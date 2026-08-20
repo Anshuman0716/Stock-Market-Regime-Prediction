@@ -1,0 +1,2 @@
+timestamp,asset,target_weight,current_weight,qty_ordered,side,dry_run,p_bull
+2026-08-20T01:13:17.027560,spx,1.0,0.0,222,buy,True,1.0

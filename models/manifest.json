@@ -1,0 +1,715 @@
+{
+    "created_at": "2026-08-20T01:44:19.679743",
+    "config_hash": "903df6c3bebff8803bea0487df7a1678",
+    "git_sha": "unknown",
+    "assets": {
+        "spx": {
+            "training_start": "2000-02-08",
+            "training_end": "2026-08-19",
+            "folds": [
+                {
+                    "fold_idx": 0,
+                    "train_end": "2009-12-31",
+                    "test_start": "2010-01-04",
+                    "test_end": "2010-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "2": "Crisis",
+                        "1": "Crisis",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 1,
+                    "train_end": "2010-12-31",
+                    "test_start": "2011-01-03",
+                    "test_end": "2011-12-30",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "0": "Transition",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 2,
+                    "train_end": "2011-12-30",
+                    "test_start": "2012-01-03",
+                    "test_end": "2012-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Crisis",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 3,
+                    "train_end": "2012-12-31",
+                    "test_start": "2013-01-02",
+                    "test_end": "2013-12-31",
+                    "state_map": {
+                        "3": "Bull",
+                        "2": "Crisis",
+                        "1": "Transition",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 4,
+                    "train_end": "2013-12-31",
+                    "test_start": "2014-01-02",
+                    "test_end": "2014-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "0": "Crisis",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 5,
+                    "train_end": "2014-12-31",
+                    "test_start": "2015-01-02",
+                    "test_end": "2015-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "2": "Crisis",
+                        "3": "Transition",
+                        "1": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 6,
+                    "train_end": "2015-12-31",
+                    "test_start": "2016-01-04",
+                    "test_end": "2016-12-30",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "0": "Transition",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 7,
+                    "train_end": "2016-12-30",
+                    "test_start": "2017-01-03",
+                    "test_end": "2017-12-29",
+                    "state_map": {
+                        "3": "Bull",
+                        "2": "Crisis",
+                        "0": "Transition",
+                        "1": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 8,
+                    "train_end": "2017-12-29",
+                    "test_start": "2018-01-02",
+                    "test_end": "2018-12-31",
+                    "state_map": {
+                        "3": "Bull",
+                        "1": "Crisis",
+                        "0": "Transition",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 9,
+                    "train_end": "2018-12-31",
+                    "test_start": "2019-01-02",
+                    "test_end": "2019-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Transition",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 10,
+                    "train_end": "2019-12-31",
+                    "test_start": "2020-01-02",
+                    "test_end": "2020-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Transition",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 11,
+                    "train_end": "2020-12-31",
+                    "test_start": "2021-01-04",
+                    "test_end": "2021-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Crisis",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 12,
+                    "train_end": "2021-12-31",
+                    "test_start": "2022-01-03",
+                    "test_end": "2022-12-30",
+                    "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "0": "Crisis",
+                        "1": "Transition"
+                    }
+                },
+                {
+                    "fold_idx": 13,
+                    "train_end": "2022-12-30",
+                    "test_start": "2023-01-03",
+                    "test_end": "2023-12-29",
+                    "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "0": "Crisis",
+                        "1": "Transition"
+                    }
+                },
+                {
+                    "fold_idx": 14,
+                    "train_end": "2023-12-29",
+                    "test_start": "2024-01-02",
+                    "test_end": "2024-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "2": "Crisis",
+                        "1": "Crisis",
+                        "3": "Transition"
+                    }
+                },
+                {
+                    "fold_idx": 15,
+                    "train_end": "2024-12-31",
+                    "test_start": "2025-01-02",
+                    "test_end": "2025-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Crisis",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 16,
+                    "train_end": "2025-12-31",
+                    "test_start": "2026-01-02",
+                    "test_end": "2026-08-19",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "0": "Crisis",
+                        "2": "Crisis"
+                    }
+                }
+            ]
+        },
+        "nasdaq": {
+            "training_start": "2000-02-08",
+            "training_end": "2026-08-19",
+            "folds": [
+                {
+                    "fold_idx": 0,
+                    "train_end": "2009-12-31",
+                    "test_start": "2010-01-04",
+                    "test_end": "2010-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Transition",
+                        "0": "Transition"
+                    }
+                },
+                {
+                    "fold_idx": 1,
+                    "train_end": "2010-12-31",
+                    "test_start": "2011-01-03",
+                    "test_end": "2011-12-30",
+                    "state_map": {
+                        "0": "Bull",
+                        "1": "Crisis",
+                        "3": "Bull",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 2,
+                    "train_end": "2011-12-30",
+                    "test_start": "2012-01-03",
+                    "test_end": "2012-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "1": "Crisis",
+                        "2": "Bull",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 3,
+                    "train_end": "2012-12-31",
+                    "test_start": "2013-01-02",
+                    "test_end": "2013-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 4,
+                    "train_end": "2013-12-31",
+                    "test_start": "2014-01-02",
+                    "test_end": "2014-12-31",
+                    "state_map": {
+                        "2": "Bull",
+                        "0": "Crisis",
+                        "3": "Bull",
+                        "1": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 5,
+                    "train_end": "2014-12-31",
+                    "test_start": "2015-01-02",
+                    "test_end": "2015-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "1": "Crisis",
+                        "3": "Bull",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 6,
+                    "train_end": "2015-12-31",
+                    "test_start": "2016-01-04",
+                    "test_end": "2016-12-30",
+                    "state_map": {
+                        "3": "Bull",
+                        "0": "Crisis",
+                        "2": "Bull",
+                        "1": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 7,
+                    "train_end": "2016-12-30",
+                    "test_start": "2017-01-03",
+                    "test_end": "2017-12-29",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 8,
+                    "train_end": "2017-12-29",
+                    "test_start": "2018-01-02",
+                    "test_end": "2018-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "0": "Crisis",
+                        "2": "Bull",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 9,
+                    "train_end": "2018-12-31",
+                    "test_start": "2019-01-02",
+                    "test_end": "2019-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "1": "Crisis",
+                        "3": "Bull",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 10,
+                    "train_end": "2019-12-31",
+                    "test_start": "2020-01-02",
+                    "test_end": "2020-12-31",
+                    "state_map": {
+                        "2": "Bull",
+                        "1": "Crisis",
+                        "3": "Bull",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 11,
+                    "train_end": "2020-12-31",
+                    "test_start": "2021-01-04",
+                    "test_end": "2021-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 12,
+                    "train_end": "2021-12-31",
+                    "test_start": "2022-01-03",
+                    "test_end": "2022-12-30",
+                    "state_map": {
+                        "0": "Bull",
+                        "1": "Crisis",
+                        "3": "Transition",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 13,
+                    "train_end": "2022-12-30",
+                    "test_start": "2023-01-03",
+                    "test_end": "2023-12-29",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 14,
+                    "train_end": "2023-12-29",
+                    "test_start": "2024-01-02",
+                    "test_end": "2024-12-31",
+                    "state_map": {
+                        "2": "Bull",
+                        "1": "Crisis",
+                        "3": "Bull",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 15,
+                    "train_end": "2024-12-31",
+                    "test_start": "2025-01-02",
+                    "test_end": "2025-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "0": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 16,
+                    "train_end": "2025-12-31",
+                    "test_start": "2026-01-02",
+                    "test_end": "2026-08-19",
+                    "state_map": {
+                        "0": "Bull",
+                        "2": "Crisis",
+                        "1": "Bull",
+                        "3": "Bull"
+                    }
+                }
+            ]
+        },
+        "gold": {
+            "training_start": "2000-10-05",
+            "training_end": "2026-08-19",
+            "folds": [
+                {
+                    "fold_idx": 0,
+                    "train_end": "2009-12-31",
+                    "test_start": "2010-01-04",
+                    "test_end": "2010-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "1": "Crisis",
+                        "2": "Bull",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 1,
+                    "train_end": "2010-12-31",
+                    "test_start": "2011-01-03",
+                    "test_end": "2011-12-30",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 2,
+                    "train_end": "2011-12-30",
+                    "test_start": "2012-01-03",
+                    "test_end": "2012-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "0": "Crisis",
+                        "2": "Bull",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 3,
+                    "train_end": "2012-12-31",
+                    "test_start": "2013-01-02",
+                    "test_end": "2013-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 4,
+                    "train_end": "2013-12-31",
+                    "test_start": "2014-01-02",
+                    "test_end": "2014-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "2": "Crisis",
+                        "1": "Bull",
+                        "3": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 5,
+                    "train_end": "2014-12-31",
+                    "test_start": "2015-01-02",
+                    "test_end": "2015-12-31",
+                    "state_map": {
+                        "3": "Bull",
+                        "1": "Crisis",
+                        "0": "Bull",
+                        "2": "Transition"
+                    }
+                },
+                {
+                    "fold_idx": 6,
+                    "train_end": "2015-12-31",
+                    "test_start": "2016-01-04",
+                    "test_end": "2016-12-30",
+                    "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "0": "Crisis"
+                    }
+                },
+                {
+                    "fold_idx": 7,
+                    "train_end": "2016-12-30",
+                    "test_start": "2017-01-03",
+                    "test_end": "2017-12-29",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "0": "Bull",
+                        "3": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 8,
+                    "train_end": "2017-12-29",
+                    "test_start": "2018-01-02",
+                    "test_end": "2018-12-31",
+                    "state_map": {
+                        "2": "Bull",
+                        "0": "Crisis",
+                        "1": "Bull",
+                        "3": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 9,
+                    "train_end": "2018-12-31",
+                    "test_start": "2019-01-02",
+                    "test_end": "2019-12-31",
+                    "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "1": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 10,
+                    "train_end": "2019-12-31",
+                    "test_start": "2020-01-02",
+                    "test_end": "2020-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "0": "Bull",
+                        "3": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 11,
+                    "train_end": "2020-12-31",
+                    "test_start": "2021-01-04",
+                    "test_end": "2021-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 12,
+                    "train_end": "2021-12-31",
+                    "test_start": "2022-01-03",
+                    "test_end": "2022-12-30",
+                    "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "0": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 13,
+                    "train_end": "2022-12-30",
+                    "test_start": "2023-01-03",
+                    "test_end": "2023-12-29",
+                    "state_map": {
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "0": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 14,
+                    "train_end": "2023-12-29",
+                    "test_start": "2024-01-02",
+                    "test_end": "2024-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "2": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 15,
+                    "train_end": "2024-12-31",
+                    "test_start": "2025-01-02",
+                    "test_end": "2025-12-31",
+                    "state_map": {
+                        "3": "Bull",
+                        "2": "Crisis",
+                        "1": "Bull",
+                        "0": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 16,
+                    "train_end": "2025-12-31",
+                    "test_start": "2026-01-02",
+                    "test_end": "2026-08-19",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Bull"
+                    }
+                }
+            ]
+        },
+        "bitcoin": {
+            "training_start": "2014-10-12",
+            "training_end": "2026-08-19",
+            "folds": [
+                {
+                    "fold_idx": 0,
+                    "train_end": "2020-12-31",
+                    "test_start": "2021-01-01",
+                    "test_end": "2021-12-31",
+                    "state_map": {
+                        "3": "Bull",
+                        "1": "Crisis",
+                        "2": "Bull",
+                        "0": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 1,
+                    "train_end": "2021-12-31",
+                    "test_start": "2022-01-01",
+                    "test_end": "2022-12-31",
+                    "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 2,
+                    "train_end": "2022-12-31",
+                    "test_start": "2023-01-01",
+                    "test_end": "2023-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "2": "Transition"
+                    }
+                },
+                {
+                    "fold_idx": 3,
+                    "train_end": "2023-12-31",
+                    "test_start": "2024-01-01",
+                    "test_end": "2024-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "2": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 4,
+                    "train_end": "2024-12-31",
+                    "test_start": "2025-01-01",
+                    "test_end": "2025-12-31",
+                    "state_map": {
+                        "0": "Bull",
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Bull"
+                    }
+                },
+                {
+                    "fold_idx": 5,
+                    "train_end": "2025-12-31",
+                    "test_start": "2026-01-01",
+                    "test_end": "2026-08-19",
+                    "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "1": "Bull"
+                    }
+                }
+            ]
+        }
+    }
+}

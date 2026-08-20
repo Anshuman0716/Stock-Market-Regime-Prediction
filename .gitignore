@@ -1,0 +1,30 @@
+# ── Python ────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+
+# ── Virtual environment ──────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── Cached raw data (re-downloadable from yfinance) ──────────────────
+data/raw/
+
+# ── SQLite database (rebuilt from pipeline) ──────────────────────────
+*.db
+
+# ── Persisted model artifacts (rebuilt from pipeline) ────────────────
+models/*.joblib
+
+# ── Jupyter ──────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── IDE / OS ─────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

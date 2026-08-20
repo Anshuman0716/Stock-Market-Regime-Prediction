@@ -1,0 +1,28 @@
+import sys
+sys.path.insert(0, ".")
+import numpy as np
+from hmmlearn.hmm import GaussianHMM
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import adjusted_rand_score
+from src.data.loader import load_config, download_prices
+from src.features.engineering import build_features, FEATURE_COLUMNS
+import warnings
+warnings.filterwarnings('ignore')
+
+cfg = load_config('config/config.yaml')
+data = download_prices(cfg)
+spx = data['spx']
+features = build_features(spx, spx['VIX_Close'])
+
+for year in [2006, 2007, 2008, 2009]:
+    train_df = features[features.index.year < year]
+    X_train = StandardScaler().fit_transform(train_df[FEATURE_COLUMNS].values)
+
+    print(f"\n--- Window up to {year-1} (N={len(X_train)}) ---")
+    for k in [3, 4]:
+        base = GaussianHMM(n_components=k, covariance_type="diag", n_iter=2000, random_state=42).fit(X_train).predict(X_train)
+        aris = []
+        for s in range(100, 110):
+            preds = GaussianHMM(n_components=k, covariance_type="diag", n_iter=2000, random_state=s).fit(X_train).predict(X_train)
+            aris.append(adjusted_rand_score(base, preds))
+        print(f"k={k} Mean ARI: {np.mean(aris):.4f}")

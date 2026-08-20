@@ -1,0 +1,27 @@
+# ── Config for Market Regime Detection Project ──────────────────────────
+# This file is the single source of truth for tickers, dates, model
+# hyperparameters, and backtest settings. src/ modules, notebooks, and
+# app.py all read from this file — no ticker or date is hardcoded in code.
+
+tickers:
+  spx: "^GSPC"
+  nasdaq: "^IXIC"
+  gold: "GC=F"
+  bitcoin: "BTC-USD"
+  vix: "^VIX"        # market-wide feature, not a tradeable asset
+
+date_range:
+  start: "2000-01-01"
+  end: null            # null = most recent available trading day
+
+model:
+  n_states: 4
+  covariance_type: "diag"
+  n_iter: 2000
+  smoothing_window: 21  # trailing, not centered
+  refit_cadence: "annual"
+  min_train_days: 2268  # approx 9 years of initial data to capture full macro cycle
+
+backtest:
+  assets: ["spx", "nasdaq", "gold", "bitcoin"]
+  transaction_cost_bps: null   # set from spread + commission model, Phase 3
