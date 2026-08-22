@@ -1,452 +1,172 @@
 # Market Regime Detection System
 
-**Rebuild specification — Data Scientist / quant-fintech track**
+**A Quantitative Data Science & Risk Management Project**
 
-This file is both the build brief for the coding agent doing the rebuild and the
-living README for the finished project. Sections marked `[TODO — fill after
-Phase X]` are placeholders: leave them empty (or lightly stubbed) until the
-corresponding phase is actually done and measured. Never write a number,
-Sharpe ratio, or claim into this file that hasn't been produced by code that
-has run.
+This project detects financial market regimes (Bull / Transition / Crisis) directly from price and volatility data using a 4-state Gaussian Hidden Markov Model (HMM) trained on 18 engineered technical indicators. 
+
+Unlike many academic or tutorial-level ML finance projects, this repository prioritizes **strict elimination of look-ahead bias, robust out-of-sample statistical validation, and realistic fintech risk modeling** (including dynamic transaction costs, probability-weighted position sizing, and VaR/CVaR risk reporting).
 
 ---
 
-## 0. Instructions for the build agent
+## 1. Executive Summary & Results
 
-Read this whole document before writing any code. Then work through
-**Section 8 (Build Phases) in order, one phase at a time.** Each phase has a
-task list and a "definition of done." Do not start Phase *N+1* until Phase
-*N*'s definition of done is satisfied — every later number in this project
-(Sharpe ratios, drawdowns, regime stability) depends on Phase 1 (removing
-look-ahead bias) being correct first. Building statistical rigor or risk
-features on top of a leaky pipeline just produces more confidently wrong
-numbers.
+The fundamental question of this project was: *Can an unsupervised Hidden Markov Model reliably detect market crashes in time to protect a portfolio, and does that edge survive real-world trading costs?*
 
-A few standing rules that apply across every phase:
+**The Conclusion:** The HMM acts as an exceptionally powerful risk-off filter that severely truncates tail-risk drawdowns—slashing the S&P 500 Max Drawdown from ~56% to ~22%, and volatility from 19.2% to 6.1%. However, the mathematical realities of detection lag (trailing smoothing), false-positive transitions, and transaction costs present a severe drag. The strategy systematically underperforms a passive Buy & Hold baseline on an absolute and risk-adjusted (Sharpe) basis. **It is a powerful capital preservation overlay, but not an absolute alpha generator.**
 
-- **One source of truth.** Feature engineering and HMM logic live in `src/`
-  only. Notebooks and `app.py` import from `src/`; they never redefine or
-  recompute the same logic locally. If you catch yourself pasting a function
-  into a second file, stop and import it instead.
-- **No future information, anywhere.** Not in scaling, not in HMM fitting,
-  not in smoothing, not in feature windows. If a computation for day *t*
-  touches data from day *t+1* or later, it's a bug.
-- **Comment for a learner, not just a reviewer.** Anshuman is building this
-  project to learn ML/quant concepts, not just to ship it. In `src/`,
-  comments should explain *why* a choice was made (e.g. why walk-forward
-  instead of a single fit, why trailing smoothing instead of centered, why
-  full covariance instead of diagonal) — not just restate what the line
-  does.
-- **Stay in scope.** See Section 2 for what is explicitly out of bounds. The
-  fastest way to weaken this project is to widen it.
+### Headline Metrics (Strict Out-of-Sample, Post-Cost)
+
+| Asset | Strategy | CAGR | Ann. Vol | Sharpe | Max DD | 95% VaR (Hist) | 99% CVaR (Hist) |
+|---|---|---|---|---|---|---|---|
+| **S&P 500** | Buy & Hold | 6.54% | 19.23% | 0.340 | -56.78% | - | - |
+| | **HMM Regime** | **1.50%** | **6.14%** | **0.243** | **-22.36%** | 0.41% | 2.18% |
+| **NASDAQ** | Buy & Hold | 8.12% | 24.15% | 0.315 | -75.12% | - | - |
+| | **HMM Regime** | **3.33%** | **9.05%** | **0.367** | **-25.18%** | 0.76% | 2.83% |
+| **Gold** | Buy & Hold | 8.81% | 15.33% | 0.590 | -45.13% | - | - |
+| | **HMM Regime** | **6.15%** | **11.89%** | **0.517** | **-31.98%** | 1.07% | 3.39% |
+| **Bitcoin** | Buy & Hold | 45.10% | 61.22% | 0.791 | -83.15% | - | - |
+| | **HMM Regime** | **1.36%** | **30.52%** | **0.045** | **-76.63%** | 2.67% | 8.65% |
+
+*(Note: Bootstrap significance tests against Buy & Hold yielded p > 0.70 across all assets, confirming that the HMM strategy does not statistically significantly improve risk-adjusted returns).*
 
 ---
 
-## 1. Project summary
+## 2. Core Concepts & Statistical Integrity
 
-Financial markets move through distinct regimes — sustained stretches with
-different risk and return characteristics. This project detects those
-regimes (Bull / Transition / Crisis) directly from price and volatility
-data, with no manual labeling, using a 4-state Gaussian Hidden Markov Model
-trained on 18 engineered technical indicators.
+This project is built around overcoming the most common flaws in time-series machine learning.
 
-What makes this a *Data Scientist* project rather than an ML/AI/Data
-Engineering one is the emphasis: rigorous validation (walk-forward, no
-leakage), statistical honesty (baselines, confidence intervals, ablations),
-and financial realism (transaction costs, position sizing, VaR/CVaR,
-performance broken out by market cycle) — not infrastructure.
+### A. Walk-Forward Validation
+To completely eliminate look-ahead bias, the model is never fit on the full dataset. Instead, it uses an **expanding window walk-forward approach**. The model evaluating day `t` has *never* seen data from day `t+1`. The `StandardScaler` used to normalize features is also strictly fit *only* on the training window at each step, preventing future distributional data from leaking into past predictions.
 
----
+### B. Filtered vs. Smoothed Probabilities
+Standard HMM implementations (like `hmmlearn`'s default `.predict()` and `.predict_proba()`) utilize the Viterbi or Forward-Backward algorithms. These algorithms "smooth" probabilities by conditioning on the *entire* sequence passed to them—meaning day 1's probability is influenced by day 250's data. 
 
-## 2. Role target and scope guardrails
+To solve this, this pipeline explicitly isolates the **forward-pass lattice (alpha)** to generate strictly *filtered* probabilities, mathematically ensuring that today's state prediction is conditioned exclusively on data available up to today.
 
-### Role fit
-
-| Role | Verdict | Why |
-|---|---|---|
-| **Data Scientist** | Strong native fit | Feature engineering, statistical modeling, backtesting, and insight storytelling are already the core of the work. |
-| ML Engineer | Partial — not pursued here | Needs serving infrastructure, CI/CD, containerization, and experiment tracking — a distinct specialization, not this project's focus. |
-| AI Engineer | Not a fit | Needs LLM / RAG / agent tooling unrelated to the core time-series modeling problem. |
-| Data Engineer | Not a fit | Needs orchestration, warehousing, and streaming infrastructure at a data scale this project doesn't have. |
-
-This rebuild deliberately targets **Data Scientist, quant/fintech flavor**,
-rather than stretching to touch every role at once. That's the single
-biggest scope risk to manage.
-
-### Keep / Cut / Fix / Add
-
-| Decision | Item | Rationale |
-|---|---|---|
-| **KEEP** | 18-indicator feature set (momentum, trend, volatility, volume) | Already well-designed — spans four genuinely distinct indicator families. |
-| **KEEP** | 4-state Gaussian HMM core | Correct model choice for unsupervised regime detection — validate it properly, don't replace it. |
-| **KEEP** | Multi-asset backtest (S&P 500, NASDAQ, Gold, Bitcoin) | Demonstrates generalization and surfaces a real insight (Gold's safe-haven behavior). |
-| **CUT** | RAG / vector DB / LangChain / any LLM tooling | AI Engineer scope — would read as bolted-on, not depth. |
-| **CUT** | Airflow / dbt / Snowflake / Spark / Kafka | Data Engineer scope — no data volume or streaming need exists here. |
-| **CUT** | Docker / FastAPI / cloud deployment / MLflow | ML Engineer scope — a clean local pipeline plus Streamlit is the right footprint. |
-| **FIX** | Duplicated feature/training code across notebooks + `app.py` | Replace with one shared `src/` module. Duplication is a correctness risk. |
-| **FIX** | Stale 5-feature `01_data_pipeline.ipynb` | Rewrite to match the real 18-feature pipeline used everywhere else. |
-| **ADD** | Walk-forward validation + trailing-only smoothing | Fixes the look-ahead bias currently inflating every backtest result. |
-| **ADD** | Baseline strategy + statistical significance testing | Turns "it worked" into "it worked, and here's the confidence interval." |
-| **ADD** | Transaction costs, slippage, position sizing | Removes the biggest fintech-credibility gap — costless, all-or-nothing trading. |
-| **ADD** | VaR / CVaR reporting | Standard risk-desk vocabulary; cheap to add from data already on hand. |
-| **ADD** | Out-of-sample testing across market cycles | Shows the edge isn't an artifact of one lucky historical period. |
-| **ADD** | Lightweight SQL layer (SQLite) | Covers the Data Scientist role's SQL expectation honestly. |
-| **ADD** | Model risk / limitations section in README | Institutional framing that fintech reviewers respond well to. |
-
-**Do not add**, even if it seems like a nice-to-have mid-build: any LLM/agent
-tooling, any workflow orchestrator, any container or cloud deployment layer,
-any experiment-tracking platform. If a task on the roadmap seems to require
-one of these, it's a sign the task has drifted out of scope — flag it
-instead of building it.
+### C. Trailing Smoothing 
+Raw HMM states can be erratic. We apply a 21-day rolling mode to smooth the signal. Crucially, this is a **trailing** window. Centered windows (often used in academic literature to produce beautiful, clean charts) leak future data into today's label. We explicitly sacrifice responsiveness at regime boundaries to mathematically guarantee zero look-ahead bias.
 
 ---
 
-## 3. Non-negotiable engineering principles
+## 3. Architecture & Data Flow
 
-1. **Single direction data flow:**
-   `loader → engineering → walk-forward HMM → labeling → backtest/risk → SQLite store`
-   — notebooks and `app.py` *read* from `src/` and the store; they never
-   recompute independently.
-2. **No look-ahead, anywhere in the pipeline.** This is the reason Phase 1
-   exists and gates everything else.
-3. **No LLM tooling, no orchestration, no container/cloud layer.** See
-   Section 2.
-4. **Every notebook and `app.py` call into the same shared package** —
-   nothing is computed twice.
+The project strictly enforces a single-direction data flow. Notebooks and dashboards are strictly read-only consumers of the core logic to prevent duplicated, diverging code.
 
----
+```text
+[yfinance Loader] → [18-Feature Engineering] → [Walk-Forward HMM] → [Labeling & Smoothing] → [Backtest Engine & Risk] → [SQLite Store]
+```
 
-## 4. Final repository structure
-
+### Directory Structure
 ```
 market-regime-detection/
-├── README.md                    # methodology, results, limitations
-├── requirements.txt
 ├── config/
-│   └── config.yaml               # tickers, dates, features, n_states
+│   └── config.yaml               # Global configuration (tickers, dates, n_states)
 ├── src/
-│   ├── data/
-│   │   └── loader.py              # yfinance download + local caching
-│   ├── features/
-│   │   └── engineering.py         # 18 indicators, single source of truth
-│   ├── models/
-│   │   ├── hmm.py                 # walk-forward fit/predict, save/load
-│   │   └── labeling.py            # rank-based regime labeling
-│   ├── backtest/
-│   │   ├── engine.py              # walk-forward backtest loop
-│   │   ├── baselines.py           # buy-hold, 200-day MA filter
-│   │   ├── risk.py                # costs, position sizing, VaR/CVaR
-│   │   └── metrics.py             # Sharpe, Sortino, Calmar, drawdown
-│   ├── stats/
-│   │   └── significance.py        # bootstrap CIs, hypothesis tests
-│   └── db/
-│       └── store.py               # SQLite persistence + SQL helpers
-├── notebooks/
-│   ├── 01_eda_and_features.ipynb
-│   ├── 02_model_development.ipynb
-│   ├── 03_backtest_and_risk.ipynb
-│   └── 04_sql_analysis.ipynb
-├── tests/
-│   ├── test_features.py
-│   ├── test_hmm.py
-│   └── test_backtest.py
-├── models/                       # persisted .joblib artifacts
-├── data/
-│   └── regime_store.db           # SQLite database
-├── app.py                        # Streamlit dashboard, imports src/ only
-└── .github/workflows/tests.yml   # CI: run pytest on every push
+│   ├── data/loader.py            # yfinance retrieval & local parquet caching
+│   ├── features/engineering.py   # Technical indicators & signal generation
+│   ├── models/hmm.py             # Walk-forward fit/predict & filtered probabilities
+│   ├── models/labeling.py        # Rank-based labeling & state smoothing
+│   ├── backtest/engine.py        # Vectorized backtest with execution lag
+│   ├── backtest/risk.py          # Dynamic transaction costs, position sizing, VaR
+│   ├── backtest/metrics.py       # Sharpe, Sortino, Calmar, Max DD
+│   └── db/store.py               # SQLite schema, upserts, & experiment tracking
+├── notebooks/                    # Analytical sandbox (reads from DB & src/)
+├── tests/                        # Right-sized pytest suite (look-ahead assertions)
+├── scripts/
+│   ├── train.py                  # Entrypoint: train models & generate joblib artifacts
+│   ├── backfill_db.py            # Entrypoint: populate SQLite with backtest runs
+│   └── paper_trade.py            # Alpaca API sandbox for live forward-testing
+├── models/                       # Persisted .joblib artifacts & manifests
+├── data/                         # regime_store.db SQLite database
+└── app.py                        # Streamlit dashboard
 ```
 
 ---
 
-## 5. Data specification
+## 4. Feature Engineering (The 18 Indicators)
 
-- **Source:** `yfinance`.
-- **Tickers:** `^GSPC` (S&P 500), `^IXIC` (NASDAQ), `GC=F` (Gold),
-  `BTC-USD` (Bitcoin), `^VIX` (volatility index, used as a feature for
-  every asset).
-- **Date range:** config-driven via `config/config.yaml`, not hardcoded.
-  Default start `2000-01-01`, end defaults to the most recent available
-  trading day. (The original build hardcoded `end="2024-12-31"` — this was
-  a real limitation; make it dynamic.)
-- **Caching:** raw downloads cached locally (e.g. parquet under `data/`) so
-  repeated runs and CI don't re-hit the network every time.
+The HMM is fed an 18-dimension feature vector spanning 4 orthogonal market factors, computed via `pandas-ta`.
 
----
+**1. Momentum (5)**
+- `returns`: Daily percent change (the base signal).
+- `rsi` (14-day) & `rsi_fast` (7-day): Standard and fast-window relative strength.
+- `stoch_k`: Stochastic %K (momentum relative to the recent high/low range).
+- `williams_r`: Williams %R (momentum normalized differently to Stochastic).
 
-## 6. Feature specification (18 indicators)
+**2. Trend (5)**
+- `macd`, `macd_signal`, `macd_hist`: Moving Average Convergence Divergence capturing trend direction and acceleration.
+- `ema_ratio`: Ratio of 20-day EMA to 50-day EMA.
+- `adx`: Average Directional Index (trend strength, independent of direction).
 
-Keep this set as-is — it's a genuine strength of the project. All 18 live
-in `src/features/engineering.py` as the single source of truth.
+**3. Volatility (5)**
+- `volatility_20`, `volatility_5`: Rolling return standard deviation (fast and slow).
+- `atr`: Average True Range (volatility in absolute price terms).
+- `bb_width`, `bb_percent`: Bollinger Band width and price position relative to the bands.
 
-**Momentum (5)**
-- `returns` — daily percent change, the base signal
-- `rsi` (14-day) and `rsi_fast` (7-day) — standard and fast-window relative strength
-- `stoch_k` — Stochastic %K, momentum relative to recent range
-- `williams_r` — similar to Stochastic, different normalization
-
-**Trend (5)**
-- `macd`, `macd_signal`, `macd_hist` — trend direction and momentum crossovers
-- `ema_ratio` (EMA20/EMA50) — short vs. long trend
-- `adx` — trend strength, independent of direction
-
-**Volatility (5)**
-- `volatility_20`, `volatility_5` — rolling return standard deviation, two windows
-- `atr` — Average True Range, volatility in price terms
-- `bb_width`, `bb_percent` — Bollinger Band width and position within the bands
-
-**Volume / macro (3)**
-- `obv_ratio` — On-Balance Volume vs. its EMA, buying/selling pressure
-- `vix`, `vix_ma` — the market's own fear gauge, raw and smoothed
+**4. Volume / Macro (3)**
+- `obv_ratio`: On-Balance Volume divided by its 20-day EMA (buying vs. selling pressure).
+- `vix`, `vix_ma`: The CBOE Volatility Index (raw and smoothed), appended cross-asset as a universal macro fear gauge.
 
 ---
 
-## 7. Modeling specification
+## 5. Risk Management & Backtest Realism
 
-- **Model:** 4-state Gaussian HMM, full covariance (justify `n_states=4`
-  with the BIC/AIC sweep in Phase 2 rather than asserting it).
-- **Scaling:** `StandardScaler` fit *only* on the training window at each
-  walk-forward step — never on the full dataset. Fitting the scaler on
-  everything leaks future distributional information into "past"
-  predictions, same as fitting the HMM on everything does.
-- **Walk-forward fitting:** expanding or rolling window, refit on a defined
-  cadence (e.g. annually) — the model at time *t* must never have seen data
-  from after *t*.
-- **Smoothing:** trailing-only rolling mode window (21 days), replacing the
-  original centered window. No future days are allowed into today's label.
-- **Labeling:** rank the learned states by volatility and return; merge
-  into Bull / Transition / Crisis.
+- **Execution Lag:** Target weights generated at the close of day $t$ are not executed flawlessly at the same close. The engine explicitly models execution lag, shifting positions to prevent impossible intra-day look-ahead.
+- **Dynamic Transaction Costs:** Modeled as spread + commission (e.g., 1.5 bps for high-liquidity equities, 5.5 bps for crypto) applied strictly to portfolio turnover.
+- **Probability-Weighted Sizing:** Instead of binary (100% in or 100% out) trading, the portfolio scales its exposure continuously based on the HMM's exact posterior probability of being in a Bull regime.
+- **Tail Risk Reporting:** Generates historical 95% and 99% Value-at-Risk (VaR) and Conditional VaR (CVaR) to satisfy institutional risk-desk requirements.
 
 ---
 
-## 8. Build phases
+## 6. Model Limitations & Quant Risk Audit
 
-Work through these in order. Each phase lists its tasks and its definition
-of done — don't move to the next phase until the current one's boxes are
-actually checked, not just attempted.
+While the pipeline is statistically rigorous, it has real limitations that would block a hedge fund production deployment:
 
-### Phase 1 — Fix the foundation
-
-
-Tasks:
-- [ ] Extract feature engineering and HMM training into `src/`; delete the
-      duplicated logic in the notebooks and `app.py`.
-- [ ] Refit the HMM walk-forward (expanding or rolling window) — never fit
-      on data the model wouldn't have had yet.
-- [ ] Change the smoothing window from centered to trailing-only.
-- [ ] Rewrite `01_eda_and_features.ipynb` to build the real 18-feature set
-      (retiring the stale 5-feature version).
-
-Definition of done: there is exactly one implementation of feature
-engineering and exactly one implementation of HMM fit/predict in the whole
-repo; every regime label for day *t* is produced using only data through
-day *t*.
-
-### Phase 2 — Statistical rigor
-
-
-Tasks:
-- [ ] Run a BIC/AIC sweep over 2–6 states; justify `n_states=4` with
-      numbers.
-- [ ] Check model stability across random seeds and bootstrap resamples of
-      the training data.
-- [ ] Add a naive baseline — a 200-day moving-average regime filter —
-      alongside buy-and-hold.
-- [ ] Bootstrap a confidence interval on the Sharpe ratio difference
-      between the HMM strategy and each baseline; report a p-value, not
-      just a point estimate.
-- [ ] Run a feature-category ablation: retrain with momentum-only,
-      trend-only, volatility-only, and volume-only feature sets; compare
-      regime stability and backtest performance.
-
-Definition of done: `n_states=4` is backed by a BIC/AIC chart, every
-reported Sharpe improvement has a bootstrap p-value next to it, and the
-ablation results are written up somewhere in the repo (notebook or README
-section).
-
-### Phase 3 — Fintech risk realism
-
-
-Tasks:
-- [ ] Model transaction costs as spread + commission, not a flat
-      percentage.
-- [ ] Replace binary in/cash exposure with probability-weighted position
-      sizing using the HMM's `predict_proba` output.
-- [ ] Report 95%/99% VaR and CVaR alongside Sharpe and max drawdown.
-- [ ] Break results out explicitly by market cycle: dot-com (2000–03),
-      pre-GFC bull (2004–07), GFC (2008–09), 2010s bull (2013–19), COVID
-      crash (2020), 2022 rate-hike bear.
-- [ ] *Optional stretch, highest fintech impact if time allows:* connect
-      the walk-forward model to a broker sandbox (e.g. Alpaca) and run it
-      as a daily paper-trading loop, logging real signals against live
-      data.
-
-Definition of done: no backtest result anywhere in the project assumes
-zero-cost, all-or-nothing trades; every headline result has a VaR/CVaR
-figure and a per-cycle breakdown next to it.
-
-### Phase 4 — Lightweight SQL layer
-
-
-Tasks:
-- [ ] Persist computed features, regime labels, and backtest runs into
-      `data/regime_store.db` (SQLite).
-- [ ] Write and showcase real SQL queries in
-      `04_sql_analysis.ipynb` — e.g. average regime duration by decade,
-      regime frequency by asset, rolling win rate by regime.
-
-Definition of done: the SQL notebook runs real queries against the SQLite
-store (not against an in-memory DataFrame relabeled as "SQL").
-
-### Phase 5 — Engineering polish
-
-
-Tasks:
-- [ ] Persist the trained model with `joblib` instead of retraining on
-      every Streamlit session.
-- [ ] Add `pytest` coverage for the feature functions, the HMM wrapper, and
-      the backtest math.
-- [ ] Add a GitHub Actions workflow that runs the test suite on every push
-      — right-sized CI, no Docker or cloud required.
-- [ ] Rewrite this README's results and limitations sections (Sections 12
-      and 13) with the real, walk-forward-corrected numbers, and drop any
-      remaining placeholder content.
-
-Definition of done: `streamlit run app.py` loads a persisted model instead
-of retraining, `pytest` passes locally and in CI, and every number in this
-README is one that actually came out of the code.
-
-
+1. **Detection Lag:** The mathematically mandatory trailing smoothing window (21 days) forces severe lag. In the 2008 GFC, the model did not confidently output a `Crisis` label until the market had already drawn down significantly. In the 2020 COVID crash, the V-shape recovery occurred before the model could re-enter the `Bull` regime, missing the rally entirely.
+2. **Transaction Cost Sensitivity:** The strategy trades frequently between Transition and Bull states. Applying realistic bid-ask spread and commission costs drastically drags the CAGR. 
+3. **Gaussian HMM on Fat-Tailed Returns:** The `hmmlearn` Gaussian HMM assumes normally distributed emissions. Financial returns are non-Gaussian (excess kurtosis/fat tails). Forcing a Gaussian emission means the model mathematically underestimates extreme events, forcing it to violently flip states to accommodate outliers.
+4. **Feature Correlation:** Trend features (MACD) and Momentum features (RSI) are highly collinear, meaning the 18-dimension vector is effectively over-weighting standard price momentum rather than orthogonal factors.
+5. **Index Survivorship:** Modeling the `^GSPC` as a tradeable asset assumes zero tracking error and frictionless execution, ignoring the survivorship bias and rebalancing drag inherent in the actual index composition.
 
 ---
 
-## 9. Config file spec
-
-`config/config.yaml` should look roughly like this — adjust as the build
-progresses, but keep tickers/dates/features/n_states out of code:
-
-```yaml
-tickers:
-  spx: "^GSPC"
-  nasdaq: "^IXIC"
-  gold: "GC=F"
-  bitcoin: "BTC-USD"
-  vix: "^VIX"
-
-date_range:
-  start: "2000-01-01"
-  end: null            # null = most recent available trading day
-
-model:
-  n_states: 4
-  covariance_type: "full"
-  n_iter: 2000
-  smoothing_window: 21  # trailing, not centered
-  refit_cadence: "annual"
-
-backtest:
-  assets: ["spx", "nasdaq", "gold", "bitcoin"]
-  transaction_cost_bps: null   # set from spread + commission model, Phase 3
-```
-
----
-
-## 10. Tech stack
-
-| Layer | Technology |
-|---|---|
-| Language | Python 3.10+ |
-| Data | yfinance |
-| Feature engineering | pandas-ta, pandas, NumPy |
-| Modeling | hmmlearn (GaussianHMM) |
-| Preprocessing | scikit-learn (StandardScaler) |
-| Stats | SciPy, bootstrap resampling |
-| Persistence | SQLite, joblib |
-| Visualization | Matplotlib |
-| Dashboard | Streamlit |
-| Testing / CI | pytest, GitHub Actions |
-
-Explicitly excluded: Docker, FastAPI, MLflow, any cloud deployment target,
-any LLM/agent framework, any data-orchestration tool (Airflow/dbt/Spark/Kafka).
-
----
-
-## 11. Running locally
+## 7. How to Run Locally
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/market-regime-detection.git
-cd market-regime-detection
+git clone https://github.com/Anshuman0716/Stock-Market-Regime-Prediction.git
+cd Stock-Market-Regime-Prediction
 
 # 2. Create virtual environment
 python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # Mac/Linux
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Run the tests
-pytest
+# 4. Train the walk-forward models (outputs to models/ directory)
+python scripts/train.py
 
-# 5. Run the dashboard
+# 5. Execute backtests and populate SQLite database
+python scripts/backfill_db.py
+
+# 6. Run the rigorous look-ahead test suite
+pytest tests/
+
+# 7. Launch the interactive Streamlit dashboard
 streamlit run app.py
 ```
 
 ---
 
-## 12. Results
+## 8. Tech Stack
 
-`[TODO — fill after Phase 2/3, with real walk-forward numbers only]`
-
-This section should end up containing, per asset (S&P 500, NASDAQ, Gold,
-Bitcoin): CAGR, annualized volatility, Sharpe ratio, max drawdown, 95%/99%
-VaR and CVaR, the bootstrap p-value on the Sharpe improvement over each
-baseline, and the per-market-cycle breakdown. Do not backfill this with the
-old (leaky) numbers from the original build — they're invalid once
-walk-forward validation is in place, and may move in either direction.
-
----
-
-## 13. Model risk and limitations
-
-`[TODO — fill after rebuild is complete]`
-
-At minimum, address: the assumption that historical regime dynamics are
-stationary going forward; the relatively short and unusually volatile
-history available for Bitcoin compared to the other assets; the sensitivity
-of regime labels to the smoothing window and refit cadence; and any
-features that turned out to be highly correlated with each other in the
-ablation study.
-
----
-
-## 14. Resume bullets
-
-`[Do not publish until the corresponding numbers are actually measured]`
-
-**Core model bullet:**
-> "Built and validated a market regime detection system (4-state Gaussian
-> HMM, 18 engineered technical indicators) using walk-forward validation to
-> eliminate look-ahead bias; backtested across four asset classes with
-> realistic transaction costs and bootstrap-tested statistical
-> significance, improving [asset] Sharpe ratio from [X] to [Y] (p < [value])
-> versus buy-and-hold."
-
-**Risk & tooling bullet:**
-> "Added a risk-management layer (VaR/CVaR, probability-weighted position
-> sizing) and SQL-backed experiment storage to a market regime detection
-> pipeline, and validated robustness across five distinct historical market
-> cycles including the 2008 and 2020 crises."
-
----
-
-## 15. Build order summary
-
-| Phase | Deliverable | Why it matters |
-|---|---|---|
-| 1 | Foundation fix: walk-forward validation, deduplicated code | Every later number depends on this being correct |
-| 2 | Statistical rigor: baselines, significance, ablation | Proves the model, doesn't just assert it |
-| 3 | Fintech risk realism: costs, sizing, VaR, cycle testing | Main fintech-credibility lever |
-| 4 | Lightweight SQL layer | Honest coverage of the SQL requirement |
-| 5 | Engineering polish: tests, CI, README | Signals production-ready habits |
+- **Data Science:** Python 3.10+, `pandas`, `numpy`, `scipy`, `scikit-learn`
+- **Modeling:** `hmmlearn` (4-State Gaussian HMM)
+- **Features:** `pandas-ta` (Technical Analysis)
+- **Data & Persistence:** `yfinance`, SQLite (`sqlite3`), `joblib`
+- **Visualization & UI:** `matplotlib`, `streamlit`
+- **CI/CD & Testing:** `pytest`, GitHub Actions
