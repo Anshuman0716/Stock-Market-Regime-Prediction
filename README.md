@@ -2,7 +2,7 @@
 
 **A Quantitative Data Science & Risk Management Project**
 
-This project detects financial market regimes (Bull / Transition / Crisis) directly from price and volatility data using a 4-state Gaussian Hidden Markov Model (HMM) trained on 18 engineered technical indicators. 
+This project detects financial market regimes (Bull / Transition / Crisis) directly from price and volatility data using a 4-state Gaussian Hidden Markov Model (HMM) trained on 8 strictly-engineered technical indicators. 
 
 Unlike many academic or tutorial-level ML finance projects, this repository prioritizes **strict elimination of look-ahead bias, robust out-of-sample statistical validation, and realistic fintech risk modeling** (including dynamic transaction costs, probability-weighted position sizing, and VaR/CVaR risk reporting).
 
@@ -83,29 +83,25 @@ market-regime-detection/
 
 ---
 
-## 4. Feature Engineering (The 18 Indicators)
+## 4. Feature Engineering (The 8 Indicators)
 
-The HMM is fed an 18-dimension feature vector spanning 4 orthogonal market factors, computed via `pandas-ta`.
+The HMM is fed an 8-dimension feature vector spanning 4 orthogonal market factors, computed via `pandas-ta`. We intentionally reduced the feature set from an original 18 down to 8 to prevent overparameterization and collinearity (e.g., stripping out redundant Momentum indicators like Stochastic and Williams %R).
 
-**1. Momentum (5)**
+**1. Momentum & Trend (3)**
 - `returns`: Daily percent change (the base signal).
-- `rsi` (14-day) & `rsi_fast` (7-day): Standard and fast-window relative strength.
-- `stoch_k`: Stochastic %K (momentum relative to the recent high/low range).
-- `williams_r`: Williams %R (momentum normalized differently to Stochastic).
+- `rsi` (14-day): Relative Strength Index.
+- `macd`: Moving Average Convergence Divergence capturing trend direction and acceleration.
 
-**2. Trend (5)**
-- `macd`, `macd_signal`, `macd_hist`: Moving Average Convergence Divergence capturing trend direction and acceleration.
-- `ema_ratio`: Ratio of 20-day EMA to 50-day EMA.
+**2. Trend Strength (1)**
 - `adx`: Average Directional Index (trend strength, independent of direction).
 
-**3. Volatility (5)**
-- `volatility_20`, `volatility_5`: Rolling return standard deviation (fast and slow).
+**3. Volatility (2)**
+- `volatility_20`: 20-day rolling return standard deviation.
 - `atr`: Average True Range (volatility in absolute price terms).
-- `bb_width`, `bb_percent`: Bollinger Band width and price position relative to the bands.
 
-**4. Volume / Macro (3)**
+**4. Volume / Macro (2)**
 - `obv_ratio`: On-Balance Volume divided by its 20-day EMA (buying vs. selling pressure).
-- `vix`, `vix_ma`: The CBOE Volatility Index (raw and smoothed), appended cross-asset as a universal macro fear gauge.
+- `vix`: The CBOE Volatility Index, appended cross-asset as a universal macro fear gauge.
 
 ---
 
@@ -125,7 +121,7 @@ While the pipeline is statistically rigorous, it has real limitations that would
 1. **Detection Lag:** The mathematically mandatory trailing smoothing window (21 days) forces severe lag. In the 2008 GFC, the model did not confidently output a `Crisis` label until the market had already drawn down significantly. In the 2020 COVID crash, the V-shape recovery occurred before the model could re-enter the `Bull` regime, missing the rally entirely.
 2. **Transaction Cost Sensitivity:** The strategy trades frequently between Transition and Bull states. Applying realistic bid-ask spread and commission costs drastically drags the CAGR. 
 3. **Gaussian HMM on Fat-Tailed Returns:** The `hmmlearn` Gaussian HMM assumes normally distributed emissions. Financial returns are non-Gaussian (excess kurtosis/fat tails). Forcing a Gaussian emission means the model mathematically underestimates extreme events, forcing it to violently flip states to accommodate outliers.
-4. **Feature Correlation:** Trend features (MACD) and Momentum features (RSI) are highly collinear, meaning the 18-dimension vector is effectively over-weighting standard price momentum rather than orthogonal factors.
+4. **Feature Correlation:** Even after reducing the features to 8, Trend features (MACD) and Momentum features (RSI) remain highly collinear, meaning the feature vector is effectively over-weighting standard price momentum rather than orthogonal factors.
 5. **Index Survivorship:** Modeling the `^GSPC` as a tradeable asset assumes zero tracking error and frictionless execution, ignoring the survivorship bias and rebalancing drag inherent in the actual index composition.
 
 ---
