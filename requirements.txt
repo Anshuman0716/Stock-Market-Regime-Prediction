@@ -16,7 +16,7 @@ pyarrow>=17.0,<19.0
 
 # Core data science
 pandas>=2.2
-numpy>=1.26
+numpy>=1.26,<2.0.0
 scipy>=1.13
 
 # Feature engineering
