@@ -1,11 +1,11 @@
 {
-    "created_at": "2026-08-20T01:44:19.679743",
+    "created_at": "2026-09-13T19:21:11.962083",
     "config_hash": "903df6c3bebff8803bea0487df7a1678",
-    "git_sha": "unknown",
+    "git_sha": "ce29c9fa7254898bc02e479eae2c4bae965a5487",
     "assets": {
         "spx": {
             "training_start": "2000-02-08",
-            "training_end": "2026-08-19",
+            "training_end": "2026-09-11",
             "folds": [
                 {
                     "fold_idx": 0,
@@ -203,7 +203,7 @@
                     "fold_idx": 16,
                     "train_end": "2025-12-31",
                     "test_start": "2026-01-02",
-                    "test_end": "2026-08-19",
+                    "test_end": "2026-09-11",
                     "state_map": {
                         "1": "Bull",
                         "3": "Crisis",
@@ -215,7 +215,7 @@
         },
         "nasdaq": {
             "training_start": "2000-02-08",
-            "training_end": "2026-08-19",
+            "training_end": "2026-09-11",
             "folds": [
                 {
                     "fold_idx": 0,
@@ -413,7 +413,7 @@
                     "fold_idx": 16,
                     "train_end": "2025-12-31",
                     "test_start": "2026-01-02",
-                    "test_end": "2026-08-19",
+                    "test_end": "2026-09-11",
                     "state_map": {
                         "0": "Bull",
                         "2": "Crisis",
@@ -425,7 +425,7 @@
         },
         "gold": {
             "training_start": "2000-10-05",
-            "training_end": "2026-08-19",
+            "training_end": "2026-09-11",
             "folds": [
                 {
                     "fold_idx": 0,
@@ -623,7 +623,7 @@
                     "fold_idx": 16,
                     "train_end": "2025-12-31",
                     "test_start": "2026-01-02",
-                    "test_end": "2026-08-19",
+                    "test_end": "2026-09-11",
                     "state_map": {
                         "0": "Bull",
                         "3": "Crisis",
@@ -635,7 +635,7 @@
         },
         "bitcoin": {
             "training_start": "2014-10-12",
-            "training_end": "2026-08-19",
+            "training_end": "2026-09-12",
             "folds": [
                 {
                     "fold_idx": 0,
@@ -701,7 +701,7 @@
                     "fold_idx": 5,
                     "train_end": "2025-12-31",
                     "test_start": "2026-01-01",
-                    "test_end": "2026-08-19",
+                    "test_end": "2026-09-12",
                     "state_map": {
                         "2": "Bull",
                         "3": "Crisis",

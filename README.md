@@ -19,13 +19,13 @@ The fundamental question of this project was: *Can an unsupervised Hidden Markov
 | Asset | Strategy | CAGR | Ann. Vol | Sharpe | Max DD | 95% VaR (Hist) | 99% CVaR (Hist) |
 |---|---|---|---|---|---|---|---|
 | **S&P 500** | Buy & Hold | 6.54% | 19.23% | 0.340 | -56.78% | - | - |
-| | **HMM Regime** | **1.50%** | **6.14%** | **0.243** | **-22.36%** | 0.41% | 2.18% |
+| | **HMM Regime** | **1.47%** | **6.15%** | **0.238** | **-22.36%** | 0.42% | 2.18% |
 | **NASDAQ** | Buy & Hold | 8.12% | 24.15% | 0.315 | -75.12% | - | - |
-| | **HMM Regime** | **3.33%** | **9.05%** | **0.367** | **-25.18%** | 0.76% | 2.83% |
+| | **HMM Regime** | **3.32%** | **9.06%** | **0.366** | **-25.19%** | 0.76% | 2.84% |
 | **Gold** | Buy & Hold | 8.81% | 15.33% | 0.590 | -45.13% | - | - |
-| | **HMM Regime** | **6.15%** | **11.89%** | **0.517** | **-31.98%** | 1.07% | 3.39% |
+| | **HMM Regime** | **6.00%** | **11.92%** | **0.503** | **-31.98%** | 1.08% | 3.38% |
 | **Bitcoin** | Buy & Hold | 45.10% | 61.22% | 0.791 | -83.15% | - | - |
-| | **HMM Regime** | **1.36%** | **30.52%** | **0.045** | **-76.63%** | 2.67% | 8.65% |
+| | **HMM Regime** | **2.07%** | **30.58%** | **0.068** | **-76.63%** | 2.67% | 8.65% |
 
 *(Note: Bootstrap significance tests against Buy & Hold yielded p > 0.70 across all assets, confirming that the HMM strategy does not statistically significantly improve risk-adjusted returns).*
 
@@ -53,7 +53,7 @@ Raw HMM states can be erratic. We apply a 21-day rolling mode to smooth the sign
 The project strictly enforces a single-direction data flow. Notebooks and dashboards are strictly read-only consumers of the core logic to prevent duplicated, diverging code.
 
 ```text
-[yfinance Loader] → [18-Feature Engineering] → [Walk-Forward HMM] → [Labeling & Smoothing] → [Backtest Engine & Risk] → [SQLite Store]
+[yfinance Loader] → [8-Feature Engineering] → [Walk-Forward HMM] → [Labeling & Smoothing] → [Backtest Engine & Risk] → [SQLite Store]
 ```
 
 ### Directory Structure
@@ -166,3 +166,43 @@ streamlit run app.py
 - **Data & Persistence:** `yfinance`, SQLite (`sqlite3`), `joblib`
 - **Visualization & UI:** `matplotlib`, `streamlit`
 - **CI/CD & Testing:** `pytest`, GitHub Actions
+
+---
+
+## 9. Known Limitations
+
+These are intentional scope boundaries or inherent model constraints — not bugs:
+
+| Limitation | Explanation |
+|-----------|-------------|
+| **No cloud deployment** | By design — the project targets Data Scientist scope, not ML Engineer / DevOps. See [Deployment](#10-deployment--hosting) for local and Streamlit Cloud instructions. |
+| **Gaussian emission assumption** | `hmmlearn`'s Gaussian HMM assumes normally distributed returns per state. Financial returns are fat-tailed; a Student-t or mixture emission model would be more accurate but is not available in `hmmlearn`. |
+| **Detection lag** | The 21-day trailing smoothing window delays regime transitions by up to ~3 weeks. This is the mathematically necessary cost of zero look-ahead bias. |
+| **No live trading integration** | A `scripts/paper_trade.py` scaffold exists for Alpaca API forward-testing, but live execution is out of scope. |
+| **Index-level backtesting** | We backtest on indices (`^GSPC`, `^IXIC`) rather than tradeable ETFs (SPY, QQQ). This ignores tracking error and ETF expense ratios. |
+| **`hmmlearn` private API usage** | Filtered probabilities require `hmmlearn._hmmc.forward_log()`, a private C-extension function. This is pinned to `hmmlearn>=0.3,<0.4` in `requirements.txt`. |
+
+---
+
+## 10. Deployment / Hosting
+
+### Run Locally
+
+```bash
+# Clone, create venv, install deps (see Section 7 above)
+# Then:
+python scripts/train.py        # train walk-forward models
+python scripts/backfill_db.py  # populate SQLite with backtest runs
+streamlit run app.py           # launch dashboard at http://localhost:8501
+```
+
+### Deploy on Streamlit Community Cloud
+
+1. Push this repository to GitHub (public or private).
+2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
+3. Click **"New app"** → select the repo, branch `main`, and set the main file to `app.py`.
+4. Ensure `requirements.txt` is in the repo root (already present).
+5. **Important:** The app reads from `data/regime_store.db` and `models/manifest.json`. You must either:
+   - Commit these artifacts to the repo after running `train.py` and `backfill_db.py` locally, or
+   - Add a startup script that generates them on first launch (slower cold-start).
+6. Click **Deploy**. The app will be live at `https://<your-app>.streamlit.app`.

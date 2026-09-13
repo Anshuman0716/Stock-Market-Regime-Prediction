@@ -151,6 +151,7 @@ def _download_single_ticker(ticker, start, end, force_refresh=False,
         start=start,
         end=resolved_end,
         progress=False,
+        auto_adjust=True,  # explicit: use adjusted prices, suppress FutureWarning
     )
 
     # ── Validate download quality ────────────────────────────────────
