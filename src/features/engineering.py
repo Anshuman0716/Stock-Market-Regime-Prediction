@@ -5,7 +5,7 @@ Feature engineering: 8 core technical indicators to prevent overparameterization
 import logging
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+import ta
 
 logger = logging.getLogger(__name__)
 
@@ -28,32 +28,21 @@ def build_features(df, vix_close):
 
     # 1. Momentum & Returns
     returns = close.pct_change()
-    rsi = ta.rsi(close, length=14)
+    rsi = ta.momentum.RSIIndicator(close, window=14).rsi()
 
     # 2. Trend
-    macd_df = ta.macd(close, fast=12, slow=26, signal=9)
-    if macd_df is not None and len(macd_df.columns) >= 1:
-        macd = macd_df.iloc[:, 0]
-    else:
-        macd = pd.Series(np.nan, index=close.index)
+    macd = ta.trend.MACD(close, window_slow=26, window_fast=12, window_sign=9).macd()
 
-    adx_df = ta.adx(high, low, close, length=14)
-    if adx_df is not None and len(adx_df.columns) >= 1:
-        adx = adx_df.iloc[:, 0]
-    else:
-        adx = pd.Series(np.nan, index=close.index)
+    adx = ta.trend.ADXIndicator(high, low, close, window=14).adx()
 
     # 3. Volatility
     volatility_20 = returns.rolling(20).std()
-    atr = ta.atr(high, low, close, length=14)
+    atr = ta.volatility.AverageTrueRange(high, low, close, window=14).average_true_range()
 
     # 4. Volume/Macro
-    obv = ta.obv(close, volume)
-    obv_ema = ta.ema(obv, length=20)
-    if obv_ema is not None and obv is not None:
-        obv_ratio = obv / obv_ema
-    else:
-        obv_ratio = pd.Series(np.nan, index=close.index)
+    obv = ta.volume.OnBalanceVolumeIndicator(close, volume).on_balance_volume()
+    obv_ema = obv.ewm(span=20, adjust=False).mean()
+    obv_ratio = obv / obv_ema
 
     features = pd.DataFrame({
         "returns": returns,

@@ -3,12 +3,12 @@
 # Pin major.minor versions to keep the environment reproducible.
 # Run: pip install -r requirements.txt
 #
-# NOTE on pandas-ta: This library can be brittle against recent numpy and
+# NOTE on ta>=0.11.0: This library can be brittle against recent numpy and
 # pandas releases (it is not actively maintained as of 2024). If version
 # conflicts become unwinnable, implement the 18 indicators directly in
 # pandas/numpy inside src/features/engineering.py and remove this dependency.
 # The calculations (RSI, MACD, Bollinger Bands, etc.) are straightforward
-# rolling-window operations — pandas-ta is a convenience, not a necessity.
+# rolling-window operations — ta>=0.11.0 is a convenience, not a necessity.
 
 # Data
 yfinance>=0.2.40,<0.3
@@ -20,7 +20,7 @@ numpy>=1.26,<2.0.0
 scipy>=1.13
 
 # Feature engineering
-pandas-ta
+ta>=0.11.0
 
 # Modeling
 hmmlearn>=0.3,<0.4
