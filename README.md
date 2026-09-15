@@ -85,7 +85,7 @@ market-regime-detection/
 
 ## 4. Feature Engineering (The 8 Indicators)
 
-The HMM is fed an 8-dimension feature vector spanning 4 orthogonal market factors, computed via `pandas-ta`. We intentionally reduced the feature set from an original 18 down to 8 to prevent overparameterization and collinearity (e.g., stripping out redundant Momentum indicators like Stochastic and Williams %R).
+The HMM is fed an 8-dimension feature vector spanning 4 orthogonal market factors, computed via the `ta` library. We intentionally reduced the feature set from an original 18 down to 8 to prevent overparameterization and collinearity (e.g., stripping out redundant Momentum indicators like Stochastic and Williams %R).
 
 **1. Momentum & Trend (3)**
 - `returns`: Daily percent change (the base signal).
@@ -162,7 +162,7 @@ streamlit run app.py
 
 - **Data Science:** Python 3.10+, `pandas`, `numpy`, `scipy`, `scikit-learn`
 - **Modeling:** `hmmlearn` (4-State Gaussian HMM)
-- **Features:** `pandas-ta` (Technical Analysis)
+- **Features:** `ta` (Technical Analysis)
 - **Data & Persistence:** `yfinance`, SQLite (`sqlite3`), `joblib`
 - **Visualization & UI:** `matplotlib`, `streamlit`
 - **CI/CD & Testing:** `pytest`, GitHub Actions
