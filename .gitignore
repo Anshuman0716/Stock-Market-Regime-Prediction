@@ -8,6 +8,11 @@ __pycache__/
 venv/
 .venv/
 env/
+myenv/
+
+# ── Scratch / temp files ─────────────────────────────────────────────
+scratch/
+*.png
 
 # ── Cached raw data (re-downloadable from yfinance) ──────────────────
 data/raw/
