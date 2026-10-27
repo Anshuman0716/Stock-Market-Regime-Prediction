@@ -32,8 +32,9 @@ joblib>=1.4,<1.5
 # Config
 pyyaml>=6.0,<7.0
 
-# Visualization
+# Visualization (matplotlib: notebooks; plotly: dashboard)
 matplotlib>=3.9,<3.11
+plotly>=5.22,<6.0
 
 # Dashboard
 streamlit>=1.37,<1.42

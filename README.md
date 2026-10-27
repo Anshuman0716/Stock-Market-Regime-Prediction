@@ -6,7 +6,7 @@ This project labels each trading day as **Bull, Transition or Crisis** using a 4
 
 The project's priority is an **honest evaluation**: no look-ahead bias anywhere in the pipeline, strictly out-of-sample results, the same costs and execution lag for every strategy, and statistical tests that correct for multiple comparisons.
 
-> **Status:** Steps 1–3 of 5 of the improvement roadmap are complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/run_pipeline.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`. Separate runs agree to within 10⁻¹¹ on every metric, and a refresh that reuses the saved models reproduces a full retrain exactly.
+> **Status:** Steps 1–4 of 5 of the improvement roadmap are complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/run_pipeline.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`. Separate runs agree to within 10⁻¹¹ on every metric, and a refresh that reuses the saved models reproduces a full retrain exactly.
 
 ---
 
@@ -157,6 +157,27 @@ Implemented in `src/backtest/evaluation.py`.
 
 **Crash-safe publishing.** Models are trained into a staging folder, and the database is built as a separate file. Only when every asset has succeeded are the new models, the manifest and the database swapped in, so the dashboard never sees a half-written result.
 
+### Dashboard
+
+`streamlit run app.py` opens an interactive Plotly dashboard with seven tabs. Everything on it is read from the SQLite store; the app never fits a model or recomputes a metric.
+
+| Tab | What it shows |
+|---|---|
+| **Overview** | Today's regime, regime probabilities and target exposure for all four assets; a cross-asset scoreboard (Sharpe, CAGR, max drawdown vs both baselines); headline findings generated from the stored results |
+| **Regimes** | Price on a log scale shaded by regime, above the stacked regime probabilities (smoothed, or raw with a toggle); recent regime spells; time spent in each regime |
+| **Performance** | Full metrics table; growth of $1, drawdown and rolling 1-year Sharpe for all three strategies; calendar-year returns; equity stress episodes |
+| **Risk** | Historical VaR / CVaR and Cornish-Fisher VaR; how much each strategy was invested over time; turnover and total costs paid |
+| **Model insight** | What each regime looked like (returns, volatility, average VIX / RSI / ADX); day-to-day transition probabilities; spell lengths; every yearly fold's HMM states and the labels they received |
+| **Statistical evidence** | Sharpe differences vs each baseline with 95% bootstrap intervals; bootstrap, HAC and Holm-adjusted p-values |
+| **Paper trading** | Latest signal, data and model freshness checks, how to run `scripts/paper_trade.py`, and its trade log |
+
+Design notes:
+- **Read-only.** The store is opened with SQLite's read-only mode and closed after each query, so the dashboard can't change results or block the pipeline from publishing a new database. Cached queries reload automatically when a new database appears.
+- **Pinned to one run.** Every query is filtered to the latest `run_id`, so rows from different runs are never mixed.
+- **Honest headlines.** The overview's summary sentences (e.g. on how many assets the HMM beat buy-and-hold, and whether any difference is significant) are computed from the store each time the page loads, never typed by hand.
+- **Readable for everyone.** Colours follow the entity everywhere (each strategy and each regime has one fixed colour) and were checked with a colour-vision-deficiency validator in light and dark themes. Red-vs-green for Bull/Crisis was rejected because red-green colour-blind readers can't tell them apart. Regime names are always shown as text and symbols (▲ Bull, ◆ Transition, ▼ Crisis), never as colour alone. Charts never use two y-axes on one plot.
+- **Tested.** `tests/test_dashboard.py` builds a small store with the real pipeline and runs the real `app.py` headlessly through every tab and asset.
+
 ### Directory structure
 ```
 ├── config/config.yaml            # Tickers, dates, HMM settings, assets, annualization, costs, stress episodes
@@ -174,15 +195,17 @@ Implemented in `src/backtest/evaluation.py`.
 │   ├── backtest/metrics.py       # CAGR, Sharpe, Sortino, Calmar, drawdowns, period metrics, chart series
 │   ├── analysis/regimes.py       # Regime profiles, transitions, spells, per-year / per-episode breakdown
 │   ├── stats/significance.py     # Block bootstrap, HAC test, Holm correction
-│   └── db/schema.sql, store.py   # SQLite schema (versioned) and idempotent writers
+│   ├── db/schema.sql, store.py   # SQLite schema (versioned) and idempotent writers
+│   └── dashboard/                # Read-only queries (data.py), Plotly charts (charts.py),
+│                                 #   colours and labels (theme.py), generated headlines (summary.py)
 ├── scripts/
 │   ├── run_pipeline.py           # Run everything → models/ + data/regime_store.db
 │   └── paper_trade.py            # Alpaca paper-trading scaffold (dry run by default)
-├── tests/                        # pytest: look-ahead, lag, costs, evaluation, signal, pipeline
+├── tests/                        # pytest: look-ahead, lag, costs, evaluation, signal, pipeline, dashboard
 ├── notebooks/                    # EDA, model development, backtest, SQL analysis
 ├── models/                       # Persisted fold artifacts (model + scaler + state map)
 ├── data/regime_store.db          # SQLite store read by the dashboard
-└── app.py                        # Streamlit dashboard
+└── app.py                        # Streamlit dashboard (layout only; reads the store)
 ```
 
 ### SQLite tables
@@ -278,8 +301,8 @@ On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/)
 | 1 | Out-of-sample-only evaluation window, per-asset annualization, one Sharpe definition, baselines + significance stored in the database | ✅ Done |
 | 2 | One signal definition shared by backtest, store, dashboard and paper trading; scale-free features; continuous forward pass; EM restarts | ✅ Done |
 | 3 | A single pipeline that trains once and writes everything (per-year and stress-episode metrics, fold info, regime profiles, transitions, chart series); fast refresh with saved models; crash-safe publishing; costs in config | ✅ Done |
-| 4 | Dashboard rebuild: overview, regime timeline, performance vs baselines, risk, model insight, statistical evidence, paper trading | ⏳ Next |
-| 5 | Repo clean-up, refreshed notebooks/docs, more tests, CI updates | Planned |
+| 4 | Dashboard rebuild in Plotly: overview, regime timeline, performance vs baselines, risk, model insight, statistical evidence, paper trading; read-only, colour-blind-safe, tested headlessly | ✅ Done |
+| 5 | Repo clean-up, refreshed notebooks/docs, more tests, CI updates | ⏳ Next |
 
 ---
 
@@ -289,7 +312,7 @@ On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/)
 - **Modeling:** `hmmlearn` (Gaussian HMM)
 - **Features:** `ta`
 - **Data & persistence:** `yfinance`, SQLite, `joblib`, parquet
-- **UI:** `streamlit`, `matplotlib`
+- **UI:** `streamlit`, `plotly`
 - **Testing / CI:** `pytest`, GitHub Actions
 
 ---
@@ -297,6 +320,6 @@ On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/)
 ## 11. Deploy on Streamlit Community Cloud
 
 1. Push the repo to GitHub.
-2. On [share.streamlit.io](https://share.streamlit.io) choose **New app** → this repo, branch `main`, main file `app.py`.
-3. The app reads `data/regime_store.db` and `models/manifest.json`, so commit both after running `scripts/run_pipeline.py` locally.
+2. On [share.streamlit.io](https://share.streamlit.io) choose **New app** → this repo, branch `main`, main file `app.py`. Under **Advanced settings** pick Python 3.12 or lower (`numpy<2` has no wheels for 3.13).
+3. The app reads only `data/regime_store.db`, so commit it after running `scripts/run_pipeline.py` locally.
 4. Deploy.
