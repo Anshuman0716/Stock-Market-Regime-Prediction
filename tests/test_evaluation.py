@@ -15,7 +15,11 @@ from src.stats.significance import block_bootstrap_sharpe_diff, run_significance
 
 CFG = {
     "model": {"smoothing_window": 5},
-    "backtest": {"annualization": {"default": 252, "bitcoin": 365}},
+    "backtest": {
+        "annualization": {"default": 252, "bitcoin": 365},
+        "costs": {"commission_bps": 0.5,
+                  "spread_bps": {"default": 2.0, "spx": 1.0, "bitcoin": 5.0}},
+    },
 }
 
 

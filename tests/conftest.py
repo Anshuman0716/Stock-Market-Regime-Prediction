@@ -1,6 +1,7 @@
+import os
+
 import pytest
 import pandas as pd
-import os
 
 @pytest.fixture
 def sample_spx():

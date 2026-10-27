@@ -30,7 +30,7 @@ MANIFEST_PATH = "models/manifest.json"
 @st.cache_data
 def validate_artifacts(cfg):
     if not os.path.exists(MANIFEST_PATH):
-        return False, "Models manifest not found. Please run `python scripts/train.py`."
+        return False, "Models manifest not found. Please run `python scripts/run_pipeline.py`."
         
     try:
         with open(MANIFEST_PATH, 'r') as f:
@@ -40,7 +40,7 @@ def validate_artifacts(cfg):
         
     current_hash = get_config_hash(cfg)
     if manifest.get('config_hash') != current_hash:
-        return False, "Config mismatch. The models were trained under a different config. Please run `python scripts/train.py`."
+        return False, "Config mismatch. The models were trained under a different config. Please run `python scripts/run_pipeline.py`."
         
     return True, manifest
 
@@ -88,7 +88,7 @@ conn = get_db_connection()
 # run_id never mixes rows from different experiments.
 run_row = conn.execute("SELECT run_id FROM backtest_runs ORDER BY created_at DESC LIMIT 1").fetchone()
 if run_row is None:
-    st.error("No backtest runs found in the store. Run `python scripts/backfill_db.py`.")
+    st.error("No backtest runs found in the store. Run `python scripts/run_pipeline.py`.")
     st.stop()
 RUN_ID = run_row[0]
 

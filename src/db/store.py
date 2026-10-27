@@ -1,17 +1,31 @@
-import sqlite3
-import pandas as pd
+"""
+SQLite store: schema management and idempotent writers.
+
+Every writer upserts on the table's primary key, so writing the same run
+twice never duplicates rows. The pipeline builds a fresh database file and
+swaps it in when complete (see src/pipeline.py), so readers never see a
+half-written store.
+"""
 import hashlib
 import json
-import subprocess
+import math
 import os
+import sqlite3
+import subprocess
 from contextlib import contextmanager
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 
 # Must match "PRAGMA user_version" in schema.sql. Bump both together whenever
 # a table's columns or keys change.
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
+
+DEFAULT_DB_PATH = "data/regime_store.db"
+
 
 def get_git_sha():
     try:
@@ -19,22 +33,23 @@ def get_git_sha():
     except Exception:
         return "unknown"
 
+
 def get_config_hash(cfg):
     return hashlib.md5(json.dumps(cfg, sort_keys=True).encode('utf-8')).hexdigest()
 
+
 @contextmanager
-def get_db_connection(db_path="data/regime_store.db"):
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+def get_db_connection(db_path=DEFAULT_DB_PATH):
+    os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
     conn = sqlite3.connect(db_path)
-    # Enable foreign keys
     conn.execute("PRAGMA foreign_keys = ON;")
     try:
         yield conn
     finally:
         conn.close()
 
-def init_db(db_path="data/regime_store.db"):
+
+def init_db(db_path=DEFAULT_DB_PATH):
     """
     Create the tables, rebuilding the database if its schema is out of date.
 
@@ -59,94 +74,110 @@ def init_db(db_path="data/regime_store.db"):
             conn.execute("VACUUM")
             conn.execute("PRAGMA foreign_keys = ON;")
         with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
-            schema_sql = f.read()
-        conn.executescript(schema_sql)
+            conn.executescript(f.read())
         conn.commit()
 
+
+# --- Generic helpers ---------------------------------------------------------
+
+def _to_sql_value(v):
+    """Convert pandas/numpy values to plain Python types SQLite accepts.
+    NaN / inf become NULL, so 'no value' is never stored as a fake number."""
+    if v is None:
+        return None
+    if isinstance(v, (pd.Timestamp, datetime)):
+        return str(pd.Timestamp(v).date())
+    if hasattr(v, "isoformat") and not isinstance(v, str):  # datetime.date
+        return v.isoformat()
+    if isinstance(v, (np.integer,)):
+        return int(v)
+    if isinstance(v, (float, np.floating)):
+        return None if not math.isfinite(float(v)) else float(v)
+    if isinstance(v, (np.bool_, bool)):
+        return int(v)
+    return v
+
+
 def _upsert_many(conn, table, columns, data, conflict_keys):
-    """
-    Generic idempotent upsert helper.
-    """
-    if not data: return
-    
+    """Insert rows, updating non-key columns when the key already exists."""
+    if not data:
+        return
     cols_str = ", ".join(columns)
     placeholders = ", ".join(["?"] * len(columns))
     conflict_str = ", ".join(conflict_keys)
-    
-    # Update all non-conflict columns
     update_cols = [c for c in columns if c not in conflict_keys]
     if update_cols:
-        set_str = ", ".join([f"{c}=excluded.{c}" for c in update_cols])
-        sql = f"""
-            INSERT INTO {table} ({cols_str}) 
-            VALUES ({placeholders})
-            ON CONFLICT({conflict_str}) 
-            DO UPDATE SET {set_str}
-        """
+        action = "DO UPDATE SET " + ", ".join(f"{c}=excluded.{c}" for c in update_cols)
     else:
-        # If all columns are part of the PK, just DO NOTHING on conflict
-        sql = f"""
-            INSERT INTO {table} ({cols_str}) 
-            VALUES ({placeholders})
-            ON CONFLICT({conflict_str}) 
-            DO NOTHING
-        """
-        
+        action = "DO NOTHING"
+    sql = f"INSERT INTO {table} ({cols_str}) VALUES ({placeholders}) ON CONFLICT({conflict_str}) {action}"
     conn.executemany(sql, data)
 
-def write_asset(conn, asset_id, ticker, name=""):
-    sql = """
-        INSERT INTO assets (asset_id, ticker, name)
-        VALUES (?, ?, ?)
-        ON CONFLICT(asset_id) DO UPDATE SET ticker=excluded.ticker, name=excluded.name
-    """
-    conn.execute(sql, (asset_id, ticker, name))
+
+def write_frame(conn, table, df, key_cols):
+    """Upsert every row of `df` (columns = table columns) into `table`."""
+    if df is None or df.empty:
+        return
+    cols = list(df.columns)
+    data = [tuple(_to_sql_value(v) for v in row) for row in df.itertuples(index=False, name=None)]
+    _upsert_many(conn, table, cols, data, key_cols)
     conn.commit()
+
+
+def _dated(df, asset_id, run_id=None, date_col="date"):
+    """Move a DatetimeIndex into a 'date' column and add asset/run ids."""
+    out = df.copy()
+    out.insert(0, date_col, [str(d.date()) for d in out.index])
+    out.insert(0, "asset_id", asset_id)
+    if run_id is not None:
+        out.insert(0, "run_id", run_id)
+    return out.reset_index(drop=True)
+
+
+# --- Writers -------------------------------------------------------------------
+
+def write_asset(conn, asset_id, ticker, name="", calendar=None):
+    write_frame(conn, "assets",
+                pd.DataFrame([{"asset_id": asset_id, "ticker": ticker, "name": name, "calendar": calendar}]),
+                ["asset_id"])
+
 
 def write_prices(conn, df, asset_id):
-    df = df.copy()
-    if 'Volume' not in df.columns:
-        df['Volume'] = 0.0
-    data = []
-    for idx, row in df.iterrows():
-        date_str = str(idx.date()) if isinstance(idx, pd.Timestamp) else str(idx)
-        data.append((asset_id, date_str, row.get('Open', 0.0), row.get('High', 0.0), row.get('Low', 0.0), row.get('Close', 0.0), row['Volume']))
-    _upsert_many(conn, 'prices', ['asset_id', 'date', 'open', 'high', 'low', 'close', 'volume'], data, ['asset_id', 'date'])
-    conn.commit()
+    px = df.reindex(columns=["Open", "High", "Low", "Close", "Volume"])
+    px.columns = ["open", "high", "low", "close", "volume"]
+    write_frame(conn, "prices", _dated(px, asset_id), ["asset_id", "date"])
+
 
 def write_features(conn, df, asset_id):
-    # Convert wide df to long format
-    # columns are features, index is date
-    data = []
-    for date_idx, row in df.iterrows():
-        date_str = str(date_idx.date()) if isinstance(date_idx, pd.Timestamp) else str(date_idx)
-        for col_name, val in row.items():
-            if pd.isna(val): continue
-            data.append((asset_id, date_str, col_name, float(val)))
-            
-    _upsert_many(conn, 'features', ['asset_id', 'date', 'feature_name', 'value'], data, ['asset_id', 'date', 'feature_name'])
-    conn.commit()
+    """Wide feature frame -> long (asset_id, date, feature_name, value)."""
+    long = df.copy()
+    long.index = [str(d.date()) for d in long.index]
+    long = long.rename_axis("date").reset_index().melt(
+        id_vars="date", var_name="feature_name", value_name="value").dropna(subset=["value"])
+    long.insert(0, "asset_id", asset_id)
+    write_frame(conn, "features", long, ["asset_id", "date", "feature_name"])
 
-def write_run(conn, run_id, cfg, strategy_name="hmm_walk_forward", notes=""):
-    git_sha = get_git_sha()
-    config_hash = get_config_hash(cfg)
-    created_at = datetime.now().isoformat()
-    cost_model = cfg.get("backtest", {}).get("cost_bps", 0)
-    
-    sql = """
-        INSERT INTO backtest_runs (run_id, created_at, config_hash, git_sha, strategy_name, cost_model, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(run_id) DO UPDATE SET 
-            created_at=excluded.created_at,
-            config_hash=excluded.config_hash,
-            git_sha=excluded.git_sha,
-            strategy_name=excluded.strategy_name,
-            cost_model=excluded.cost_model,
-            notes=excluded.notes
-    """
-    conn.execute(sql, (run_id, created_at, config_hash, git_sha, strategy_name, str(cost_model), notes))
-    conn.commit()
+
+def write_run(conn, run_id, cfg, data_end=None, models_trained=True,
+              strategy_name="hmm_walk_forward", notes=""):
+    costs = cfg.get("backtest", {}).get("costs", {})
+    cost_model = (f"spread + {costs.get('commission_bps', 0)} bps commission per unit turnover; "
+                  f"spreads (bps): {json.dumps(costs.get('spread_bps', {}), sort_keys=True)}")
+    row = {
+        "run_id": run_id,
+        "created_at": datetime.now().isoformat(),
+        "config_hash": get_config_hash(cfg),
+        "git_sha": get_git_sha(),
+        "strategy_name": strategy_name,
+        "cost_model": cost_model,
+        "notes": notes,
+        "data_end": None if data_end is None else str(pd.Timestamp(data_end).date()),
+        "models_trained": int(bool(models_trained)),
+        "config_json": json.dumps(cfg, sort_keys=True, default=str),
+    }
+    write_frame(conn, "backtest_runs", pd.DataFrame([row]), ["run_id"])
     return run_id
+
 
 REGIME_COLUMNS = ['raw_label', 'p_bull', 'p_transition', 'p_crisis',
                   'label', 'sp_bull', 'sp_transition', 'sp_crisis', 'target_weight']
@@ -154,67 +185,97 @@ REGIME_COLUMNS = ['raw_label', 'p_bull', 'p_transition', 'p_crisis',
 
 def write_regimes(conn, signal_df, asset_id, run_id):
     """Store the signal frame from src.models.signal.compute_signal.
+    Only days with a prediction (out-of-sample) are written."""
+    sig = signal_df.dropna(subset=['raw_label'])[REGIME_COLUMNS]
+    write_frame(conn, "regimes", _dated(sig, asset_id, run_id), ["asset_id", "date", "run_id"])
 
-    Only days with a prediction (out-of-sample) are written.
-    """
-    data = []
-    for date_idx, row in signal_df.dropna(subset=['raw_label']).iterrows():
-        date_str = str(date_idx.date()) if isinstance(date_idx, pd.Timestamp) else str(date_idx)
-        values = [row[c] if c in ('raw_label', 'label') else float(row[c]) for c in REGIME_COLUMNS]
-        data.append((asset_id, date_str, run_id, *values))
-    _upsert_many(conn, 'regimes', ['asset_id', 'date', 'run_id'] + REGIME_COLUMNS, data,
-                 ['asset_id', 'date', 'run_id'])
-    conn.commit()
 
-def write_backtest_daily(conn, btest_df, asset_id, run_id, strategy="hmm"):
-    data = []
-    for date_idx, row in btest_df.iterrows():
-        date_str = str(date_idx.date()) if isinstance(date_idx, pd.Timestamp) else str(date_idx)
-        data.append((
-            run_id, asset_id, strategy, date_str,
-            float(row.get('executed_weight', 0.0)),
-            float(row.get('gross_return', 0.0)),
-            float(row.get('net_return', 0.0)),
-            float(row.get('turnover', 0.0)),
-            float(row.get('cost', 0.0))
-        ))
-    _upsert_many(conn, 'backtest_daily', ['run_id', 'asset_id', 'strategy', 'date', 'weight', 'gross_return', 'net_return', 'turnover', 'cost'], data, ['run_id', 'asset_id', 'strategy', 'date'])
-    conn.commit()
+def write_backtest_daily(conn, btest_df, asset_id, run_id, strategy="hmm", perf_df=None):
+    """Daily backtest rows; `perf_df` (from metrics.performance_series) adds
+    equity, drawdown and rolling Sharpe for charts."""
+    df = pd.DataFrame({
+        "weight": btest_df["executed_weight"],
+        "gross_return": btest_df["gross_return"],
+        "net_return": btest_df["net_return"],
+        "turnover": btest_df["turnover"],
+        "cost": btest_df["cost"],
+    }, index=btest_df.index)
+    if perf_df is not None:
+        df = df.join(perf_df[["equity", "drawdown", "rolling_sharpe"]])
+    out = _dated(df, asset_id, run_id)
+    out.insert(2, "strategy", strategy)
+    write_frame(conn, "backtest_daily", out, ["run_id", "asset_id", "strategy", "date"])
+
 
 def write_backtest_metrics(conn, metrics_dict, asset_id, run_id, cycle="full", strategy="hmm"):
-    data = []
-    for metric_name, val in metrics_dict.items():
-        # skip non-numeric info if any, but all should be floats or similar
+    rows = []
+    for name, val in metrics_dict.items():
         try:
             val_f = float(val)
         except (ValueError, TypeError):
-            continue
-            
-        data.append((run_id, asset_id, strategy, cycle, metric_name, val_f))
-        
-    _upsert_many(conn, 'backtest_metrics', ['run_id', 'asset_id', 'strategy', 'cycle', 'metric_name', 'metric_value'], data, ['run_id', 'asset_id', 'strategy', 'cycle', 'metric_name'])
-    conn.commit()
+            continue  # skip labels such as "Asset"
+        rows.append({"run_id": run_id, "asset_id": asset_id, "strategy": strategy,
+                     "cycle": cycle, "metric_name": name, "metric_value": val_f})
+    write_frame(conn, "backtest_metrics", pd.DataFrame(rows),
+                ["run_id", "asset_id", "strategy", "cycle", "metric_name"])
 
 
-def write_evaluation_window(conn, run_id, asset_id, oos_start, oos_end, ann_factor):
+def write_evaluation_window(conn, run_id, asset_id, oos_start, oos_end, ann_factor, cost_bps=None):
     """Record the out-of-sample window every strategy for this asset was scored on."""
-    _upsert_many(
-        conn, 'evaluation_windows',
-        ['run_id', 'asset_id', 'oos_start', 'oos_end', 'ann_factor'],
-        [(run_id, asset_id, str(pd.Timestamp(oos_start).date()), str(pd.Timestamp(oos_end).date()), int(ann_factor))],
-        ['run_id', 'asset_id'])
-    conn.commit()
+    write_frame(conn, "evaluation_windows", pd.DataFrame([{
+        "run_id": run_id, "asset_id": asset_id,
+        "oos_start": pd.Timestamp(oos_start), "oos_end": pd.Timestamp(oos_end),
+        "ann_factor": int(ann_factor), "cost_bps": cost_bps,
+    }]), ["run_id", "asset_id"])
 
 
 def write_significance(conn, sig_df, run_id):
     """Store Sharpe-difference test results (output of run_significance_suite)."""
-    cols = ['asset', 'strategy', 'baseline', 'sharpe_diff', 'ci_lower', 'ci_upper',
-            'p_value', 'p_value_hac', 'p_value_holm']
-    data = [(run_id,) + tuple(r[c] if isinstance(r[c], str) else float(r[c]) for c in cols)
-            for _, r in sig_df.iterrows()]
-    _upsert_many(
-        conn, 'significance_tests',
-        ['run_id', 'asset_id', 'strategy', 'baseline', 'sharpe_diff', 'ci_lower', 'ci_upper',
-         'p_value', 'p_value_hac', 'p_value_holm'],
-        data, ['run_id', 'asset_id', 'strategy', 'baseline'])
-    conn.commit()
+    if sig_df.empty:
+        return
+    out = sig_df.rename(columns={"asset": "asset_id"})[
+        ["asset_id", "strategy", "baseline", "sharpe_diff", "ci_lower", "ci_upper",
+         "p_value", "p_value_hac", "p_value_holm"]].copy()
+    out.insert(0, "run_id", run_id)
+    write_frame(conn, "significance_tests", out, ["run_id", "asset_id", "strategy", "baseline"])
+
+
+def write_folds(conn, folds_info, asset_id, run_id):
+    """Per-fold fit diagnostics and per-state training statistics."""
+    fold_rows, state_rows = [], []
+    for f in folds_info:
+        labels = list(f["state_map"].values())
+        starts = f.get("fit", {}).get("starts", [])
+        fold_rows.append({
+            "run_id": run_id, "asset_id": asset_id, "fold_idx": f["fold_idx"],
+            "train_start": f.get("train_start"), "train_end": f["train_end"],
+            "test_start": f["test_start"], "test_end": f["test_end"],
+            "best_log_likelihood": f.get("fit", {}).get("best_log_likelihood"),
+            "n_starts": len(starts),
+            "n_converged": sum(bool(s.get("converged")) for s in starts),
+            "n_bull_states": labels.count("Bull"),
+            "n_transition_states": labels.count("Transition"),
+            "n_crisis_states": labels.count("Crisis"),
+        })
+        for st in f.get("states", []):
+            state_rows.append({
+                "run_id": run_id, "asset_id": asset_id, "fold_idx": f["fold_idx"],
+                "state": st["state"], "label": st["label"],
+                "train_days": st["train_days"], "train_share": st["train_share"],
+                "ann_return": st["mu"], "ann_vol": st["vol"], "sharpe": st["sharpe"],
+            })
+    write_frame(conn, "model_folds", pd.DataFrame(fold_rows), ["run_id", "asset_id", "fold_idx"])
+    write_frame(conn, "fold_states", pd.DataFrame(state_rows), ["run_id", "asset_id", "fold_idx", "state"])
+
+
+def write_regime_analysis(conn, asset_id, run_id, profile, transitions, spells):
+    """Store outputs of src.analysis.regimes (profile, transitions, spells)."""
+    def tag(df):
+        out = df.copy()
+        out.insert(0, "asset_id", asset_id)
+        out.insert(0, "run_id", run_id)
+        return out
+    write_frame(conn, "regime_profiles", tag(profile), ["run_id", "asset_id", "label", "stat_name"])
+    write_frame(conn, "regime_transitions", tag(transitions), ["run_id", "asset_id", "from_label", "to_label"])
+    sp = spells.rename(columns={"start": "start_date", "end": "end_date"})[["start_date", "end_date", "label", "days"]]
+    write_frame(conn, "regime_spells", tag(sp), ["run_id", "asset_id", "start_date"])

@@ -28,7 +28,7 @@ def test_signal_lag():
     
     df = pd.DataFrame({'returns': returns})
     
-    res = run_backtest(df, target_weights, asset_name="spx", use_dynamic_costs=False, cost_bps=0.0)
+    res = run_backtest(df, target_weights, cost_bps=0.0)
     
     # Due to lag, the target_weight for day t is executed at t+1 and earns return at t+2.
     # So the weights earned will NOT match the perfect oracle, meaning the strategy shouldn't just win perfectly.
@@ -47,7 +47,7 @@ def test_signal_lag():
     target_weights_buggy = pd.Series([1.0, 0.0, 1.0, 1.0, 1.0], index=dates[:5])
     # If there was no lag, we would have 0 weight on day 2 and miss the -0.5.
     df2 = pd.DataFrame({'returns': returns2})
-    res2 = run_backtest(df2, target_weights_buggy, use_dynamic_costs=False)
+    res2 = run_backtest(df2, target_weights_buggy, cost_bps=0.0)
     
     # Because of lag, the weight held at day 2 is the target from day 0, which is 1.0.
     # So we DO suffer the -0.5 drop!
@@ -62,7 +62,7 @@ def test_cost_model_arithmetic():
     df = pd.DataFrame({'returns': returns})
     
     # Cost = 100 bps = 0.01 per unit of turnover
-    res = run_backtest(df, target_weights, use_dynamic_costs=False, cost_bps=100.0)
+    res = run_backtest(df, target_weights, cost_bps=100.0)
     
     # turnover is diff of executed_weights (shifted 2).
     # target: [1.0, 0.0, 1.0, 0.0]
@@ -73,7 +73,7 @@ def test_cost_model_arithmetic():
     np.testing.assert_allclose(res['cost'].values, [0.0, 0.0, 0.01, 0.01])
     
     # 4. zero-cost vs full-cost runs differ
-    res_zero = run_backtest(df, target_weights, use_dynamic_costs=False, cost_bps=0.0)
+    res_zero = run_backtest(df, target_weights, cost_bps=0.0)
     assert res_zero['cost'].sum() == 0.0
     assert res['cost'].sum() > 0.0
     assert res_zero['net_return'].sum() > res['net_return'].sum()

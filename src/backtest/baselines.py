@@ -33,13 +33,13 @@ def dma200_weights(close, window=200):
 
 # --- Convenience wrappers (kept for notebooks that call them directly) ------
 
-def get_buy_and_hold(df, asset_name="spx"):
+def get_buy_and_hold(df, cost_bps):
     """Run the buy-and-hold baseline through the backtest engine."""
-    return run_backtest(df, buy_and_hold_weights(df.index), asset_name=asset_name, use_dynamic_costs=True)
+    return run_backtest(df, buy_and_hold_weights(df.index), cost_bps=cost_bps)
 
 
-def get_200dma_filter(df, asset_name="spx"):
+def get_200dma_filter(df, cost_bps):
     """Run the 200-day moving-average baseline through the backtest engine."""
     if "Close" not in df.columns:
         raise ValueError("DataFrame must contain 'Close' to compute 200DMA.")
-    return run_backtest(df, dma200_weights(df["Close"]), asset_name=asset_name, use_dynamic_costs=True)
+    return run_backtest(df, dma200_weights(df["Close"]), cost_bps=cost_bps)

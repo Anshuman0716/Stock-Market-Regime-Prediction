@@ -177,7 +177,7 @@ def main():
 
     train_end = artifact.get("train_end")
     if train_end is not None and pd.Timestamp(train_end).year < today.year - 1:
-        logger.warning(f"Latest model was trained through {train_end}; run scripts/train.py to refresh it.")
+        logger.warning(f"Latest model was trained through {train_end}; run scripts/run_pipeline.py to retrain.")
 
     # 3. Today's signal, computed exactly as in the backtest: continuous
     # filtered forward pass over the full history, then the shared

@@ -94,6 +94,27 @@ def get_ann_factor(config, asset_name):
     return int(table.get(asset_name, table.get("default", 252)))
 
 
+def get_cost_bps(config, asset_name):
+    """
+    Trading cost in basis points per unit of turnover for an asset:
+    its spread (from config backtest.costs.spread_bps, falling back to
+    'default') plus the flat commission.
+
+    Why spread + commission rather than one flat number: liquidity differs
+    a lot between assets. Crossing the spread on S&P 500 products costs
+    about 1 bp, on Bitcoin several. One flat figure would flatter the
+    expensive assets and punish the cheap ones.
+    """
+    costs = (config or {}).get("backtest", {}).get("costs")
+    if costs is None:
+        raise KeyError("config is missing backtest.costs; refusing to guess trading costs.")
+    spreads = costs.get("spread_bps", {})
+    spread = spreads.get(asset_name, spreads.get("default"))
+    if spread is None:
+        raise KeyError(f"No spread configured for '{asset_name}' and no default.")
+    return float(spread) + float(costs.get("commission_bps", 0.0))
+
+
 # ---------------------------------------------------------------------------
 # Caching helpers
 # ---------------------------------------------------------------------------

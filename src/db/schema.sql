@@ -1,20 +1,20 @@
 -- Regime Store Schema
--- 
+--
 -- Design choices:
--- 1. We use a LONG format for features (asset_id, date, feature_name, value). 
---    Tradeoff: While a wide format (one column per feature) is slightly faster for 
---    pandas to load directly without a pivot, the long format makes ablation 
---    queries far nicer and allows us to add or remove feature columns in 
---    the future without running ALTER TABLE commands.
--- 2. Idempotent upserts are handled via ON CONFLICT DO UPDATE using explicit 
---    UNIQUE constraints (or PRIMARY KEYs).
+-- 1. We use a LONG format for features (asset_id, date, feature_name, value)
+--    and for regime profiles / metrics (name, value). A wide format is a bit
+--    faster to load, but the long format lets us add or remove features and
+--    metrics without ALTER TABLE.
+-- 2. Idempotent upserts are handled via ON CONFLICT DO UPDATE on PRIMARY KEYs.
 -- 3. Backtest tables carry a `strategy` column (hmm / buy_hold / dma200) so the
 --    HMM and its baselines live side by side for the same run and dates.
 -- 4. PRAGMA user_version is the schema version. store.init_db() rebuilds the
 --    database when it does not match, because CREATE TABLE IF NOT EXISTS
 --    would silently keep an old table layout.
+-- 5. Everything the dashboard shows is precomputed here by the pipeline, so
+--    the app only reads; it never re-derives results.
 
-PRAGMA user_version = 3;
+PRAGMA user_version = 4;
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id TEXT PRIMARY KEY,
@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS features (
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );
 
+-- One row per pipeline run. models_trained = 1 when the HMMs were refit,
+-- 0 when saved models were reused for a fast refresh.
 CREATE TABLE IF NOT EXISTS backtest_runs (
     run_id TEXT PRIMARY KEY,
     created_at TEXT NOT NULL,
@@ -51,7 +53,10 @@ CREATE TABLE IF NOT EXISTS backtest_runs (
     git_sha TEXT NOT NULL,
     strategy_name TEXT NOT NULL,
     cost_model TEXT,
-    notes TEXT
+    notes TEXT,
+    data_end TEXT,
+    models_trained INTEGER,
+    config_json TEXT
 );
 
 -- The trading signal (src/models/signal.py), one row per out-of-sample day.
@@ -76,6 +81,8 @@ CREATE TABLE IF NOT EXISTS regimes (
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id)
 );
 
+-- Daily backtest per strategy, plus chart-ready series:
+-- equity ($1 start), drawdown, trailing one-year Sharpe.
 CREATE TABLE IF NOT EXISTS backtest_daily (
     run_id TEXT,
     asset_id TEXT,
@@ -86,11 +93,15 @@ CREATE TABLE IF NOT EXISTS backtest_daily (
     net_return REAL,
     turnover REAL,
     cost REAL,
+    equity REAL,
+    drawdown REAL,
+    rolling_sharpe REAL,
     PRIMARY KEY (run_id, asset_id, strategy, date),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );
 
+-- cycle = 'full', 'year:2020' or 'episode:covid_crash_2020'
 CREATE TABLE IF NOT EXISTS backtest_metrics (
     run_id TEXT,
     asset_id TEXT,
@@ -111,6 +122,7 @@ CREATE TABLE IF NOT EXISTS evaluation_windows (
     oos_start TEXT NOT NULL,
     oos_end TEXT NOT NULL,
     ann_factor INTEGER NOT NULL,
+    cost_bps REAL,
     PRIMARY KEY (run_id, asset_id),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
@@ -129,6 +141,84 @@ CREATE TABLE IF NOT EXISTS significance_tests (
     p_value_hac REAL,
     p_value_holm REAL,
     PRIMARY KEY (run_id, asset_id, strategy, baseline),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- One row per walk-forward fold (one refit per year).
+CREATE TABLE IF NOT EXISTS model_folds (
+    run_id TEXT,
+    asset_id TEXT,
+    fold_idx INTEGER,
+    train_start TEXT,
+    train_end TEXT,
+    test_start TEXT,
+    test_end TEXT,
+    best_log_likelihood REAL,
+    n_starts INTEGER,
+    n_converged INTEGER,
+    n_bull_states INTEGER,
+    n_transition_states INTEGER,
+    n_crisis_states INTEGER,
+    PRIMARY KEY (run_id, asset_id, fold_idx),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- Each raw HMM state of each fold: its TRAINING-window behaviour and the
+-- regime label the labeling rule gave it.
+CREATE TABLE IF NOT EXISTS fold_states (
+    run_id TEXT,
+    asset_id TEXT,
+    fold_idx INTEGER,
+    state INTEGER,
+    label TEXT,
+    train_days INTEGER,
+    train_share REAL,
+    ann_return REAL,
+    ann_vol REAL,
+    sharpe REAL,
+    PRIMARY KEY (run_id, asset_id, fold_idx, state),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- Out-of-sample description of each smoothed regime (long format):
+-- days, share, n_spells, avg_spell_days, ann_return, ann_vol, sharpe,
+-- mean_<feature>.
+CREATE TABLE IF NOT EXISTS regime_profiles (
+    run_id TEXT,
+    asset_id TEXT,
+    label TEXT,
+    stat_name TEXT,
+    value REAL,
+    PRIMARY KEY (run_id, asset_id, label, stat_name),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- Empirical P(regime tomorrow | regime today) from the smoothed labels.
+CREATE TABLE IF NOT EXISTS regime_transitions (
+    run_id TEXT,
+    asset_id TEXT,
+    from_label TEXT,
+    to_label TEXT,
+    n INTEGER,
+    probability REAL,
+    PRIMARY KEY (run_id, asset_id, from_label, to_label),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- Consecutive runs of one smoothed regime (for timeline bands and durations).
+CREATE TABLE IF NOT EXISTS regime_spells (
+    run_id TEXT,
+    asset_id TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    label TEXT,
+    days INTEGER,
+    PRIMARY KEY (run_id, asset_id, start_date),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );

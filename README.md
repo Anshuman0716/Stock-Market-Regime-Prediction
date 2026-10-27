@@ -6,7 +6,7 @@ This project labels each trading day as **Bull, Transition or Crisis** using a 4
 
 The project's priority is an **honest evaluation**: no look-ahead bias anywhere in the pipeline, strictly out-of-sample results, the same costs and execution lag for every strategy, and statistical tests that correct for multiple comparisons.
 
-> **Status:** Steps 1–2 of 5 of the improvement roadmap are complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/backfill_db.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`. Two separate runs of the pipeline agree to within 10⁻¹⁰ on every metric.
+> **Status:** Steps 1–3 of 5 of the improvement roadmap are complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/run_pipeline.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`. Separate runs agree to within 10⁻¹¹ on every metric, and a refresh that reuses the saved models reproduces a full retrain exactly.
 
 ---
 
@@ -68,6 +68,33 @@ Step 2 fixed the model's inputs and plumbing, not the strategy idea. Same out-of
 
 The bootstrap p-value calculation was also corrected in Step 2. The old version counted draws on the "wrong side" of zero, which broke when the bootstrap distribution wasn't centred exactly on the observed value: it reported Gold's +0.03 Sharpe difference as p = 1.000. The new version centres the draws on zero first. The conclusion (nothing significant) is the same under both methods.
 
+### During equity stress episodes
+
+Each episode runs from an S&P 500 closing high to the closing low that followed (dates in `config.yaml`, checked against the data). Total return over the episode, S&P 500 only; the other assets are in the database and dashboard.
+
+| Episode (S&P 500 peak → trough) | Buy & Hold | 200-day MA | HMM | HMM avg. exposure |
+|---|---|---|---|---|
+| Euro debt crisis 2011 (2011-04-29 → 2011-10-03) | -19.2% | -7.4% | -3.0% | 16% |
+| China / oil sell-off 2015–16 (2015-05-21 → 2016-02-11) | -14.0% | -16.4% | -5.2% | 27% |
+| Q4 sell-off 2018 (2018-09-20 → 2018-12-24) | -19.1% | -7.8% | -6.6% | 52% |
+| COVID crash 2020 (2020-02-19 → 2020-03-23) | -33.6% | -10.3% | -19.0% | 63% |
+| Bear market 2022 (2022-01-03 → 2022-10-12) | -24.9% | -14.1% | -5.5% | 11% |
+| Tariff sell-off 2025 (2025-02-19 → 2025-04-08) | -18.7% | -10.4% | -8.3% | 65% |
+
+The HMM lost less than buy-and-hold in all six episodes, and less than the 200-day MA in five (not the fast COVID crash, where it was still 63% invested on average).
+
+### So why doesn't it win overall?
+
+What each regime looked like on the S&P 500 out-of-sample (the asset's own return on days with that label, *not* a tradable result):
+
+| S&P 500 regime | Share of days | Avg. spell (days) | Ann. return | Ann. vol |
+|---|---|---|---|---|
+| Bull | 60% | 94 | +11.6% | 12.6% |
+| Transition | 22% | 44 | +5.7% | 20.6% |
+| Crisis | 18% | 40 | +26.3% | 24.3% |
+
+"Crisis" days are the most volatile, but on average they were also the *best* days. Big rebounds cluster with big sell-offs, so a strategy that steps aside in volatile periods avoids the crashes and also misses the rebounds. Net of both effects, the HMM still ends 2010–2026 with a lower Sharpe than buy-and-hold on the S&P 500 (0.55 vs 0.75).
+
 ### Caveats
 - **Lower exposure explains part of the risk reduction.** The HMM is 46–73% invested on average, so some of its lower volatility and drawdown simply comes from holding less.
 - **Gold and Bitcoin never get a Transition regime.** Every fold maps their 4 states to Bull or Crisis only (see [Limitations](#7-limitations)).
@@ -121,32 +148,37 @@ Implemented in `src/backtest/evaluation.py`.
 ## 4. Architecture & Data Flow
 
 ```text
-[yfinance loader] → [8 features] → [walk-forward HMM] → [labeling] → [signal] → [evaluation: HMM + baselines, risk, significance] → [SQLite store] → [Streamlit app / notebooks]
+[yfinance loader] → [8 features] → [walk-forward HMM] → [labeling] → [signal] → [evaluation: HMM + baselines, risk] → [regime analysis] → [significance] → [SQLite store + models/] → [Streamlit app / notebooks]
 ```
 
-Notebooks and `app.py` only **read** from `src/` and the store; they never recompute pipeline logic.
+`src/pipeline.py::run_pipeline` runs all of it in one pass. Notebooks and `app.py` only **read** from `src/` and the store; they never recompute pipeline logic.
+
+**One training run, two outputs.** Each run fits every walk-forward fold once and writes both the saved models and the database from that same fit. `--reuse-models` skips fitting and predicts with the saved folds instead: about 15 seconds instead of about 3.5 minutes, with identical results (tested in `tests/test_pipeline.py`). A retrain is required after any change to `config.yaml` or the features, and when a new calendar year starts; the pipeline refuses to reuse models in those cases.
+
+**Crash-safe publishing.** Models are trained into a staging folder, and the database is built as a separate file. Only when every asset has succeeded are the new models, the manifest and the database swapped in, so the dashboard never sees a half-written result.
 
 ### Directory structure
 ```
-├── config/config.yaml            # Tickers, dates, HMM settings, assets, annualization
+├── config/config.yaml            # Tickers, dates, HMM settings, assets, annualization, costs, stress episodes
 ├── src/
-│   ├── data/loader.py            # yfinance download, parquet cache, config + annualization helpers
+│   ├── pipeline.py               # run_pipeline(): the whole flow, start to finish
+│   ├── data/loader.py            # yfinance download, parquet cache, config / annualization / cost helpers
 │   ├── features/engineering.py   # The 8 features + look-ahead property check
-│   ├── models/hmm.py             # Walk-forward fit/predict, filtered probabilities
+│   ├── models/hmm.py             # Walk-forward fit/predict, filtered probabilities, reuse of saved folds
 │   ├── models/labeling.py        # Per-fold state → regime mapping, fold artifacts
 │   ├── models/signal.py          # THE signal: smoothed probabilities, regime, target weight
 │   ├── backtest/engine.py        # Backtest with 2-day execution lag and costs
 │   ├── backtest/baselines.py     # Buy & hold and 200-day MA target weights
 │   ├── backtest/evaluation.py    # Out-of-sample window; scores all strategies on it
-│   ├── backtest/risk.py          # Cost model, VaR / CVaR
-│   ├── backtest/metrics.py       # CAGR, Sharpe, Sortino, Calmar, drawdowns, exposure
+│   ├── backtest/risk.py          # VaR / CVaR
+│   ├── backtest/metrics.py       # CAGR, Sharpe, Sortino, Calmar, drawdowns, period metrics, chart series
+│   ├── analysis/regimes.py       # Regime profiles, transitions, spells, per-year / per-episode breakdown
 │   ├── stats/significance.py     # Block bootstrap, HAC test, Holm correction
 │   └── db/schema.sql, store.py   # SQLite schema (versioned) and idempotent writers
 ├── scripts/
-│   ├── train.py                  # Train walk-forward models → models/ + manifest.json
-│   ├── backfill_db.py            # Run everything and write it to data/regime_store.db
+│   ├── run_pipeline.py           # Run everything → models/ + data/regime_store.db
 │   └── paper_trade.py            # Alpaca paper-trading scaffold (dry run by default)
-├── tests/                        # pytest: look-ahead, lag, costs, evaluation window, metrics
+├── tests/                        # pytest: look-ahead, lag, costs, evaluation, signal, pipeline
 ├── notebooks/                    # EDA, model development, backtest, SQL analysis
 ├── models/                       # Persisted fold artifacts (model + scaler + state map)
 ├── data/regime_store.db          # SQLite store read by the dashboard
@@ -154,7 +186,20 @@ Notebooks and `app.py` only **read** from `src/` and the store; they never recom
 ```
 
 ### SQLite tables
-`assets`, `prices`, `features` (long format), `backtest_runs`, `regimes` (the full signal per out-of-sample day: raw and smoothed probabilities and labels, target weight), `backtest_daily` and `backtest_metrics` (both with a `strategy` column: `hmm` / `buy_hold` / `dma200`), `evaluation_windows`, `significance_tests`. The schema is versioned with `PRAGMA user_version`; an out-of-date database is rebuilt automatically.
+
+| Table | Contents |
+|---|---|
+| `assets`, `prices`, `features` | Raw inputs (features in long format) |
+| `backtest_runs` | One row per run: config (and its hash), git SHA, cost model, data end date, whether models were retrained |
+| `regimes` | The full signal per out-of-sample day: raw and smoothed probabilities and labels, target weight |
+| `backtest_daily` | Per strategy (`hmm` / `buy_hold` / `dma200`) and day: weight, returns, turnover, cost, equity, drawdown, rolling 1-year Sharpe |
+| `backtest_metrics` | Per strategy and cycle: `full`, `year:2020`, `episode:covid_crash_2020`, ... |
+| `evaluation_windows` | Out-of-sample window, annualization and cost per asset |
+| `significance_tests` | Sharpe-difference tests vs each baseline (bootstrap, HAC, Holm) |
+| `model_folds`, `fold_states` | Per-fold training window and fit diagnostics; each HMM state's training behaviour and label |
+| `regime_profiles`, `regime_transitions`, `regime_spells` | Out-of-sample description of the regimes: frequency, persistence, returns, average features |
+
+The schema is versioned with `PRAGMA user_version`; an out-of-date database is rebuilt automatically.
 
 ---
 
@@ -182,7 +227,7 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 ## 6. Backtest Realism
 
 - **Execution lag:** a weight decided at day *t*'s close is traded at day *t+1*'s close and earns returns from day *t+2*. Tested in `tests/test_backtest.py`.
-- **Transaction costs:** spread + commission per unit of turnover: 1.5 bps for S&P 500 and NASDAQ, 2.5 bps for Gold, 5.5 bps for Bitcoin.
+- **Transaction costs:** spread + commission per unit of turnover, set in `config.yaml` (`backtest.costs`): 1.5 bps for S&P 500 and NASDAQ, 2.5 bps for Gold, 5.5 bps for Bitcoin. `run_backtest` requires the cost explicitly, so no backtest can silently run cost-free.
 - **Probability-weighted sizing:** HMM exposure = trailing 21-day mean of P(Bull), between 0 and 1 (`src/models/signal.py`). Positions under 0.1% of the portfolio are set to 0: nobody would trade them, and floating-point noise around such tiny weights made some metrics change between runs.
 - **Risk reporting:** historical and Cornish-Fisher VaR, historical CVaR, drawdown depth and duration.
 
@@ -196,7 +241,7 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 | **Gaussian emissions** | `hmmlearn`'s Gaussian HMM assumes normal returns within each state. Real returns have fat tails. |
 | **Detection lag** | The 21-day trailing smoothing delays reactions to regime changes by up to ~3 weeks. That's the price of zero look-ahead. |
 | **No Transition state for Gold and Bitcoin** | With the current labeling rule, every Gold and Bitcoin fold maps its 4 states to Bull or Crisis only. The rule is worth revisiting. |
-| **Training time** | 5 EM starts per fold make training ~5 minutes, and `backfill_db.py` currently retrains instead of loading the saved models. (Step 3 merges the two.) |
+| **Stress-episode dates are equity-based** | The episodes are S&P 500 peak-to-trough windows applied to every asset, which shows how Gold and Bitcoin behaved during *equity* stress, not during their own crashes. |
 | **Index-level backtest** | `^GSPC` / `^IXIC` are traded as if they were investable, which ignores ETF tracking error and fees. |
 | **Private `hmmlearn` API** | Filtered probabilities use `hmmlearn._hmmc.forward_log`, so `hmmlearn` is pinned to `>=0.3,<0.4`. |
 | **Notebooks and older docs** | `notebooks/` and the phase docs in `docs/` predate Steps 1–2. They may show old numbers, and notebooks 01 and 03 import functions that were replaced by `src/models/signal.py`. They'll be refreshed in Step 5. |
@@ -216,13 +261,13 @@ python -m venv .venv
 # source .venv/bin/activate     # Mac / Linux
 pip install -r requirements.txt
 
-python scripts/train.py          # walk-forward models → models/  (~5 min)
-python scripts/backfill_db.py    # evaluation → data/regime_store.db  (~5 min)
-pytest tests/                    # test suite
-streamlit run app.py             # dashboard at http://localhost:8501
+python scripts/run_pipeline.py                 # train + evaluate + write the store (~3.5 min)
+python scripts/run_pipeline.py --reuse-models  # daily refresh with saved models (~15 s)
+pytest tests/                                  # test suite
+streamlit run app.py                           # dashboard at http://localhost:8501
 ```
 
-`python scripts/backfill_db.py --check-idempotency` runs the backfill twice and fails if any table's row count changes.
+On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/) on Python 3.12.
 
 ---
 
@@ -232,8 +277,8 @@ streamlit run app.py             # dashboard at http://localhost:8501
 |---|---|---|
 | 1 | Out-of-sample-only evaluation window, per-asset annualization, one Sharpe definition, baselines + significance stored in the database | ✅ Done |
 | 2 | One signal definition shared by backtest, store, dashboard and paper trading; scale-free features; continuous forward pass; EM restarts | ✅ Done |
-| 3 | A single pipeline script that trains once and writes everything (incl. per-cycle metrics and fold info) | ⏳ Next |
-| 4 | Dashboard rebuild: overview, regime timeline, performance vs baselines, risk, model insight, statistical evidence, paper trading | Planned |
+| 3 | A single pipeline that trains once and writes everything (per-year and stress-episode metrics, fold info, regime profiles, transitions, chart series); fast refresh with saved models; crash-safe publishing; costs in config | ✅ Done |
+| 4 | Dashboard rebuild: overview, regime timeline, performance vs baselines, risk, model insight, statistical evidence, paper trading | ⏳ Next |
 | 5 | Repo clean-up, refreshed notebooks/docs, more tests, CI updates | Planned |
 
 ---
@@ -253,5 +298,5 @@ streamlit run app.py             # dashboard at http://localhost:8501
 
 1. Push the repo to GitHub.
 2. On [share.streamlit.io](https://share.streamlit.io) choose **New app** → this repo, branch `main`, main file `app.py`.
-3. The app reads `data/regime_store.db` and `models/manifest.json`, so commit both after running `train.py` and `backfill_db.py` locally.
+3. The app reads `data/regime_store.db` and `models/manifest.json`, so commit both after running `scripts/run_pipeline.py` locally.
 4. Deploy.

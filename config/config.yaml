@@ -33,4 +33,31 @@ backtest:
   annualization:
     default: 252
     bitcoin: 365
-  transaction_cost_bps: null   # set from spread + commission model, Phase 3
+  # Trading costs per unit of turnover (buying or selling 100% of the
+  # portfolio), in basis points: half the bid-ask spread you cross plus a
+  # commission. Liquid index products are cheapest; Bitcoin spreads are
+  # wider. Every strategy (HMM and baselines) pays the same costs.
+  costs:
+    commission_bps: 0.5
+    spread_bps:
+      default: 2.0
+      spx: 1.0
+      nasdaq: 1.0
+      gold: 2.0
+      bitcoin: 5.0
+
+evaluation:
+  # Out-of-sample results are also broken down by calendar year and by
+  # these equity stress episodes. Each episode runs from an S&P 500 closing
+  # high to the closing low that followed (checked against the data: the
+  # start is the highest close of the prior 6 months and the end is the
+  # lowest close up to a month later). They are applied as date windows to
+  # every asset, so you can see how Gold and Bitcoin behaved during equity
+  # stress too.
+  stress_episodes:
+    euro_debt_2011: ["2011-04-29", "2011-10-03"]
+    china_oil_2015: ["2015-05-21", "2016-02-11"]
+    q4_selloff_2018: ["2018-09-20", "2018-12-24"]
+    covid_crash_2020: ["2020-02-19", "2020-03-23"]
+    bear_market_2022: ["2022-01-03", "2022-10-12"]
+    tariff_selloff_2025: ["2025-02-19", "2025-04-08"]

@@ -177,3 +177,45 @@ def get_all_metrics(returns, weights, ann_factor, asset_name):
         "VaR 99% (CF)": compute_cornish_fisher_var(returns, 0.99),
         "Years": len(_clean(returns)) / ann_factor,
     }
+
+
+def get_period_metrics(returns, weights, ann_factor):
+    """
+    Compact metrics for a sub-period (a calendar year or a stress episode).
+
+    "Total Return" is reported instead of CAGR because annualizing a
+    5-week crash window would turn a -30% month into a meaningless yearly
+    figure. Sharpe is still annualized so years are comparable, but treat
+    it as noisy for windows of only a few weeks.
+    """
+    r = _clean(returns)
+    max_dd, _ = compute_drawdowns(pd.Series(r))
+    return {
+        "Total Return": float(np.prod(1 + r) - 1) if len(r) else 0.0,
+        "Ann. Vol": compute_volatility(r, ann_factor),
+        "Sharpe": compute_sharpe(r, ann_factor),
+        "Max DD": max_dd,
+        "Avg. Exposure": compute_avg_exposure(weights),
+        "Days": int(len(r)),
+    }
+
+
+def performance_series(returns, ann_factor):
+    """
+    Daily series for charts: equity curve ($1 start), drawdown, and the
+    trailing one-year Sharpe ratio.
+
+    The rolling Sharpe uses a trailing window of `ann_factor` rows (one year)
+    and is NaN until a full year of history exists, so early values are not
+    based on a handful of days.
+    """
+    r = pd.Series(returns).fillna(0.0)
+    equity = (1 + r).cumprod()
+    drawdown = equity / equity.cummax() - 1
+    roll = r.rolling(ann_factor)
+    rolling_sharpe = roll.mean() / roll.std(ddof=1) * np.sqrt(ann_factor)
+    return pd.DataFrame({
+        "equity": equity,
+        "drawdown": drawdown,
+        "rolling_sharpe": rolling_sharpe.replace([np.inf, -np.inf], np.nan),
+    }, index=r.index)

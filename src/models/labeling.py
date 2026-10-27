@@ -15,6 +15,41 @@ import joblib
 import numpy as np
 
 
+def state_statistics(train_df, train_hidden_states, n_states, ann_factor=252):
+    """
+    Empirical behaviour of each raw HMM state on the TRAINING window.
+
+    For every state: how many training days it covers, and the annualized
+    mean return, volatility and Sharpe of the asset on those days. These
+    numbers drive the labeling rule below and are also stored so the
+    dashboard can show what each fold's states looked like.
+
+    A state with fewer than 2 training days gets vol=inf, mean=-inf,
+    Sharpe=-inf so it can never be ranked as the calm Bull state.
+    """
+    if "returns" not in train_df.columns:
+        raise ValueError("train_df must contain 'returns' column for ranking.")
+    returns = train_df["returns"]
+    stats = []
+    for i in range(n_states):
+        state_returns = returns[train_hidden_states == i]
+        if len(state_returns) < 2:
+            vol, mu, sharpe = np.inf, -np.inf, -np.inf
+        else:
+            vol = state_returns.std() * np.sqrt(ann_factor)
+            mu = state_returns.mean() * ann_factor
+            sharpe = mu / vol if vol > 0 else -np.inf
+        stats.append({
+            "state": i,
+            "train_days": int(len(state_returns)),
+            "train_share": float(len(state_returns) / max(len(returns), 1)),
+            "vol": float(vol),
+            "mu": float(mu),
+            "sharpe": float(sharpe),
+        })
+    return stats
+
+
 def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=252):
     """
     Rank states by volatility and annualized Sharpe, merging them into Bull,
@@ -50,29 +85,8 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=25
     dict
         Mapping from state integer (0..n_states-1) to string label.
     """
-    stats = []
-    
-    if "returns" not in train_df.columns:
-        raise ValueError("train_df must contain 'returns' column for ranking.")
-        
-    returns = train_df["returns"]
-    
-    for i in range(n_states):
-        mask = (train_hidden_states == i)
-        state_returns = returns[mask]
-        
-        # In case a state has zero assignments, assign worst possible stats
-        if len(state_returns) < 2:
-            vol = np.inf
-            mu = -np.inf
-            sharpe = -np.inf
-        else:
-            vol = state_returns.std() * np.sqrt(ann_factor)
-            mu = state_returns.mean() * ann_factor
-            sharpe = mu / vol if vol > 0 else -np.inf
-            
-        stats.append({"state": i, "vol": vol, "mu": mu, "sharpe": sharpe})
-        
+    stats = state_statistics(train_df, train_hidden_states, n_states, ann_factor)
+
     # Sort states by volatility ascending
     stats.sort(key=lambda x: x["vol"])
     

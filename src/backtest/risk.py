@@ -66,30 +66,5 @@ def compute_cornish_fisher_cvar(returns, confidence_level=0.95):
 # src/models/signal.py.
 
 
-# --- Transaction Costs ---
-
-def estimate_transaction_costs(turnover, asset_name):
-    """
-    Model transaction costs as spread + commission, not a flat percentage.
-    Spreads vary by asset liquidity.
-    """
-    asset = str(asset_name).lower()
-    
-    # Spread estimates (bps)
-    if 'spx' in asset or 'gspc' in asset:
-        spread_bps = 1.0
-    elif 'nasdaq' in asset or 'ixic' in asset:
-        spread_bps = 1.0
-    elif 'gold' in asset or 'gc' in asset:
-        spread_bps = 2.0
-    elif 'btc' in asset or 'bitcoin' in asset:
-        spread_bps = 5.0
-    else:
-        spread_bps = 2.0
-        
-    # Flat commission (e.g. 0.5 bps equivalent)
-    commission_bps = 0.5
-    
-    total_cost_bps = spread_bps + commission_bps
-    
-    return turnover * (total_cost_bps / 10000.0)
+# Transaction costs live in config.yaml (backtest.costs) and are looked up
+# with src.data.loader.get_cost_bps, so there is one place to change them.

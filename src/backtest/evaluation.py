@@ -19,7 +19,7 @@ The rule enforced here:
     onwards, and every strategy starts that window flat and pays to enter.
 """
 
-from src.data.loader import get_ann_factor
+from src.data.loader import get_ann_factor, get_cost_bps
 from src.backtest.engine import run_backtest
 from src.models.signal import compute_signal
 from src.backtest.baselines import buy_and_hold_weights, dma200_weights
@@ -92,6 +92,7 @@ def evaluate_asset(features, probs, config, asset_name):
         raise ValueError("features and probs must share the same index.")
 
     ann_factor = get_ann_factor(config, asset_name)
+    cost_bps = get_cost_bps(config, asset_name)
     oos_start = out_of_sample_start(probs)
     oos = features.loc[oos_start:]
     signal = compute_signal(probs, config["model"]["smoothing_window"])
@@ -101,7 +102,7 @@ def evaluate_asset(features, probs, config, asset_name):
         # Slicing the weights to the window means each strategy enters the
         # window flat: the engine's 2-day lag then makes it pay the entry
         # trade inside the window, exactly as a real launch would.
-        bt = run_backtest(oos, weights.loc[oos_start:], asset_name=asset_name, use_dynamic_costs=True)
+        bt = run_backtest(oos, weights.loc[oos_start:], cost_bps=cost_bps)
         backtests[name] = bt
         metrics[name] = get_all_metrics(bt["net_return"], bt["executed_weight"], ann_factor, asset_name)
 

@@ -26,7 +26,7 @@ from hmmlearn.hmm import GaussianHMM
 from hmmlearn import _hmmc
 
 from src.data.loader import get_ann_factor
-from src.models.labeling import rank_and_map_states, save_fold_artifact
+from src.models.labeling import rank_and_map_states, save_fold_artifact, state_statistics
 from src.models.signal import REGIME_LABELS, regime_labels
 
 logger = logging.getLogger(__name__)
@@ -132,7 +132,7 @@ def fit_best_hmm(X_train, n_states, covariance_type, n_iter, n_init, seed):
     return best_model, {"best_log_likelihood": float(best_ll), "starts": starts}
 
 
-def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
+def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=None):
     """
     Perform an expanding-window walk-forward fit and predict loop.
 
@@ -147,6 +147,8 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
         Configuration dict containing 'model' parameters.
     asset_name : str
         Name of the asset (used for annualization, logging and saving models).
+    model_dir : str or None
+        Where to save the fold artifacts. Defaults to models/<asset_name>.
 
     Returns
     -------
@@ -169,6 +171,7 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
     n_init = model_cfg.get("n_init", 1)
     min_train_days = model_cfg.get("min_train_days", 1008)
     ann_factor = get_ann_factor(config, asset_name)
+    model_dir = model_dir or f"models/{asset_name}"
 
     years = df.index.year.unique()
     out_probs = pd.DataFrame(index=df.index, columns=REGIME_LABELS, dtype=float)
@@ -212,9 +215,12 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
         # training set is fine here: it only describes past behaviour.
         train_states = model.predict(X_train)
         state_map = rank_and_map_states(train_df, train_states, n_states, ann_factor=ann_factor)
+        state_stats = state_statistics(train_df, train_states, n_states, ann_factor)
+        for st in state_stats:
+            st["label"] = state_map[st["state"]]
 
         # 5. Persist model + scaler + mapping (one is useless without the others).
-        save_fold_artifact(fold_idx, model, scaler, state_map, directory=f"models/{asset_name}",
+        save_fold_artifact(fold_idx, model, scaler, state_map, directory=model_dir,
                            train_end=train_df.index[-1].date())
 
         # 6. Filtered probabilities over the whole history up to the end of
@@ -232,10 +238,12 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
 
         folds_info.append({
             "fold_idx": fold_idx,
+            "train_start": train_df.index[0].date(),
             "train_end": train_df.index[-1].date(),
             "test_start": test_df.index[0].date(),
             "test_end": test_df.index[-1].date(),
             "state_map": state_map,
+            "states": state_stats,
             "fit": fit_diag,
         })
         fold_idx += 1
@@ -255,3 +263,44 @@ def predict_latest_probs(features, artifact, feature_cols):
     state_probs = predict_proba_filtered(artifact["model"], X)
     return pd.DataFrame(map_to_regimes(state_probs, artifact["state_map"]),
                         index=features.index, columns=REGIME_LABELS)
+
+
+class RetrainRequired(RuntimeError):
+    """Saved models cannot cover the data (e.g. a new calendar year began)."""
+
+
+def predict_from_artifacts(df, feature_cols, folds_info, model_dir):
+    """
+    Rebuild walk-forward probabilities from SAVED fold models, without refitting.
+
+    Each fold's model predicts its own test year with the same continuous
+    forward pass used in training, so for the same data and config the
+    output matches walk_forward_predict exactly (tests/test_pipeline.py).
+    New days inside the latest fold's year are predicted by that fold, which
+    is exactly what would have happened live. A day in a year no fold
+    covers needs a new fold, so we raise RetrainRequired instead of guessing.
+
+    Returns (raw_labels, probs, folds_info) like walk_forward_predict.
+    """
+    from src.models.labeling import load_fold_artifact
+
+    out_probs = pd.DataFrame(index=df.index, columns=REGIME_LABELS, dtype=float)
+    fold_years = {}
+    for fold in folds_info:
+        year = pd.Timestamp(fold["test_start"]).year
+        fold_years[year] = fold
+    first_year = min(fold_years)
+    uncovered = sorted(set(df.index.year[df.index.year >= first_year]) - set(fold_years))
+    if uncovered:
+        raise RetrainRequired(f"No saved fold covers year(s) {uncovered}; run the pipeline with training.")
+
+    for year, fold in sorted(fold_years.items()):
+        artifact = load_fold_artifact(fold["fold_idx"], directory=model_dir)
+        history = df[df.index.year <= year]
+        test_index = history.index[history.index.year == year]
+        if len(test_index) == 0:
+            continue
+        X_history = artifact["scaler"].transform(history[feature_cols].values)
+        state_probs = predict_proba_filtered(artifact["model"], X_history)[-len(test_index):]
+        out_probs.loc[test_index, REGIME_LABELS] = map_to_regimes(state_probs, artifact["state_map"])
+    return regime_labels(out_probs), out_probs, folds_info
