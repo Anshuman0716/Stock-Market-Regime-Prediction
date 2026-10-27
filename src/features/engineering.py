@@ -20,7 +20,28 @@ FEATURE_COLUMNS = [
     "vix"
 ]
 
+# ADX smooths twice over its 14-day window, so it needs at least 2 * 14 rows.
+# The `ta` library crashes (instead of returning NaN) on anything shorter.
+ADX_WINDOW = 14
+MIN_INPUT_ROWS = 2 * ADX_WINDOW
+
+
 def build_features(df, vix_close):
+    """
+    Build the 8 HMM features from one asset's OHLCV frame plus VIX.
+
+    Every indicator is a trailing calculation (rolling / ewm / recursive
+    smoothing over past rows only), so the value on day t depends only on
+    data up to t. Leading warm-up rows, where an indicator is not yet
+    defined, are dropped rather than filled.
+
+    Returns an empty frame with the standard columns when the input is too
+    short to compute every indicator.
+    """
+    if len(df) < MIN_INPUT_ROWS:
+        logger.info(f"Input has {len(df)} rows (< {MIN_INPUT_ROWS}); returning no features.")
+        return pd.DataFrame(columns=FEATURE_COLUMNS, index=df.index[:0], dtype=float)
+
     close = df["Close"].squeeze()
     high = df["High"].squeeze()
     low = df["Low"].squeeze()
@@ -33,7 +54,7 @@ def build_features(df, vix_close):
     # 2. Trend
     macd = ta.trend.MACD(close, window_slow=26, window_fast=12, window_sign=9).macd()
 
-    adx = ta.trend.ADXIndicator(high, low, close, window=14).adx()
+    adx = ta.trend.ADXIndicator(high, low, close, window=ADX_WINDOW).adx()
 
     # 3. Volatility
     volatility_20 = returns.rolling(20).std()

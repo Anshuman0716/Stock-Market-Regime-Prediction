@@ -8,6 +8,13 @@
 --    the future without running ALTER TABLE commands.
 -- 2. Idempotent upserts are handled via ON CONFLICT DO UPDATE using explicit 
 --    UNIQUE constraints (or PRIMARY KEYs).
+-- 3. Backtest tables carry a `strategy` column (hmm / buy_hold / dma200) so the
+--    HMM and its baselines live side by side for the same run and dates.
+-- 4. PRAGMA user_version is the schema version. store.init_db() rebuilds the
+--    database when it does not match, because CREATE TABLE IF NOT EXISTS
+--    would silently keep an old table layout.
+
+PRAGMA user_version = 2;
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id TEXT PRIMARY KEY,
@@ -64,13 +71,14 @@ CREATE TABLE IF NOT EXISTS regimes (
 CREATE TABLE IF NOT EXISTS backtest_daily (
     run_id TEXT,
     asset_id TEXT,
+    strategy TEXT NOT NULL,
     date TEXT,
     weight REAL,
     gross_return REAL,
     net_return REAL,
     turnover REAL,
     cost REAL,
-    PRIMARY KEY (run_id, asset_id, date),
+    PRIMARY KEY (run_id, asset_id, strategy, date),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );
@@ -78,10 +86,41 @@ CREATE TABLE IF NOT EXISTS backtest_daily (
 CREATE TABLE IF NOT EXISTS backtest_metrics (
     run_id TEXT,
     asset_id TEXT,
+    strategy TEXT NOT NULL,
     cycle TEXT,
     metric_name TEXT,
     metric_value REAL,
-    PRIMARY KEY (run_id, asset_id, cycle, metric_name),
+    PRIMARY KEY (run_id, asset_id, strategy, cycle, metric_name),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- The out-of-sample window each asset was evaluated on. Every strategy for
+-- a (run, asset) is scored over exactly this window.
+CREATE TABLE IF NOT EXISTS evaluation_windows (
+    run_id TEXT,
+    asset_id TEXT,
+    oos_start TEXT NOT NULL,
+    oos_end TEXT NOT NULL,
+    ann_factor INTEGER NOT NULL,
+    PRIMARY KEY (run_id, asset_id),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- Sharpe-difference tests of a strategy against each baseline.
+CREATE TABLE IF NOT EXISTS significance_tests (
+    run_id TEXT,
+    asset_id TEXT,
+    strategy TEXT,
+    baseline TEXT,
+    sharpe_diff REAL,
+    ci_lower REAL,
+    ci_upper REAL,
+    p_value REAL,
+    p_value_hac REAL,
+    p_value_holm REAL,
+    PRIMARY KEY (run_id, asset_id, strategy, baseline),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );

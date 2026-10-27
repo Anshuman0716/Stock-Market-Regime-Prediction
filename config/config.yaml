@@ -24,4 +24,12 @@ model:
 
 backtest:
   assets: ["spx", "nasdaq", "gold", "bitcoin"]
+  # Rows per year, used to annualize returns, volatility and Sharpe.
+  # Equities and gold futures trade ~252 days a year; Bitcoin trades every
+  # calendar day, so its daily series has ~365 rows per year. Using 252 for
+  # Bitcoin would overstate how many "years" the backtest covers and
+  # understate its CAGR.
+  annualization:
+    default: 252
+    bitcoin: 365
   transaction_cost_bps: null   # set from spread + commission model, Phase 3

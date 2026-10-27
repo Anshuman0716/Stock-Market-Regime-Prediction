@@ -77,6 +77,23 @@ def load_config(path="config/config.yaml"):
     return config
 
 
+def get_ann_factor(config, asset_name):
+    """
+    Number of rows per year for an asset, used to annualize statistics.
+
+    Why per-asset: annualizing multiplies a daily mean by rows-per-year and a
+    daily std by sqrt(rows-per-year). Bitcoin has ~365 rows a year, equities
+    ~252. A single hardcoded 252 silently mis-states every crypto metric
+    (CAGR, volatility, Sharpe) and even shifts which HMM state gets labelled
+    Bull, because the labelling thresholds are on annualized Sharpe.
+
+    Falls back to 252 when the config has no annualization block (e.g. the
+    small mock configs used in tests).
+    """
+    table = (config or {}).get("backtest", {}).get("annualization", {})
+    return int(table.get(asset_name, table.get("default", 252)))
+
+
 # ---------------------------------------------------------------------------
 # Caching helpers
 # ---------------------------------------------------------------------------

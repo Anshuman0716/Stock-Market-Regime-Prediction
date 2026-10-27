@@ -18,19 +18,22 @@ import pandas as pd
 import numpy as np
 
 
-def rank_and_map_states(train_df, train_hidden_states, n_states=4):
+def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=252):
     """
-    Rank states by volatility and mean return, merging them into Bull, Transition,
-    and Crisis labels.
+    Rank states by volatility and annualized Sharpe, merging them into Bull,
+    Transition, and Crisis labels.
 
     Subtlety handled: THE RANKING MUST USE TRAINING DATA ONLY.
     We compute empirical stats directly from the training data's returns, masked
     by the training hidden states.
 
-    Merge Rule:
-    - Top 2 states by Sharpe Ratio (Mu/Vol) -> Bull (captures both quiet and volatile rallies)
-    - 3rd state by Sharpe Ratio -> Transition (choppy/sideways)
-    - Lowest state by Sharpe Ratio -> Crisis (steep drawdowns)
+    Merge rule (4 states):
+    - Lowest-volatility state -> Bull (calm, steadily rising markets)
+    - Highest-volatility state -> Crisis (stress, steep drawdowns)
+    - The two middle states are judged by annualized Sharpe:
+        Sharpe > 0.2  -> Bull       (volatile rallies)
+        Sharpe < -0.1 -> Crisis     (secondary sell-offs)
+        otherwise     -> Transition (choppy / sideways)
     
     Parameters
     ----------
@@ -40,6 +43,10 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4):
         Array of state predictions on the training set.
     n_states : int
         Number of states.
+    ann_factor : int
+        Rows per year for this asset (252 equities, 365 crypto). The Sharpe
+        thresholds above are annualized, so the wrong factor would move
+        states across the Bull/Transition/Crisis boundaries.
 
     Returns
     -------
@@ -63,8 +70,8 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4):
             mu = -np.inf
             sharpe = -np.inf
         else:
-            vol = state_returns.std() * np.sqrt(252)
-            mu = state_returns.mean() * 252
+            vol = state_returns.std() * np.sqrt(ann_factor)
+            mu = state_returns.mean() * ann_factor
             sharpe = mu / vol if vol > 0 else -np.inf
             
         stats.append({"state": i, "vol": vol, "mu": mu, "sharpe": sharpe})

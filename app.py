@@ -85,44 +85,61 @@ def get_db_connection():
 
 conn = get_db_connection()
 
+# Every query is pinned to ONE run, so re-running the backfill under a new
+# run_id never mixes rows from different experiments.
+run_row = conn.execute("SELECT run_id FROM backtest_runs ORDER BY created_at DESC LIMIT 1").fetchone()
+if run_row is None:
+    st.error("No backtest runs found in the store. Run `python scripts/backfill_db.py`.")
+    st.stop()
+RUN_ID = run_row[0]
+
 @st.cache_data
-def load_timeline_data(asset_id):
-    # Join prices and regimes and backtest_daily
+def load_timeline_data(asset_id, run_id):
+    # Out-of-sample dates only: regimes and backtests both start at the
+    # first walk-forward prediction.
     sql = """
         SELECT 
             p.date, 
             p.close, 
             r.label as regime_label, 
             r.p_bull, r.p_transition, r.p_crisis,
-            b.net_return as strat_net_return
+            h.net_return as strat_net_return,
+            bh.net_return as bh_net_return
         FROM prices p
-        JOIN regimes r ON p.asset_id = r.asset_id AND p.date = r.date
-        LEFT JOIN backtest_daily b ON p.asset_id = b.asset_id AND p.date = b.date
+        JOIN regimes r ON p.asset_id = r.asset_id AND p.date = r.date AND r.run_id = ?
+        LEFT JOIN backtest_daily h  ON h.asset_id = p.asset_id AND h.date = p.date
+                                   AND h.run_id = ? AND h.strategy = 'hmm'
+        LEFT JOIN backtest_daily bh ON bh.asset_id = p.asset_id AND bh.date = p.date
+                                   AND bh.run_id = ? AND bh.strategy = 'buy_hold'
         WHERE p.asset_id = ?
         ORDER BY p.date
     """
-    df = pd.read_sql_query(sql, conn, params=(asset_id,))
+    df = pd.read_sql_query(sql, conn, params=(run_id, run_id, run_id, asset_id))
     df['date'] = pd.to_datetime(df['date'])
     df.set_index('date', inplace=True)
     return df
 
 @st.cache_data
-def load_metrics(asset_id):
-    sql = "SELECT metric_name, metric_value FROM backtest_metrics WHERE asset_id = ? AND cycle = 'full'"
-    df = pd.read_sql_query(sql, conn, params=(asset_id,))
-    return df.set_index('metric_name')['metric_value'].to_dict()
+def load_metrics(asset_id, run_id):
+    sql = """SELECT strategy, metric_name, metric_value FROM backtest_metrics
+             WHERE asset_id = ? AND run_id = ? AND cycle = 'full'"""
+    df = pd.read_sql_query(sql, conn, params=(asset_id, run_id))
+    if df.empty:
+        return pd.DataFrame()
+    return df.pivot(index='strategy', columns='metric_name', values='metric_value')
 
 @st.cache_data
-def load_cycle_performance(asset_id):
-    sql = "SELECT cycle, metric_name, metric_value FROM backtest_metrics WHERE asset_id = ? AND cycle != 'full'"
-    df = pd.read_sql_query(sql, conn, params=(asset_id,))
+def load_cycle_performance(asset_id, run_id):
+    sql = """SELECT cycle, metric_name, metric_value FROM backtest_metrics
+             WHERE asset_id = ? AND run_id = ? AND strategy = 'hmm' AND cycle != 'full'"""
+    df = pd.read_sql_query(sql, conn, params=(asset_id, run_id))
     if df.empty:
         return pd.DataFrame()
     return df.pivot(index='cycle', columns='metric_name', values='metric_value')
 
-df = load_timeline_data(asset_id)
-metrics = load_metrics(asset_id)
-cycle_df = load_cycle_performance(asset_id)
+df = load_timeline_data(asset_id, RUN_ID)
+metrics = load_metrics(asset_id, RUN_ID)
+cycle_df = load_cycle_performance(asset_id, RUN_ID)
 
 if df.empty:
     st.error(f"No data found in the store for {asset_id}. Ensure you've run the backfill script.")
@@ -134,6 +151,8 @@ st.markdown("### Current Market Regime")
 current_row = df.iloc[-1]
 current_regime = current_row['regime_label']
 current_date   = df.index[-1].strftime("%B %d, %Y")
+st.caption(f"As of {current_date} (latest date in the store). "
+           f"Out-of-sample period shown: {df.index[0]:%Y-%m-%d} to {df.index[-1]:%Y-%m-%d}.")
 
 color_map = {'Bull': '🟢', 'Transition': '🟡', 'Crisis': '🔴'}
 col1, col2, col3, col4 = st.columns(4)
@@ -168,13 +187,13 @@ plt.close()
 
 # ── 4. Cumulative Performance vs Baselines ────────────────────────
 st.markdown("### Strategy Performance (Post-Cost)")
-st.markdown("Returns are fully out-of-sample and factor in dynamic bid-ask spread and commission costs.")
+st.markdown("Both lines cover the same out-of-sample dates and pay the same spread + commission costs.")
 
 if not df['strat_net_return'].isna().all():
     df['cumulative_strat'] = (1 + df['strat_net_return'].fillna(0)).cumprod()
-    
-    # We compute Buy & Hold directly from price ratio to match
-    df['cumulative_market'] = df['close'] / df['close'].iloc[0]
+    # Buy & Hold comes from the store too (same engine, lag and costs),
+    # rather than being recomputed here from prices.
+    df['cumulative_market'] = (1 + df['bh_net_return'].fillna(0)).cumprod()
 
     fig2, ax2 = plt.subplots(figsize=(16, 4))
     ax2.plot(df.index, df['cumulative_market'], label='Buy & Hold',       linewidth=1.2)
@@ -193,9 +212,8 @@ if not df['strat_net_return'].isna().all():
 # ── 5. VaR/CVaR Panel & Headline Metrics ──────────────────────────
 st.markdown("### Headline Risk & Performance Metrics")
 
-if metrics:
-    m_df = pd.DataFrame([metrics])
-    st.dataframe(m_df.style.format(precision=4), use_container_width=True)
+if not metrics.empty:
+    st.dataframe(metrics.style.format(precision=4), use_container_width=True)
 else:
     st.info("Metrics not found in DB.")
 

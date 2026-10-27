@@ -27,7 +27,7 @@ def train_and_persist():
         "assets": {}
     }
     
-    for asset_name in ['spx', 'nasdaq', 'gold', 'bitcoin']:
+    for asset_name in cfg['backtest']['assets']:
         if asset_name not in data:
             continue
             
@@ -35,10 +35,9 @@ def train_and_persist():
         asset = data[asset_name]
         
         features = build_features(asset, asset['VIX_Close'])
-        features['returns'] = asset['Close'].pct_change()
         features = features.dropna()
         
-        # walk_forward_predict will naturally save fold artifacts because we uncommented it
+        # walk_forward_predict saves one artifact (model + scaler + state map) per fold
         raw_labels, out_probs, folds_info = walk_forward_predict(features, FEATURE_COLUMNS, cfg, asset_name=asset_name)
         
         manifest["assets"][asset_name] = {

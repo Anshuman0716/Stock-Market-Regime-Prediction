@@ -1,5 +1,10 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
+
+# Same Sharpe definition as the reported metrics, so the number we test is
+# the number we show.
+from src.backtest.metrics import compute_sharpe
 
 def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60, n_bootstraps=2000, seed=42):
     """
@@ -33,12 +38,13 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
     rb = np.asarray(returns_b)
     n = len(ra)
     
-    # Observed Sharpe difference
+    if len(ra) != len(rb):
+        raise ValueError("returns_a and returns_b must cover the same dates.")
+    if n < 2 * block_size:
+        raise ValueError(f"Need at least {2 * block_size} rows for block_size={block_size}, got {n}.")
+
     def calc_sharpe(r):
-        std = np.std(r, ddof=1)
-        if std == 0: return 0.0
-        # Annualized
-        return (np.mean(r) / std) * np.sqrt(ann_factor)
+        return compute_sharpe(r, ann_factor)
 
     obs_diff = calc_sharpe(ra) - calc_sharpe(rb)
     
@@ -135,7 +141,6 @@ def ledoit_wolf_sharpe_diff(returns_a, returns_b, ann_factor):
     # Z-test
     if se_diff > 0:
         z_stat = obs_diff / se_diff
-        from scipy.stats import norm
         p_value = 2 * (1 - norm.cdf(abs(z_stat)))
     else:
         p_value = 1.0
@@ -168,3 +173,55 @@ def adjust_pvalues(p_values, method='holm'):
         adjusted[order[i]] = current_max
         
     return adjusted
+
+
+def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
+                           baselines=("buy_hold", "dma200"), n_bootstraps=2000):
+    """
+    Test the strategy against every baseline on every asset, then correct for
+    multiple testing.
+
+    Why Holm across ALL comparisons: with 4 assets x 2 baselines we run 8
+    tests. At alpha = 0.05, the chance of at least one false "significant"
+    result across 8 independent tests is ~34%. Holm-Bonferroni controls that
+    family-wise error rate while being less conservative than plain
+    Bonferroni.
+
+    Parameters
+    ----------
+    strategy_returns : dict[str, dict[str, pd.Series]]
+        asset -> strategy name -> daily net returns. All strategies of one
+        asset must share the same (out-of-sample) index.
+    ann_factors : dict[str, int]
+        asset -> rows per year.
+
+    Returns
+    -------
+    pd.DataFrame
+        One row per (asset, baseline) with sharpe_diff, bootstrap CI and
+        p-value, the HAC delta-method p-value as a cross-check, and the
+        Holm-adjusted bootstrap p-value.
+    """
+    rows = []
+    for asset, by_strategy in strategy_returns.items():
+        ra = by_strategy[strategy]
+        for baseline in baselines:
+            rb = by_strategy[baseline]
+            if not ra.index.equals(rb.index):
+                raise ValueError(f"{asset}: {strategy} and {baseline} cover different dates.")
+            boot = block_bootstrap_sharpe_diff(ra, rb, ann_factors[asset], n_bootstraps=n_bootstraps)
+            hac = ledoit_wolf_sharpe_diff(ra, rb, ann_factors[asset])
+            rows.append({
+                "asset": asset,
+                "strategy": strategy,
+                "baseline": baseline,
+                "sharpe_diff": boot["diff"],
+                "ci_lower": boot["ci_lower"],
+                "ci_upper": boot["ci_upper"],
+                "p_value": boot["p_value"],
+                "p_value_hac": hac["p_value"],
+            })
+    out = pd.DataFrame(rows)
+    if not out.empty:
+        out["p_value_holm"] = adjust_pvalues(out["p_value"].values)
+    return out

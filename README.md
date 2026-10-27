@@ -1,208 +1,227 @@
 # Market Regime Detection System
 
-**A Quantitative Data Science & Risk Management Project**
+**A quantitative data science & risk project**
 
-This project detects financial market regimes (Bull / Transition / Crisis) directly from price and volatility data using a 4-state Gaussian Hidden Markov Model (HMM) trained on 8 strictly-engineered technical indicators. 
+This project labels each trading day as **Bull, Transition or Crisis** using a 4-state Gaussian Hidden Markov Model (HMM) trained on 8 technical and macro features. It then tests whether moving in and out of the market based on those labels beats simple baselines after trading costs. It covers the S&P 500, NASDAQ, Gold and Bitcoin.
 
-Unlike many academic or tutorial-level ML finance projects, this repository prioritizes **strict elimination of look-ahead bias, robust out-of-sample statistical validation, and realistic fintech risk modeling** (including dynamic transaction costs, probability-weighted position sizing, and VaR/CVaR risk reporting).
+The project's priority is an **honest evaluation**: no look-ahead bias anywhere in the pipeline, strictly out-of-sample results, the same costs and execution lag for every strategy, and statistical tests that correct for multiple comparisons.
+
+> **Status:** Step 1 of 5 of the improvement roadmap is complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/backfill_db.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`.
 
 ---
 
-## 1. Executive Summary & Results
+## 1. Results (out-of-sample, after costs)
 
-The fundamental question of this project was: *Can an unsupervised Hidden Markov Model reliably detect market crashes in time to protect a portfolio, and does that edge survive real-world trading costs?*
+**Question:** Can an unsupervised HMM detect market regimes early enough to improve a portfolio, and does any edge survive trading costs?
 
-**The Conclusion:** The HMM acts as an exceptionally powerful risk-off filter that severely truncates tail-risk drawdowns—slashing the S&P 500 Max Drawdown from ~56% to ~22%, and volatility from 19.2% to 6.1%. However, the mathematical realities of detection lag (trailing smoothing), false-positive transitions, and transaction costs present a severe drag. The strategy systematically underperforms a passive Buy & Hold baseline on an absolute and risk-adjusted (Sharpe) basis. **It is a powerful capital preservation overlay, but not an absolute alpha generator.**
+**Answer: no, not in its current form.** On every asset the HMM strategy has a lower Sharpe ratio than buy-and-hold, and on the S&P 500, NASDAQ and Bitcoin it is also below a plain 200-day moving-average filter. It does cut drawdowns on the two equity indices, but it does so mainly by being about half invested (average exposure ~50%), not by timing the market well: it gives up far more return than the exposure cut alone explains.
 
-### Headline Metrics (Strict Out-of-Sample, Post-Cost)
+| Asset (window) | Strategy | CAGR | Ann. Vol | Sharpe | Max DD | Avg. Exposure | 95% VaR (1d) | 99% CVaR (1d) |
+|---|---|---|---|---|---|---|---|---|
+| **S&P 500** (2010–2026-10) | Buy & Hold | 12.05% | 17.14% | 0.75 | -33.92% | 100% | 1.63% | 4.37% |
+|  | 200-day MA filter | 7.51% | 11.74% | 0.68 | -23.30% | 83% | 1.25% | 2.95% |
+|  | **HMM regime** | 2.72% | 9.20% | 0.34 | -19.12% | 52% | 0.86% | 2.79% |
+| **NASDAQ** (2010–2026-10) | Buy & Hold | 15.57% | 20.44% | 0.81 | -36.40% | 100% | 2.06% | 4.79% |
+|  | 200-day MA filter | 10.84% | 14.97% | 0.76 | -23.82% | 82% | 1.62% | 3.60% |
+|  | **HMM regime** | 3.85% | 10.55% | 0.41 | -18.78% | 49% | 1.06% | 3.08% |
+| **Gold** (2010–2026-10) | Buy & Hold | 7.95% | 17.21% | 0.53 | -44.36% | 100% | 1.70% | 4.26% |
+|  | 200-day MA filter | 6.48% | 14.01% | 0.52 | -32.43% | 64% | 1.38% | 3.87% |
+|  | **HMM regime** | 7.69% | 16.89% | 0.52 | -46.58% | 95% | 1.66% | 4.26% |
+| **Bitcoin** (2021–2026-10) | Buy & Hold | 16.96% | 56.59% | 0.56 | -76.63% | 100% | 4.54% | 10.78% |
+|  | 200-day MA filter | 15.99% | 41.31% | 0.56 | -54.40% | 55% | 3.18% | 8.38% |
+|  | **HMM regime** | -1.36% | 50.49% | 0.23 | -76.63% | 75% | 4.01% | 10.62% |
 
-| Asset | Strategy | CAGR | Ann. Vol | Sharpe | Max DD | 95% VaR (Hist) | 99% CVaR (Hist) |
-|---|---|---|---|---|---|---|---|
-| **S&P 500** | Buy & Hold | 6.54% | 19.23% | 0.340 | -56.78% | - | - |
-| | **HMM Regime** | **1.47%** | **6.15%** | **0.238** | **-22.36%** | 0.42% | 2.18% |
-| **NASDAQ** | Buy & Hold | 8.12% | 24.15% | 0.315 | -75.12% | - | - |
-| | **HMM Regime** | **3.32%** | **9.06%** | **0.366** | **-25.19%** | 0.76% | 2.84% |
-| **Gold** | Buy & Hold | 8.81% | 15.33% | 0.590 | -45.13% | - | - |
-| | **HMM Regime** | **6.00%** | **11.92%** | **0.503** | **-31.98%** | 1.08% | 3.38% |
-| **Bitcoin** | Buy & Hold | 45.10% | 61.22% | 0.791 | -83.15% | - | - |
-| | **HMM Regime** | **2.07%** | **30.58%** | **0.068** | **-76.63%** | 2.67% | 8.65% |
+*Sharpe = mean / std of daily net returns × √(rows per year), risk-free rate 0. Rows per year are 252 for equities and gold, and 365 for Bitcoin (it trades every day). VaR and CVaR are historical, 1-day, shown as positive losses.*
 
-*(Note: Bootstrap significance tests against Buy & Hold yielded p > 0.70 across all assets, confirming that the HMM strategy does not statistically significantly improve risk-adjusted returns).*
+### Is the difference statistically significant?
+
+Moving-block bootstrap (60-day blocks, 2,000 resamples) of the Sharpe difference HMM − baseline, cross-checked with a HAC delta-method test. The Holm adjustment corrects for running 8 comparisons.
+
+| Asset | HMM vs | Sharpe diff | 95% CI | p (bootstrap) | p (HAC) | p (Holm-adjusted) |
+|---|---|---|---|---|---|---|
+| S&P 500 | Buy & Hold | -0.41 | [-0.71, -0.08] | 0.011 | 0.033 | 0.077 |
+| S&P 500 | 200-day MA | -0.34 | [-0.66, +0.03] | 0.074 | 0.073 | 0.296 |
+| NASDAQ | Buy & Hold | -0.40 | [-0.77, -0.03] | 0.033 | 0.053 | 0.198 |
+| NASDAQ | 200-day MA | -0.35 | [-0.72, -0.00] | 0.050 | 0.074 | 0.250 |
+| Gold | Buy & Hold | -0.01 | [-0.08, +0.07] | 0.784 | 0.856 | 1.000 |
+| Gold | 200-day MA | +0.00 | [-0.24, +0.29] | 0.780 | 0.974 | 1.000 |
+| Bitcoin | Buy & Hold | -0.33 | [-0.63, -0.12] | 0.001 | 0.023 | 0.008 |
+| Bitcoin | 200-day MA | -0.34 | [-1.09, +0.35] | 0.344 | 0.323 | 1.000 |
+
+**Reading this:** none of the comparisons shows the HMM *beating* a baseline. On Bitcoin the HMM is significantly *worse* than buy-and-hold even after the Holm correction (p = 0.008). On Gold the HMM is almost always labeled Bull (95% average exposure), so it behaves like buy-and-hold.
+
+### Why the results look like this (findings so far)
+
+- **Bitcoin, 2022:** from the November 2021 peak to the November 2022 low (−77%), the HMM labeled every single day **Bull** and stayed 100% invested. The models for 2021 and 2022 were trained on Bitcoin's history since 2014, when even its "calm" periods were very volatile, so the lowest-volatility state, which the labeling rule calls Bull, still covered a crash. This is a weakness of the volatility-based labeling rule, not a coding error.
+- **Equities:** being ~50% invested on average would by itself shrink drawdowns roughly in half, and the HMM's lower drawdowns are in line with that. But the return it gave up (2.7% vs 12.1% CAGR on the S&P) is far larger than half, so the timing itself has hurt.
+- **Gold:** most states get labeled Bull, so the strategy is close to buy-and-hold.
+
+### Correction to earlier versions of this README
+
+An earlier version claimed the HMM "slashed S&P 500 max drawdown from ~56% to ~22%". That number was an **evaluation bug**. The walk-forward model only starts predicting after ~9 years of training data (2010 for equities, 2021 for Bitcoin), but the backtest started in 2000 and treated the missing predictions as "hold cash". So the HMM got credit for sitting out the 2000–02 and 2008 crashes, years in which the model did not exist yet, while buy-and-hold was charged for them. Bitcoin metrics were also annualized with 252 days instead of 365. Both are fixed: every strategy is now scored only on the out-of-sample window, starting flat, with per-asset annualization (see [Section 3](#3-evaluation-methodology)).
 
 ---
 
 ## 2. Core Concepts & Statistical Integrity
 
-This project is built around overcoming the most common flaws in time-series machine learning.
+### A. Walk-forward training
+The model is never fit on the full dataset. It uses an **expanding window refit once a year**: to predict year *Y*, the HMM and its `StandardScaler` are fit only on data before *Y*. The first prediction year is the first one with at least `min_train_days` (2,268 ≈ 9 years) of history before it.
 
-### A. Walk-Forward Validation
-To completely eliminate look-ahead bias, the model is never fit on the full dataset. Instead, it uses an **expanding window walk-forward approach**. The model evaluating day `t` has *never* seen data from day `t+1`. The `StandardScaler` used to normalize features is also strictly fit *only* on the training window at each step, preventing future distributional data from leaking into past predictions.
+### B. Filtered, not smoothed, probabilities
+`hmmlearn`'s `predict()` (Viterbi) and `predict_proba()` (forward-backward) condition on the **whole** sequence passed in, so day 1's label would depend on day 250's data. `src/models/hmm.py::predict_proba_filtered` runs only the forward pass and normalizes it, which gives P(state at t | data up to t).
 
-### B. Filtered vs. Smoothed Probabilities
-Standard HMM implementations (like `hmmlearn`'s default `.predict()` and `.predict_proba()`) utilize the Viterbi or Forward-Backward algorithms. These algorithms "smooth" probabilities by conditioning on the *entire* sequence passed to them—meaning day 1's probability is influenced by day 250's data. 
+### C. State labeling per fold
+HMM state numbers are arbitrary and change on every refit. In each fold, states are ranked using **training data only**: lowest volatility → Bull, highest volatility → Crisis, and the middle states by annualized Sharpe (> 0.2 → Bull, < −0.1 → Crisis, otherwise Transition).
 
-To solve this, this pipeline explicitly isolates the **forward-pass lattice (alpha)** to generate strictly *filtered* probabilities, mathematically ensuring that today's state prediction is conditioned exclusively on data available up to today.
-
-### C. Trailing Smoothing 
-Raw HMM states can be erratic. We apply a 21-day rolling mode to smooth the signal. Crucially, this is a **trailing** window. Centered windows (often used in academic literature to produce beautiful, clean charts) leak future data into today's label. We explicitly sacrifice responsiveness at regime boundaries to mathematically guarantee zero look-ahead bias.
+### D. Trailing-only signal smoothing
+The strategy's target weight is the **trailing 21-day mean of P(Bull)**. It is never a centered window, because a centered window lets future days into today's value. This trades some responsiveness at regime turns for zero look-ahead.
 
 ---
 
-## 3. Architecture & Data Flow
+## 3. Evaluation Methodology
 
-The project strictly enforces a single-direction data flow. Notebooks and dashboards are strictly read-only consumers of the core logic to prevent duplicated, diverging code.
+Implemented in `src/backtest/evaluation.py`.
+
+1. **One window per asset.** The out-of-sample window starts on the first date with a real walk-forward prediction and ends on the last available date. Every strategy for that asset (HMM, buy-and-hold, 200-day MA) is scored on exactly these dates.
+2. **Signals may look back, P&L may not start early.** The 200-day MA on the first out-of-sample day uses the 200 days before it (that information was available then). But returns, costs and metrics are only counted inside the window.
+3. **Everyone starts flat.** Each strategy enters the window with no position and pays the cost of its first trade.
+4. **Same plumbing for everyone.** The same execution lag, cost model and metric functions apply to every strategy, so differences come from the signal alone.
+5. **Per-asset annualization** from `config.yaml` (`backtest.annualization`): 252 rows per year for equities and gold, 365 for Bitcoin.
+6. **One Sharpe definition.** The same `compute_sharpe` is used for the results table and inside the significance tests.
+
+---
+
+## 4. Architecture & Data Flow
 
 ```text
-[yfinance Loader] → [8-Feature Engineering] → [Walk-Forward HMM] → [Labeling & Smoothing] → [Backtest Engine & Risk] → [SQLite Store]
+[yfinance loader] → [8 features] → [walk-forward HMM] → [labeling] → [evaluation: HMM + baselines, risk, significance] → [SQLite store] → [Streamlit app / notebooks]
 ```
 
-### Directory Structure
+Notebooks and `app.py` only **read** from `src/` and the store; they never recompute pipeline logic.
+
+### Directory structure
 ```
-market-regime-detection/
-├── config/
-│   └── config.yaml               # Global configuration (tickers, dates, n_states)
+├── config/config.yaml            # Tickers, dates, HMM settings, assets, annualization
 ├── src/
-│   ├── data/loader.py            # yfinance retrieval & local parquet caching
-│   ├── features/engineering.py   # Technical indicators & signal generation
-│   ├── models/hmm.py             # Walk-forward fit/predict & filtered probabilities
-│   ├── models/labeling.py        # Rank-based labeling & state smoothing
-│   ├── backtest/engine.py        # Vectorized backtest with execution lag
-│   ├── backtest/risk.py          # Dynamic transaction costs, position sizing, VaR
-│   ├── backtest/metrics.py       # Sharpe, Sortino, Calmar, Max DD
-│   └── db/store.py               # SQLite schema, upserts, & experiment tracking
-├── notebooks/                    # Analytical sandbox (reads from DB & src/)
-├── tests/                        # Right-sized pytest suite (look-ahead assertions)
+│   ├── data/loader.py            # yfinance download, parquet cache, config + annualization helpers
+│   ├── features/engineering.py   # The 8 features + look-ahead property check
+│   ├── models/hmm.py             # Walk-forward fit/predict, filtered probabilities
+│   ├── models/labeling.py        # Per-fold state → regime mapping, trailing smoothing
+│   ├── backtest/engine.py        # Backtest with 2-day execution lag and costs
+│   ├── backtest/baselines.py     # Buy & hold and 200-day MA target weights
+│   ├── backtest/evaluation.py    # Out-of-sample window; scores all strategies on it
+│   ├── backtest/risk.py          # Cost model, probability sizing, VaR / CVaR
+│   ├── backtest/metrics.py       # CAGR, Sharpe, Sortino, Calmar, drawdowns, exposure
+│   ├── stats/significance.py     # Block bootstrap, HAC test, Holm correction
+│   └── db/schema.sql, store.py   # SQLite schema (versioned) and idempotent writers
 ├── scripts/
-│   ├── train.py                  # Entrypoint: train models & generate joblib artifacts
-│   ├── backfill_db.py            # Entrypoint: populate SQLite with backtest runs
-│   └── paper_trade.py            # Alpaca API sandbox for live forward-testing
-├── models/                       # Persisted .joblib artifacts & manifests
-├── data/                         # regime_store.db SQLite database
+│   ├── train.py                  # Train walk-forward models → models/ + manifest.json
+│   ├── backfill_db.py            # Run everything and write it to data/regime_store.db
+│   └── paper_trade.py            # Alpaca paper-trading scaffold (dry run by default)
+├── tests/                        # pytest: look-ahead, lag, costs, evaluation window, metrics
+├── notebooks/                    # EDA, model development, backtest, SQL analysis
+├── models/                       # Persisted fold artifacts (model + scaler + state map)
+├── data/regime_store.db          # SQLite store read by the dashboard
 └── app.py                        # Streamlit dashboard
 ```
 
----
-
-## 4. Feature Engineering (The 8 Indicators)
-
-The HMM is fed an 8-dimension feature vector spanning 4 orthogonal market factors, computed via the `ta` library. We intentionally reduced the feature set from an original 18 down to 8 to prevent overparameterization and collinearity (e.g., stripping out redundant Momentum indicators like Stochastic and Williams %R).
-
-**1. Momentum & Trend (3)**
-- `returns`: Daily percent change (the base signal).
-- `rsi` (14-day): Relative Strength Index.
-- `macd`: Moving Average Convergence Divergence capturing trend direction and acceleration.
-
-**2. Trend Strength (1)**
-- `adx`: Average Directional Index (trend strength, independent of direction).
-
-**3. Volatility (2)**
-- `volatility_20`: 20-day rolling return standard deviation.
-- `atr`: Average True Range (volatility in absolute price terms).
-
-**4. Volume / Macro (2)**
-- `obv_ratio`: On-Balance Volume divided by its 20-day EMA (buying vs. selling pressure).
-- `vix`: The CBOE Volatility Index, appended cross-asset as a universal macro fear gauge.
+### SQLite tables
+`assets`, `prices`, `features` (long format), `backtest_runs`, `regimes` (out-of-sample labels and probabilities), `backtest_daily` and `backtest_metrics` (both with a `strategy` column: `hmm` / `buy_hold` / `dma200`), `evaluation_windows`, `significance_tests`. The schema is versioned with `PRAGMA user_version`; an out-of-date database is rebuilt automatically.
 
 ---
 
-## 5. Risk Management & Backtest Realism
+## 5. Features (the 8 inputs)
 
-- **Execution Lag:** Target weights generated at the close of day $t$ are not executed flawlessly at the same close. The engine explicitly models execution lag, shifting positions to prevent impossible intra-day look-ahead.
-- **Dynamic Transaction Costs:** Modeled as spread + commission (e.g., 1.5 bps for high-liquidity equities, 5.5 bps for crypto) applied strictly to portfolio turnover.
-- **Probability-Weighted Sizing:** Instead of binary (100% in or 100% out) trading, the portfolio scales its exposure continuously based on the HMM's exact posterior probability of being in a Bull regime.
-- **Tail Risk Reporting:** Generates historical 95% and 99% Value-at-Risk (VaR) and Conditional VaR (CVaR) to satisfy institutional risk-desk requirements.
+Computed with the `ta` library. Every indicator uses only past and current rows, and warm-up rows are dropped, never back-filled.
 
----
+| Group | Feature | Description |
+|---|---|---|
+| Momentum | `returns` | Daily % change |
+| | `rsi` | 14-day Relative Strength Index |
+| Trend | `macd` | MACD line (12/26) |
+| | `adx` | 14-day Average Directional Index (trend strength) |
+| Volatility | `volatility_20` | 20-day rolling std of returns |
+| | `atr` | 14-day Average True Range |
+| Volume / macro | `obv_ratio` | On-Balance Volume ÷ its 20-day EMA |
+| | `vix` | CBOE VIX close, forward-filled onto each asset's calendar |
 
-## 6. Model Limitations & Quant Risk Audit
-
-While the pipeline is statistically rigorous, it has real limitations that would block a hedge fund production deployment:
-
-1. **Detection Lag:** The mathematically mandatory trailing smoothing window (21 days) forces severe lag. In the 2008 GFC, the model did not confidently output a `Crisis` label until the market had already drawn down significantly. In the 2020 COVID crash, the V-shape recovery occurred before the model could re-enter the `Bull` regime, missing the rally entirely.
-2. **Transaction Cost Sensitivity:** The strategy trades frequently between Transition and Bull states. Applying realistic bid-ask spread and commission costs drastically drags the CAGR. 
-3. **Gaussian HMM on Fat-Tailed Returns:** The `hmmlearn` Gaussian HMM assumes normally distributed emissions. Financial returns are non-Gaussian (excess kurtosis/fat tails). Forcing a Gaussian emission means the model mathematically underestimates extreme events, forcing it to violently flip states to accommodate outliers.
-4. **Feature Correlation:** Even after reducing the features to 8, Trend features (MACD) and Momentum features (RSI) remain highly collinear, meaning the feature vector is effectively over-weighting standard price momentum rather than orthogonal factors.
-5. **Index Survivorship:** Modeling the `^GSPC` as a tradeable asset assumes zero tracking error and frictionless execution, ignoring the survivorship bias and rebalancing drag inherent in the actual index composition.
+> Known issue (fixed in Step 2): `atr` and `macd` are in price units, so they drift as prices rise over the years, and `obv_ratio` can blow up when OBV crosses zero.
 
 ---
 
-## 7. How to Run Locally
+## 6. Backtest Realism
+
+- **Execution lag:** a weight decided at day *t*'s close is traded at day *t+1*'s close and earns returns from day *t+2*. Tested in `tests/test_backtest.py`.
+- **Transaction costs:** spread + commission per unit of turnover: 1.5 bps for S&P 500 and NASDAQ, 2.5 bps for Gold, 5.5 bps for Bitcoin.
+- **Probability-weighted sizing:** HMM exposure = trailing 21-day mean of P(Bull), between 0 and 1.
+- **Risk reporting:** historical and Cornish-Fisher VaR, historical CVaR, drawdown depth and duration.
+
+---
+
+## 7. Limitations
+
+| Limitation | Explanation |
+|---|---|
+| **Volatility-based labeling** | The calmest state is always called Bull. When a training window is very volatile overall (Bitcoin since 2014), the calmest state can still include crashes. |
+| **Gaussian emissions** | `hmmlearn`'s Gaussian HMM assumes normal returns within each state. Real returns have fat tails. |
+| **Detection lag** | The 21-day trailing smoothing delays reactions to regime changes by up to ~3 weeks. That's the price of zero look-ahead. |
+| **Yearly forward-pass restart** | Each test year's forward pass starts from the model's initial state probabilities, so on January 1 the probabilities jump. (Planned fix in Step 2.) |
+| **EM convergence warnings** | Some folds report small log-likelihood decreases during EM. Re-running gives very slightly different p-values in the 3rd decimal. (Multiple restarts planned in Step 2.) |
+| **Index-level backtest** | `^GSPC` / `^IXIC` are traded as if they were investable, which ignores ETF tracking error and fees. |
+| **Private `hmmlearn` API** | Filtered probabilities use `hmmlearn._hmmc.forward_log`, so `hmmlearn` is pinned to `>=0.3,<0.4`. |
+| **Notebooks and older docs** | `notebooks/` and the phase docs in `docs/` were written before the Step 1 evaluation fix and may still show old numbers. They'll be refreshed in Steps 3 and 5. |
+
+---
+
+## 8. How to Run Locally
+
+Requires **Python 3.10–3.12**. `requirements.txt` pins `numpy<2.0`, which has no wheels for 3.13.
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Anshuman0716/Stock-Market-Regime-Prediction.git
 cd Stock-Market-Regime-Prediction
 
-# 2. Create virtual environment
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
-
-# 3. Install dependencies
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # Mac / Linux
 pip install -r requirements.txt
 
-# 4. Train the walk-forward models (outputs to models/ directory)
-python scripts/train.py
-
-# 5. Execute backtests and populate SQLite database
-python scripts/backfill_db.py
-
-# 6. Run the rigorous look-ahead test suite
-pytest tests/
-
-# 7. Launch the interactive Streamlit dashboard
-streamlit run app.py
+python scripts/train.py          # walk-forward models → models/  (~1 min)
+python scripts/backfill_db.py    # evaluation → data/regime_store.db  (~1–2 min)
+pytest tests/                    # test suite
+streamlit run app.py             # dashboard at http://localhost:8501
 ```
 
----
-
-## 8. Tech Stack
-
-- **Data Science:** Python 3.10+, `pandas`, `numpy`, `scipy`, `scikit-learn`
-- **Modeling:** `hmmlearn` (4-State Gaussian HMM)
-- **Features:** `ta` (Technical Analysis)
-- **Data & Persistence:** `yfinance`, SQLite (`sqlite3`), `joblib`
-- **Visualization & UI:** `matplotlib`, `streamlit`
-- **CI/CD & Testing:** `pytest`, GitHub Actions
+`python scripts/backfill_db.py --check-idempotency` runs the backfill twice and fails if any table's row count changes.
 
 ---
 
-## 9. Known Limitations
+## 9. Roadmap
 
-These are intentional scope boundaries or inherent model constraints — not bugs:
-
-| Limitation | Explanation |
-|-----------|-------------|
-| **No cloud deployment** | By design — the project targets Data Scientist scope, not ML Engineer / DevOps. See [Deployment](#10-deployment--hosting) for local and Streamlit Cloud instructions. |
-| **Gaussian emission assumption** | `hmmlearn`'s Gaussian HMM assumes normally distributed returns per state. Financial returns are fat-tailed; a Student-t or mixture emission model would be more accurate but is not available in `hmmlearn`. |
-| **Detection lag** | The 21-day trailing smoothing window delays regime transitions by up to ~3 weeks. This is the mathematically necessary cost of zero look-ahead bias. |
-| **No live trading integration** | A `scripts/paper_trade.py` scaffold exists for Alpaca API forward-testing, but live execution is out of scope. |
-| **Index-level backtesting** | We backtest on indices (`^GSPC`, `^IXIC`) rather than tradeable ETFs (SPY, QQQ). This ignores tracking error and ETF expense ratios. |
-| **`hmmlearn` private API usage** | Filtered probabilities require `hmmlearn._hmmc.forward_log()`, a private C-extension function. This is pinned to `hmmlearn>=0.3,<0.4` in `requirements.txt`. |
+| Step | Scope | Status |
+|---|---|---|
+| 1 | Out-of-sample-only evaluation window, per-asset annualization, one Sharpe definition, baselines + significance stored in the database | ✅ Done |
+| 2 | One signal definition shared by backtest, store, dashboard and paper trading; scale-free features; continuous forward pass; EM restarts | ⏳ Next |
+| 3 | A single pipeline script that trains once and writes everything (incl. per-cycle metrics and fold info) | Planned |
+| 4 | Dashboard rebuild: overview, regime timeline, performance vs baselines, risk, model insight, statistical evidence, paper trading | Planned |
+| 5 | Repo clean-up, refreshed notebooks/docs, more tests, CI updates | Planned |
 
 ---
 
-## 10. Deployment / Hosting
+## 10. Tech Stack
 
-### Run Locally
+- **Data science:** Python, `pandas`, `numpy`, `scipy`, `scikit-learn`
+- **Modeling:** `hmmlearn` (Gaussian HMM)
+- **Features:** `ta`
+- **Data & persistence:** `yfinance`, SQLite, `joblib`, parquet
+- **UI:** `streamlit`, `matplotlib`
+- **Testing / CI:** `pytest`, GitHub Actions
 
-```bash
-# Clone, create venv, install deps (see Section 7 above)
-# Then:
-python scripts/train.py        # train walk-forward models
-python scripts/backfill_db.py  # populate SQLite with backtest runs
-streamlit run app.py           # launch dashboard at http://localhost:8501
-```
+---
 
-### Deploy on Streamlit Community Cloud
+## 11. Deploy on Streamlit Community Cloud
 
-1. Push this repository to GitHub (public or private).
-2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
-3. Click **"New app"** → select the repo, branch `main`, and set the main file to `app.py`.
-4. Ensure `requirements.txt` is in the repo root (already present).
-5. **Important:** The app reads from `data/regime_store.db` and `models/manifest.json`. You must either:
-   - Commit these artifacts to the repo after running `train.py` and `backfill_db.py` locally, or
-   - Add a startup script that generates them on first launch (slower cold-start).
-6. Click **Deploy**. The app will be live at `https://<your-app>.streamlit.app`.
+1. Push the repo to GitHub.
+2. On [share.streamlit.io](https://share.streamlit.io) choose **New app** → this repo, branch `main`, main file `app.py`.
+3. The app reads `data/regime_store.db` and `models/manifest.json`, so commit both after running `train.py` and `backfill_db.py` locally.
+4. Deploy.

@@ -19,9 +19,13 @@ from sklearn.preprocessing import StandardScaler
 from hmmlearn.hmm import GaussianHMM
 from hmmlearn import _hmmc
 
+from src.data.loader import get_ann_factor
 from src.models.labeling import rank_and_map_states, save_fold_artifact
 
 logger = logging.getLogger(__name__)
+
+# The semantic regimes every raw HMM state is mapped onto (see labeling.py).
+REGIME_LABELS = ["Bull", "Transition", "Crisis"]
 
 
 def predict_proba_filtered(model, X):
@@ -85,8 +89,15 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
     Returns
     -------
     tuple
-        (raw_labels_series, folds_info)
-        raw_labels_series: pd.Series of mapped string labels ('Bull', 'Crisis', etc.), indexed identically to df.
+        (raw_labels, probs, folds_info)
+        raw_labels: pd.Series of mapped string labels ('Bull', 'Transition',
+            'Crisis'), indexed identically to df.
+        probs: pd.DataFrame with columns Bull / Transition / Crisis holding
+            filtered probabilities. Rows inside the initial training window
+            (before the first out-of-sample year) stay NaN on purpose: no
+            model existed yet, so there is no honest prediction for them.
+            Downstream evaluation uses this NaN boundary to find where the
+            out-of-sample period starts.
         folds_info: list of dicts describing fold boundaries and mappings.
     """
     model_cfg = config["model"]
@@ -94,13 +105,14 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
     covariance_type = model_cfg.get("covariance_type", "full")
     n_iter = model_cfg.get("n_iter", 2000)
     min_train_days = model_cfg.get("min_train_days", 1008)
+    ann_factor = get_ann_factor(config, asset_name)
     
     # Identify unique years to establish boundaries
     years = df.index.year.unique()
     
     # Output arrays
     out_labels = pd.Series(index=df.index, dtype="object")
-    out_probs = pd.DataFrame(index=df.index, columns=["Bull", "High-Vol Bull", "Transition", "Crisis"], dtype=float)
+    out_probs = pd.DataFrame(index=df.index, columns=REGIME_LABELS, dtype=float)
     folds_info = []
     
     # We will expand the training window by moving the test_year forward
@@ -155,7 +167,7 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
         # We decode the training set using standard predict (Viterbi) since it's 
         # just for evaluating empirical state behavior historically.
         train_states = model.predict(X_train)
-        state_map = rank_and_map_states(train_df, train_states, n_states)
+        state_map = rank_and_map_states(train_df, train_states, n_states, ann_factor=ann_factor)
         
         # 5. Save fold artifacts (model, scaler, state_map)
         artifact_path = save_fold_artifact(fold_idx, model, scaler, state_map, directory=f"models/{asset_name}")
@@ -168,14 +180,15 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx"):
         test_labels = [state_map[s] for s in test_states]
         out_labels.loc[test_df.index] = test_labels
 
-        # 8. Store out-of-sample probabilities aligned to semantic states
-        for i, row_date in enumerate(test_df.index):
-            for s in range(n_states):
-                semantic_state = state_map[s]
-                if pd.isna(out_probs.loc[row_date, semantic_state]):
-                    out_probs.loc[row_date, semantic_state] = test_probs[i, s]
-                else:
-                    out_probs.loc[row_date, semantic_state] += test_probs[i, s]
+        # 8. Store out-of-sample probabilities aligned to semantic labels.
+        # Several raw states can share a label (e.g. two "Bull" states), so
+        # P(Bull) is the SUM of their probabilities. A label that no state
+        # maps to in this fold gets probability 0, not NaN, so every test
+        # row sums to 1 across Bull / Transition / Crisis.
+        fold_probs = np.zeros((len(test_df), len(REGIME_LABELS)))
+        for s in range(n_states):
+            fold_probs[:, REGIME_LABELS.index(state_map[s])] += test_probs[:, s]
+        out_probs.loc[test_df.index, REGIME_LABELS] = fold_probs
         
         folds_info.append({
             "fold_idx": fold_idx,

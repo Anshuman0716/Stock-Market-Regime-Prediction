@@ -9,6 +9,10 @@ from datetime import datetime
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 
+# Must match "PRAGMA user_version" in schema.sql. Bump both together whenever
+# a table's columns or keys change.
+SCHEMA_VERSION = 2
+
 def get_git_sha():
     try:
         return subprocess.check_output(['git', 'rev-parse', 'HEAD'], stderr=subprocess.STDOUT).decode('utf-8').strip()
@@ -31,8 +35,30 @@ def get_db_connection(db_path="data/regime_store.db"):
         conn.close()
 
 def init_db(db_path="data/regime_store.db"):
+    """
+    Create the tables, rebuilding the database if its schema is out of date.
+
+    Why rebuild instead of migrate: everything in the store is derived from
+    the pipeline (prices are re-downloadable, the rest is recomputed), so the
+    simplest correct upgrade is drop-and-recreate. CREATE TABLE IF NOT EXISTS
+    alone would keep an old table with the wrong columns and fail later in a
+    confusing way.
+    """
     with get_db_connection(db_path) as conn:
-        with open(SCHEMA_PATH, 'r') as f:
+        current = conn.execute("PRAGMA user_version").fetchone()[0]
+        has_tables = conn.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table'").fetchone()[0] > 0
+        if has_tables and current != SCHEMA_VERSION:
+            print(f"Schema version {current} != {SCHEMA_VERSION}: rebuilding {db_path}")
+            conn.execute("PRAGMA foreign_keys = OFF;")
+            tables = [r[0] for r in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+            for t in tables:
+                conn.execute(f"DROP TABLE IF EXISTS {t}")
+            conn.commit()
+            conn.execute("VACUUM")
+            conn.execute("PRAGMA foreign_keys = ON;")
+        with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
             schema_sql = f.read()
         conn.executescript(schema_sql)
         conn.commit()
@@ -140,22 +166,22 @@ def write_regimes(conn, labels_series, probs_df, asset_id, run_id):
     _upsert_many(conn, 'regimes', ['asset_id', 'date', 'run_id', 'state_raw', 'label', 'p_bull', 'p_transition', 'p_crisis'], data, ['asset_id', 'date', 'run_id'])
     conn.commit()
 
-def write_backtest_daily(conn, btest_df, asset_id, run_id):
+def write_backtest_daily(conn, btest_df, asset_id, run_id, strategy="hmm"):
     data = []
     for date_idx, row in btest_df.iterrows():
         date_str = str(date_idx.date()) if isinstance(date_idx, pd.Timestamp) else str(date_idx)
         data.append((
-            run_id, asset_id, date_str,
+            run_id, asset_id, strategy, date_str,
             float(row.get('executed_weight', 0.0)),
             float(row.get('gross_return', 0.0)),
             float(row.get('net_return', 0.0)),
             float(row.get('turnover', 0.0)),
             float(row.get('cost', 0.0))
         ))
-    _upsert_many(conn, 'backtest_daily', ['run_id', 'asset_id', 'date', 'weight', 'gross_return', 'net_return', 'turnover', 'cost'], data, ['run_id', 'asset_id', 'date'])
+    _upsert_many(conn, 'backtest_daily', ['run_id', 'asset_id', 'strategy', 'date', 'weight', 'gross_return', 'net_return', 'turnover', 'cost'], data, ['run_id', 'asset_id', 'strategy', 'date'])
     conn.commit()
 
-def write_backtest_metrics(conn, metrics_dict, asset_id, run_id, cycle="full"):
+def write_backtest_metrics(conn, metrics_dict, asset_id, run_id, cycle="full", strategy="hmm"):
     data = []
     for metric_name, val in metrics_dict.items():
         # skip non-numeric info if any, but all should be floats or similar
@@ -164,7 +190,31 @@ def write_backtest_metrics(conn, metrics_dict, asset_id, run_id, cycle="full"):
         except (ValueError, TypeError):
             continue
             
-        data.append((run_id, asset_id, cycle, metric_name, val_f))
+        data.append((run_id, asset_id, strategy, cycle, metric_name, val_f))
         
-    _upsert_many(conn, 'backtest_metrics', ['run_id', 'asset_id', 'cycle', 'metric_name', 'metric_value'], data, ['run_id', 'asset_id', 'cycle', 'metric_name'])
+    _upsert_many(conn, 'backtest_metrics', ['run_id', 'asset_id', 'strategy', 'cycle', 'metric_name', 'metric_value'], data, ['run_id', 'asset_id', 'strategy', 'cycle', 'metric_name'])
+    conn.commit()
+
+
+def write_evaluation_window(conn, run_id, asset_id, oos_start, oos_end, ann_factor):
+    """Record the out-of-sample window every strategy for this asset was scored on."""
+    _upsert_many(
+        conn, 'evaluation_windows',
+        ['run_id', 'asset_id', 'oos_start', 'oos_end', 'ann_factor'],
+        [(run_id, asset_id, str(pd.Timestamp(oos_start).date()), str(pd.Timestamp(oos_end).date()), int(ann_factor))],
+        ['run_id', 'asset_id'])
+    conn.commit()
+
+
+def write_significance(conn, sig_df, run_id):
+    """Store Sharpe-difference test results (output of run_significance_suite)."""
+    cols = ['asset', 'strategy', 'baseline', 'sharpe_diff', 'ci_lower', 'ci_upper',
+            'p_value', 'p_value_hac', 'p_value_holm']
+    data = [(run_id,) + tuple(r[c] if isinstance(r[c], str) else float(r[c]) for c in cols)
+            for _, r in sig_df.iterrows()]
+    _upsert_many(
+        conn, 'significance_tests',
+        ['run_id', 'asset_id', 'strategy', 'baseline', 'sharpe_diff', 'ci_lower', 'ci_upper',
+         'p_value', 'p_value_hac', 'p_value_holm'],
+        data, ['run_id', 'asset_id', 'strategy', 'baseline'])
     conn.commit()
