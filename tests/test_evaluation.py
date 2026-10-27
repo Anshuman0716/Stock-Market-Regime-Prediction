@@ -124,6 +124,29 @@ def test_significance_uses_reported_sharpe():
     assert res["diff"] == pytest.approx(compute_sharpe(a, 252) - compute_sharpe(b, 252))
 
 
+def test_bootstrap_pvalue_behaves():
+    """Identical strategies -> p near 1; a large real gap -> small p.
+
+    Also guards the old bug where a small positive difference could be
+    reported as p = 1.0 purely because of where the bootstrap was centred.
+    """
+    rng = np.random.default_rng(3)
+    base = pd.Series(rng.normal(0.0003, 0.01, 2000))
+
+    # Exactly the same returns: zero difference, nothing to reject.
+    same = block_bootstrap_sharpe_diff(base, base, 252, n_bootstraps=300)
+    assert same["p_value"] == pytest.approx(1.0)
+
+    # A big, persistent daily edge must be detected.
+    gap = block_bootstrap_sharpe_diff(base + 0.002, base, 252, n_bootstraps=300)
+    assert 0 < gap["p_value"] < 0.01
+
+    # A small but non-zero difference must not be pinned at the 1.0 cap.
+    other = pd.Series(rng.normal(0.0003, 0.01, 2000))
+    small = block_bootstrap_sharpe_diff(base, other, 252, n_bootstraps=300)
+    assert small["p_value"] < 1.0
+
+
 def test_significance_suite_holm_is_not_smaller_than_raw():
     rng = np.random.default_rng(2)
     idx = pd.RangeIndex(400)

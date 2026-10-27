@@ -18,11 +18,10 @@ The rule enforced here:
     every metric are computed only from the first out-of-sample date
     onwards, and every strategy starts that window flat and pays to enter.
 """
-import pandas as pd
 
 from src.data.loader import get_ann_factor
 from src.backtest.engine import run_backtest
-from src.backtest.risk import compute_target_weight_proba
+from src.models.signal import compute_signal
 from src.backtest.baselines import buy_and_hold_weights, dma200_weights
 from src.backtest.metrics import get_all_metrics
 
@@ -45,27 +44,17 @@ def out_of_sample_start(probs):
 
 def hmm_target_weights(probs, smoothing_window):
     """
-    Target weight for the HMM strategy = trailing mean of P(Bull).
-
-    Why a trailing mean: raw daily P(Bull) can flip back and forth, and each
-    flip costs a trade. Averaging over the last `smoothing_window` days damps
-    that churn. It is trailing (past and current days only), never centered,
-    so no future day leaks into today's weight.
-
-    min_periods=1 lets the signal start on the first out-of-sample day
-    (averaging however many real predictions exist so far) instead of
-    forcing ~20 days of cash while the window fills up. Days before the
-    out-of-sample start have no prediction and get weight 0, but those days
-    are excluded from evaluation anyway.
+    Target weight for the HMM strategy, taken from the shared signal
+    definition (src/models/signal.py) so the backtest trades exactly what
+    the dashboard shows and what paper trading would trade.
     """
-    p_bull = probs["Bull"].rolling(window=smoothing_window, min_periods=1).mean()
-    return compute_target_weight_proba(pd.DataFrame({"Bull": p_bull}))
+    return compute_signal(probs, smoothing_window)["target_weight"]
 
 
-def build_target_weights(features, probs, config):
+def build_target_weights(features, signal):
     """Target weights (decided at each day's close) for every strategy."""
     return {
-        "hmm": hmm_target_weights(probs, config["model"]["smoothing_window"]),
+        "hmm": signal["target_weight"],
         "buy_hold": buy_and_hold_weights(features.index),
         "dma200": dma200_weights(features["Close"]),
     }
@@ -90,6 +79,7 @@ def evaluate_asset(features, probs, config, asset_name):
     Returns
     -------
     dict with keys:
+        signal : DataFrame from compute_signal (what the HMM strategy trades)
         oos_start, oos_end : pd.Timestamp
         ann_factor : int
         backtests : dict[strategy -> DataFrame from run_backtest]
@@ -104,9 +94,10 @@ def evaluate_asset(features, probs, config, asset_name):
     ann_factor = get_ann_factor(config, asset_name)
     oos_start = out_of_sample_start(probs)
     oos = features.loc[oos_start:]
+    signal = compute_signal(probs, config["model"]["smoothing_window"])
 
     backtests, metrics = {}, {}
-    for name, weights in build_target_weights(features, probs, config).items():
+    for name, weights in build_target_weights(features, signal).items():
         # Slicing the weights to the window means each strategy enters the
         # window flat: the engine's 2-day lag then makes it pay the entry
         # trade inside the window, exactly as a real launch would.
@@ -115,6 +106,7 @@ def evaluate_asset(features, probs, config, asset_name):
         metrics[name] = get_all_metrics(bt["net_return"], bt["executed_weight"], ann_factor, asset_name)
 
     return {
+        "signal": signal,
         "oos_start": oos_start,
         "oos_end": oos.index[-1],
         "ann_factor": ann_factor,

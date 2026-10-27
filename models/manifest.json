@@ -1,7 +1,7 @@
 {
-    "created_at": "2026-10-27T21:43:58.130840",
-    "config_hash": "4a756339f120820f3f229cff4e1c48cb",
-    "git_sha": "38404d41275919f596231e9bb35ed5b5a7b317a8",
+    "created_at": "2026-10-27T22:00:10.275450",
+    "config_hash": "395d224be7daba06a684120d16d89ba4",
+    "git_sha": "ad943203da0b287648aa7cdb6e3ed20bfd787be6",
     "assets": {
         "spx": {
             "training_start": "2000-02-08",
@@ -13,10 +13,45 @@
                     "test_start": "2010-01-04",
                     "test_end": "2010-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "1": "Crisis",
-                        "2": "Transition",
-                        "3": "Bull"
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "0": "Crisis",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -15809.667901647092,
+                        "starts": [
+                            {
+                                "seed": 42,
+                                "log_likelihood": -15825.263471552955,
+                                "converged": true,
+                                "iterations": 53
+                            },
+                            {
+                                "seed": 43,
+                                "log_likelihood": -15824.756700393145,
+                                "converged": true,
+                                "iterations": 62
+                            },
+                            {
+                                "seed": 44,
+                                "log_likelihood": -15809.667901647092,
+                                "converged": true,
+                                "iterations": 47
+                            },
+                            {
+                                "seed": 45,
+                                "log_likelihood": -15825.263414910143,
+                                "converged": true,
+                                "iterations": 56
+                            },
+                            {
+                                "seed": 46,
+                                "log_likelihood": -15809.667907543395,
+                                "converged": true,
+                                "iterations": 51
+                            }
+                        ]
                     }
                 },
                 {
@@ -25,10 +60,45 @@
                     "test_start": "2011-01-03",
                     "test_end": "2011-12-30",
                     "state_map": {
-                        "3": "Bull",
-                        "2": "Crisis",
-                        "0": "Bull",
-                        "1": "Crisis"
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "1": "Transition",
+                        "0": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -17776.665034888672,
+                        "starts": [
+                            {
+                                "seed": 1042,
+                                "log_likelihood": -17776.66507623679,
+                                "converged": true,
+                                "iterations": 60
+                            },
+                            {
+                                "seed": 1043,
+                                "log_likelihood": -17777.184222633066,
+                                "converged": true,
+                                "iterations": 44
+                            },
+                            {
+                                "seed": 1044,
+                                "log_likelihood": -17776.665044381378,
+                                "converged": true,
+                                "iterations": 56
+                            },
+                            {
+                                "seed": 1045,
+                                "log_likelihood": -17776.665034888672,
+                                "converged": true,
+                                "iterations": 41
+                            },
+                            {
+                                "seed": 1046,
+                                "log_likelihood": -17776.66503563719,
+                                "converged": true,
+                                "iterations": 55
+                            }
+                        ]
                     }
                 },
                 {
@@ -37,10 +107,45 @@
                     "test_start": "2012-01-03",
                     "test_end": "2012-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "1": "Crisis",
                         "0": "Bull",
-                        "3": "Crisis"
+                        "2": "Crisis",
+                        "3": "Crisis",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -19685.074675998523,
+                        "starts": [
+                            {
+                                "seed": 2042,
+                                "log_likelihood": -19685.209644322917,
+                                "converged": true,
+                                "iterations": 38
+                            },
+                            {
+                                "seed": 2043,
+                                "log_likelihood": -19685.209629211688,
+                                "converged": true,
+                                "iterations": 33
+                            },
+                            {
+                                "seed": 2044,
+                                "log_likelihood": -19685.20962298352,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 2045,
+                                "log_likelihood": -19685.209627359785,
+                                "converged": true,
+                                "iterations": 42
+                            },
+                            {
+                                "seed": 2046,
+                                "log_likelihood": -19685.074675998523,
+                                "converged": true,
+                                "iterations": 36
+                            }
+                        ]
                     }
                 },
                 {
@@ -49,10 +154,45 @@
                     "test_start": "2013-01-02",
                     "test_end": "2013-12-31",
                     "state_map": {
-                        "1": "Bull",
-                        "3": "Crisis",
                         "0": "Bull",
-                        "2": "Crisis"
+                        "3": "Crisis",
+                        "1": "Crisis",
+                        "2": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -21340.4838280761,
+                        "starts": [
+                            {
+                                "seed": 3042,
+                                "log_likelihood": -21340.4838280761,
+                                "converged": true,
+                                "iterations": 31
+                            },
+                            {
+                                "seed": 3043,
+                                "log_likelihood": -21341.4317079416,
+                                "converged": true,
+                                "iterations": 26
+                            },
+                            {
+                                "seed": 3044,
+                                "log_likelihood": -21341.292502590546,
+                                "converged": true,
+                                "iterations": 51
+                            },
+                            {
+                                "seed": 3045,
+                                "log_likelihood": -21341.431721289282,
+                                "converged": true,
+                                "iterations": 25
+                            },
+                            {
+                                "seed": 3046,
+                                "log_likelihood": -21341.29251117941,
+                                "converged": true,
+                                "iterations": 110
+                            }
+                        ]
                     }
                 },
                 {
@@ -61,10 +201,45 @@
                     "test_start": "2014-01-02",
                     "test_end": "2014-12-31",
                     "state_map": {
-                        "0": "Bull",
+                        "2": "Bull",
                         "1": "Crisis",
-                        "3": "Bull",
-                        "2": "Crisis"
+                        "0": "Transition",
+                        "3": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -22675.62613540126,
+                        "starts": [
+                            {
+                                "seed": 4042,
+                                "log_likelihood": -22675.62631964481,
+                                "converged": true,
+                                "iterations": 41
+                            },
+                            {
+                                "seed": 4043,
+                                "log_likelihood": -22675.626357838228,
+                                "converged": true,
+                                "iterations": 45
+                            },
+                            {
+                                "seed": 4044,
+                                "log_likelihood": -22675.62613540126,
+                                "converged": true,
+                                "iterations": 25
+                            },
+                            {
+                                "seed": 4045,
+                                "log_likelihood": -22675.626136034833,
+                                "converged": true,
+                                "iterations": 49
+                            },
+                            {
+                                "seed": 4046,
+                                "log_likelihood": -22675.62633575788,
+                                "converged": true,
+                                "iterations": 35
+                            }
+                        ]
                     }
                 },
                 {
@@ -73,10 +248,45 @@
                     "test_start": "2015-01-02",
                     "test_end": "2015-12-31",
                     "state_map": {
-                        "3": "Bull",
-                        "1": "Crisis",
                         "0": "Bull",
-                        "2": "Crisis"
+                        "2": "Crisis",
+                        "1": "Transition",
+                        "3": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -24259.683281199617,
+                        "starts": [
+                            {
+                                "seed": 5042,
+                                "log_likelihood": -24263.93370245135,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 5043,
+                                "log_likelihood": -24263.378267373362,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 5044,
+                                "log_likelihood": -24263.37826757039,
+                                "converged": true,
+                                "iterations": 73
+                            },
+                            {
+                                "seed": 5045,
+                                "log_likelihood": -24263.933845169904,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 5046,
+                                "log_likelihood": -24259.683281199617,
+                                "converged": true,
+                                "iterations": 40
+                            }
+                        ]
                     }
                 },
                 {
@@ -85,10 +295,45 @@
                     "test_start": "2016-01-04",
                     "test_end": "2016-12-30",
                     "state_map": {
-                        "3": "Bull",
-                        "1": "Crisis",
-                        "0": "Bull",
-                        "2": "Crisis"
+                        "2": "Bull",
+                        "3": "Crisis",
+                        "0": "Transition",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -26106.79571625249,
+                        "starts": [
+                            {
+                                "seed": 6042,
+                                "log_likelihood": -26107.82216549941,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 6043,
+                                "log_likelihood": -26106.79571625249,
+                                "converged": true,
+                                "iterations": 118
+                            },
+                            {
+                                "seed": 6044,
+                                "log_likelihood": -26106.795734257656,
+                                "converged": true,
+                                "iterations": 120
+                            },
+                            {
+                                "seed": 6045,
+                                "log_likelihood": -26120.312222420624,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 6046,
+                                "log_likelihood": -26120.31298421439,
+                                "converged": true,
+                                "iterations": 52
+                            }
+                        ]
                     }
                 },
                 {
@@ -97,10 +342,45 @@
                     "test_start": "2017-01-03",
                     "test_end": "2017-12-29",
                     "state_map": {
+                        "1": "Bull",
+                        "3": "Crisis",
                         "2": "Bull",
-                        "1": "Crisis",
-                        "0": "Bull",
-                        "3": "Crisis"
+                        "0": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -27957.202445675164,
+                        "starts": [
+                            {
+                                "seed": 7042,
+                                "log_likelihood": -27957.20253524562,
+                                "converged": true,
+                                "iterations": 29
+                            },
+                            {
+                                "seed": 7043,
+                                "log_likelihood": -27957.20252257575,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 7044,
+                                "log_likelihood": -27963.318513662052,
+                                "converged": true,
+                                "iterations": 57
+                            },
+                            {
+                                "seed": 7045,
+                                "log_likelihood": -27957.202445675164,
+                                "converged": true,
+                                "iterations": 91
+                            },
+                            {
+                                "seed": 7046,
+                                "log_likelihood": -27963.318723238703,
+                                "converged": true,
+                                "iterations": 52
+                            }
+                        ]
                     }
                 },
                 {
@@ -109,10 +389,45 @@
                     "test_start": "2018-01-02",
                     "test_end": "2018-12-31",
                     "state_map": {
+                        "2": "Bull",
+                        "1": "Crisis",
                         "0": "Bull",
-                        "3": "Crisis",
-                        "1": "Bull",
-                        "2": "Crisis"
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -29684.15490558508,
+                        "starts": [
+                            {
+                                "seed": 8042,
+                                "log_likelihood": -29684.154963815763,
+                                "converged": true,
+                                "iterations": 35
+                            },
+                            {
+                                "seed": 8043,
+                                "log_likelihood": -29684.154905844924,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 8044,
+                                "log_likelihood": -29684.154905707717,
+                                "converged": true,
+                                "iterations": 22
+                            },
+                            {
+                                "seed": 8045,
+                                "log_likelihood": -29684.154905961652,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 8046,
+                                "log_likelihood": -29684.15490558508,
+                                "converged": true,
+                                "iterations": 25
+                            }
+                        ]
                     }
                 },
                 {
@@ -121,10 +436,45 @@
                     "test_start": "2019-01-02",
                     "test_end": "2019-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
                         "1": "Bull",
-                        "0": "Crisis"
+                        "0": "Crisis",
+                        "2": "Bull",
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -31432.007990559316,
+                        "starts": [
+                            {
+                                "seed": 9042,
+                                "log_likelihood": -31432.007996154465,
+                                "converged": true,
+                                "iterations": 39
+                            },
+                            {
+                                "seed": 9043,
+                                "log_likelihood": -31432.00799433798,
+                                "converged": true,
+                                "iterations": 42
+                            },
+                            {
+                                "seed": 9044,
+                                "log_likelihood": -31432.007998387253,
+                                "converged": true,
+                                "iterations": 97
+                            },
+                            {
+                                "seed": 9045,
+                                "log_likelihood": -31432.007990559316,
+                                "converged": true,
+                                "iterations": 139
+                            },
+                            {
+                                "seed": 9046,
+                                "log_likelihood": -31432.00799164646,
+                                "converged": true,
+                                "iterations": 27
+                            }
+                        ]
                     }
                 },
                 {
@@ -133,10 +483,45 @@
                     "test_start": "2020-01-02",
                     "test_end": "2020-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "0": "Crisis",
-                        "3": "Bull",
-                        "1": "Transition"
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "0": "Bull",
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -33080.73694930996,
+                        "starts": [
+                            {
+                                "seed": 10042,
+                                "log_likelihood": -33083.26413759971,
+                                "converged": true,
+                                "iterations": 53
+                            },
+                            {
+                                "seed": 10043,
+                                "log_likelihood": -33080.73694930996,
+                                "converged": true,
+                                "iterations": 164
+                            },
+                            {
+                                "seed": 10044,
+                                "log_likelihood": -33126.73049471818,
+                                "converged": true,
+                                "iterations": 62
+                            },
+                            {
+                                "seed": 10045,
+                                "log_likelihood": -33083.264193033865,
+                                "converged": true,
+                                "iterations": 55
+                            },
+                            {
+                                "seed": 10046,
+                                "log_likelihood": -33080.737003712995,
+                                "converged": true,
+                                "iterations": 45
+                            }
+                        ]
                     }
                 },
                 {
@@ -146,9 +531,44 @@
                     "test_end": "2021-12-31",
                     "state_map": {
                         "1": "Bull",
-                        "3": "Crisis",
+                        "2": "Crisis",
                         "0": "Bull",
-                        "2": "Crisis"
+                        "3": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -34018.731892701035,
+                        "starts": [
+                            {
+                                "seed": 11042,
+                                "log_likelihood": -34018.731892701035,
+                                "converged": true,
+                                "iterations": 40
+                            },
+                            {
+                                "seed": 11043,
+                                "log_likelihood": -34018.73193463517,
+                                "converged": true,
+                                "iterations": 66
+                            },
+                            {
+                                "seed": 11044,
+                                "log_likelihood": -34018.73192551053,
+                                "converged": true,
+                                "iterations": 57
+                            },
+                            {
+                                "seed": 11045,
+                                "log_likelihood": -34018.731915070166,
+                                "converged": true,
+                                "iterations": 63
+                            },
+                            {
+                                "seed": 11046,
+                                "log_likelihood": -34018.7319381699,
+                                "converged": true,
+                                "iterations": 41
+                            }
+                        ]
                     }
                 },
                 {
@@ -157,10 +577,45 @@
                     "test_start": "2022-01-03",
                     "test_end": "2022-12-30",
                     "state_map": {
-                        "2": "Bull",
-                        "1": "Crisis",
                         "0": "Bull",
-                        "3": "Crisis"
+                        "1": "Crisis",
+                        "2": "Bull",
+                        "3": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -36030.056717018786,
+                        "starts": [
+                            {
+                                "seed": 12042,
+                                "log_likelihood": -36030.05678172532,
+                                "converged": true,
+                                "iterations": 50
+                            },
+                            {
+                                "seed": 12043,
+                                "log_likelihood": -36030.05671945181,
+                                "converged": true,
+                                "iterations": 47
+                            },
+                            {
+                                "seed": 12044,
+                                "log_likelihood": -36030.0567538793,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 12045,
+                                "log_likelihood": -36030.056717018786,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 12046,
+                                "log_likelihood": -36030.05672647368,
+                                "converged": true,
+                                "iterations": 39
+                            }
+                        ]
                     }
                 },
                 {
@@ -169,10 +624,45 @@
                     "test_start": "2023-01-03",
                     "test_end": "2023-12-29",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
                         "0": "Bull",
-                        "1": "Crisis"
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -38210.17283922984,
+                        "starts": [
+                            {
+                                "seed": 13042,
+                                "log_likelihood": -38210.172943073965,
+                                "converged": true,
+                                "iterations": 38
+                            },
+                            {
+                                "seed": 13043,
+                                "log_likelihood": -38210.17284860659,
+                                "converged": true,
+                                "iterations": 47
+                            },
+                            {
+                                "seed": 13044,
+                                "log_likelihood": -38210.172916515316,
+                                "converged": true,
+                                "iterations": 50
+                            },
+                            {
+                                "seed": 13045,
+                                "log_likelihood": -38210.172845742905,
+                                "converged": true,
+                                "iterations": 46
+                            },
+                            {
+                                "seed": 13046,
+                                "log_likelihood": -38210.17283922984,
+                                "converged": true,
+                                "iterations": 52
+                            }
+                        ]
                     }
                 },
                 {
@@ -181,10 +671,45 @@
                     "test_start": "2024-01-02",
                     "test_end": "2024-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "1": "Crisis",
-                        "2": "Bull",
-                        "3": "Crisis"
+                        "3": "Bull",
+                        "2": "Crisis",
+                        "1": "Bull",
+                        "0": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -40019.01537095619,
+                        "starts": [
+                            {
+                                "seed": 14042,
+                                "log_likelihood": -40019.01539768547,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 14043,
+                                "log_likelihood": -40020.39280178178,
+                                "converged": true,
+                                "iterations": 69
+                            },
+                            {
+                                "seed": 14044,
+                                "log_likelihood": -40020.39285261442,
+                                "converged": true,
+                                "iterations": 53
+                            },
+                            {
+                                "seed": 14045,
+                                "log_likelihood": -40019.01537095619,
+                                "converged": true,
+                                "iterations": 43
+                            },
+                            {
+                                "seed": 14046,
+                                "log_likelihood": -40020.39279903371,
+                                "converged": true,
+                                "iterations": 45
+                            }
+                        ]
                     }
                 },
                 {
@@ -193,10 +718,45 @@
                     "test_start": "2025-01-02",
                     "test_end": "2025-12-31",
                     "state_map": {
-                        "3": "Bull",
+                        "2": "Bull",
                         "0": "Crisis",
-                        "1": "Bull",
-                        "2": "Crisis"
+                        "3": "Bull",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -41604.87875653495,
+                        "starts": [
+                            {
+                                "seed": 15042,
+                                "log_likelihood": -41604.87876037706,
+                                "converged": true,
+                                "iterations": 108
+                            },
+                            {
+                                "seed": 15043,
+                                "log_likelihood": -41604.87876056799,
+                                "converged": true,
+                                "iterations": 50
+                            },
+                            {
+                                "seed": 15044,
+                                "log_likelihood": -41604.87875693298,
+                                "converged": true,
+                                "iterations": 59
+                            },
+                            {
+                                "seed": 15045,
+                                "log_likelihood": -41604.87875653495,
+                                "converged": true,
+                                "iterations": 46
+                            },
+                            {
+                                "seed": 15046,
+                                "log_likelihood": -41604.878758238454,
+                                "converged": true,
+                                "iterations": 47
+                            }
+                        ]
                     }
                 },
                 {
@@ -205,10 +765,45 @@
                     "test_start": "2026-01-02",
                     "test_end": "2026-10-26",
                     "state_map": {
-                        "3": "Bull",
-                        "2": "Crisis",
+                        "0": "Bull",
+                        "3": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "2": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -43308.00426427568,
+                        "starts": [
+                            {
+                                "seed": 16042,
+                                "log_likelihood": -43308.00426427568,
+                                "converged": true,
+                                "iterations": 95
+                            },
+                            {
+                                "seed": 16043,
+                                "log_likelihood": -43308.00429946981,
+                                "converged": true,
+                                "iterations": 77
+                            },
+                            {
+                                "seed": 16044,
+                                "log_likelihood": -43309.251603999124,
+                                "converged": true,
+                                "iterations": 51
+                            },
+                            {
+                                "seed": 16045,
+                                "log_likelihood": -43309.25158775162,
+                                "converged": true,
+                                "iterations": 66
+                            },
+                            {
+                                "seed": 16046,
+                                "log_likelihood": -43309.251574268856,
+                                "converged": true,
+                                "iterations": 56
+                            }
+                        ]
                     }
                 }
             ]
@@ -223,10 +818,45 @@
                     "test_start": "2010-01-04",
                     "test_end": "2010-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
-                        "2": "Transition",
-                        "1": "Crisis"
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -16538.103817486946,
+                        "starts": [
+                            {
+                                "seed": 42,
+                                "log_likelihood": -16538.10396479865,
+                                "converged": true,
+                                "iterations": 111
+                            },
+                            {
+                                "seed": 43,
+                                "log_likelihood": -16538.103817486946,
+                                "converged": true,
+                                "iterations": 62
+                            },
+                            {
+                                "seed": 44,
+                                "log_likelihood": -17399.817038467114,
+                                "converged": true,
+                                "iterations": 60
+                            },
+                            {
+                                "seed": 45,
+                                "log_likelihood": -17399.817044767846,
+                                "converged": true,
+                                "iterations": 61
+                            },
+                            {
+                                "seed": 46,
+                                "log_likelihood": -16538.103969436524,
+                                "converged": true,
+                                "iterations": 138
+                            }
+                        ]
                     }
                 },
                 {
@@ -235,10 +865,45 @@
                     "test_start": "2011-01-03",
                     "test_end": "2011-12-30",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
-                        "2": "Crisis",
-                        "1": "Crisis"
+                        "2": "Bull",
+                        "0": "Crisis",
+                        "1": "Crisis",
+                        "3": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -19002.390121324162,
+                        "starts": [
+                            {
+                                "seed": 1042,
+                                "log_likelihood": -19084.94209786012,
+                                "converged": true,
+                                "iterations": 40
+                            },
+                            {
+                                "seed": 1043,
+                                "log_likelihood": -19014.711415431768,
+                                "converged": true,
+                                "iterations": 45
+                            },
+                            {
+                                "seed": 1044,
+                                "log_likelihood": -19151.628444288915,
+                                "converged": true,
+                                "iterations": 38
+                            },
+                            {
+                                "seed": 1045,
+                                "log_likelihood": -19002.390121324162,
+                                "converged": true,
+                                "iterations": 69
+                            },
+                            {
+                                "seed": 1046,
+                                "log_likelihood": -19148.244958087194,
+                                "converged": true,
+                                "iterations": 24
+                            }
+                        ]
                     }
                 },
                 {
@@ -247,10 +912,45 @@
                     "test_start": "2012-01-03",
                     "test_end": "2012-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
-                        "0": "Bull",
-                        "1": "Crisis"
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -20251.03769866048,
+                        "starts": [
+                            {
+                                "seed": 2042,
+                                "log_likelihood": -20931.718969634134,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 2043,
+                                "log_likelihood": -20944.032136095866,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 2044,
+                                "log_likelihood": -20922.027372297776,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 2045,
+                                "log_likelihood": -20251.03769866048,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 2046,
+                                "log_likelihood": -20922.696309116403,
+                                "converged": true,
+                                "iterations": 243
+                            }
+                        ]
                     }
                 },
                 {
@@ -260,9 +960,44 @@
                     "test_end": "2013-12-31",
                     "state_map": {
                         "1": "Bull",
-                        "2": "Crisis",
+                        "3": "Crisis",
                         "0": "Bull",
-                        "3": "Crisis"
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -21745.050150411163,
+                        "starts": [
+                            {
+                                "seed": 3042,
+                                "log_likelihood": -21745.050202819046,
+                                "converged": true,
+                                "iterations": 27
+                            },
+                            {
+                                "seed": 3043,
+                                "log_likelihood": -21745.050201735256,
+                                "converged": true,
+                                "iterations": 40
+                            },
+                            {
+                                "seed": 3044,
+                                "log_likelihood": -22547.302731224587,
+                                "converged": true,
+                                "iterations": 35
+                            },
+                            {
+                                "seed": 3045,
+                                "log_likelihood": -21745.05020970285,
+                                "converged": true,
+                                "iterations": 95
+                            },
+                            {
+                                "seed": 3046,
+                                "log_likelihood": -21745.050150411163,
+                                "converged": true,
+                                "iterations": 54
+                            }
+                        ]
                     }
                 },
                 {
@@ -271,10 +1006,45 @@
                     "test_start": "2014-01-02",
                     "test_end": "2014-12-31",
                     "state_map": {
-                        "3": "Bull",
+                        "0": "Bull",
                         "2": "Crisis",
                         "1": "Bull",
-                        "0": "Crisis"
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -22937.12617505979,
+                        "starts": [
+                            {
+                                "seed": 4042,
+                                "log_likelihood": -22937.12624767653,
+                                "converged": true,
+                                "iterations": 41
+                            },
+                            {
+                                "seed": 4043,
+                                "log_likelihood": -22937.126211390372,
+                                "converged": true,
+                                "iterations": 41
+                            },
+                            {
+                                "seed": 4044,
+                                "log_likelihood": -22937.126252035694,
+                                "converged": true,
+                                "iterations": 40
+                            },
+                            {
+                                "seed": 4045,
+                                "log_likelihood": -22937.12617505979,
+                                "converged": true,
+                                "iterations": 22
+                            },
+                            {
+                                "seed": 4046,
+                                "log_likelihood": -22937.126244406154,
+                                "converged": true,
+                                "iterations": 37
+                            }
+                        ]
                     }
                 },
                 {
@@ -283,10 +1053,45 @@
                     "test_start": "2015-01-02",
                     "test_end": "2015-12-31",
                     "state_map": {
-                        "1": "Bull",
-                        "3": "Crisis",
                         "0": "Bull",
-                        "2": "Crisis"
+                        "2": "Crisis",
+                        "1": "Bull",
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -24451.505703931372,
+                        "starts": [
+                            {
+                                "seed": 5042,
+                                "log_likelihood": -24451.50576382116,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 5043,
+                                "log_likelihood": -24451.50570495164,
+                                "converged": true,
+                                "iterations": 168
+                            },
+                            {
+                                "seed": 5044,
+                                "log_likelihood": -24451.505763436988,
+                                "converged": true,
+                                "iterations": 33
+                            },
+                            {
+                                "seed": 5045,
+                                "log_likelihood": -24451.505703931372,
+                                "converged": true,
+                                "iterations": 43
+                            },
+                            {
+                                "seed": 5046,
+                                "log_likelihood": -24451.505713252496,
+                                "converged": true,
+                                "iterations": 31
+                            }
+                        ]
                     }
                 },
                 {
@@ -299,6 +1104,41 @@
                         "3": "Crisis",
                         "1": "Bull",
                         "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -26068.28221468715,
+                        "starts": [
+                            {
+                                "seed": 6042,
+                                "log_likelihood": -26068.282245207625,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 6043,
+                                "log_likelihood": -26068.282240679975,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 6044,
+                                "log_likelihood": -26072.10232592653,
+                                "converged": true,
+                                "iterations": 49
+                            },
+                            {
+                                "seed": 6045,
+                                "log_likelihood": -26085.896626587437,
+                                "converged": true,
+                                "iterations": 51
+                            },
+                            {
+                                "seed": 6046,
+                                "log_likelihood": -26068.28221468715,
+                                "converged": true,
+                                "iterations": 30
+                            }
+                        ]
                     }
                 },
                 {
@@ -311,6 +1151,41 @@
                         "3": "Crisis",
                         "1": "Bull",
                         "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -27872.16811194071,
+                        "starts": [
+                            {
+                                "seed": 7042,
+                                "log_likelihood": -27872.16811194071,
+                                "converged": true,
+                                "iterations": 78
+                            },
+                            {
+                                "seed": 7043,
+                                "log_likelihood": -27891.327102952404,
+                                "converged": true,
+                                "iterations": 70
+                            },
+                            {
+                                "seed": 7044,
+                                "log_likelihood": -27872.16811702548,
+                                "converged": true,
+                                "iterations": 43
+                            },
+                            {
+                                "seed": 7045,
+                                "log_likelihood": -28173.494111849817,
+                                "converged": true,
+                                "iterations": 62
+                            },
+                            {
+                                "seed": 7046,
+                                "log_likelihood": -28173.49411776472,
+                                "converged": true,
+                                "iterations": 36
+                            }
+                        ]
                     }
                 },
                 {
@@ -319,10 +1194,45 @@
                     "test_start": "2018-01-02",
                     "test_end": "2018-12-31",
                     "state_map": {
-                        "1": "Bull",
-                        "3": "Crisis",
                         "0": "Bull",
-                        "2": "Crisis"
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "1": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -29406.042335511516,
+                        "starts": [
+                            {
+                                "seed": 8042,
+                                "log_likelihood": -29412.158361944737,
+                                "converged": true,
+                                "iterations": 59
+                            },
+                            {
+                                "seed": 8043,
+                                "log_likelihood": -29406.042335511516,
+                                "converged": true,
+                                "iterations": 45
+                            },
+                            {
+                                "seed": 8044,
+                                "log_likelihood": -29412.158296134636,
+                                "converged": true,
+                                "iterations": 57
+                            },
+                            {
+                                "seed": 8045,
+                                "log_likelihood": -29412.604831168555,
+                                "converged": true,
+                                "iterations": 47
+                            },
+                            {
+                                "seed": 8046,
+                                "log_likelihood": -29406.042345774335,
+                                "converged": true,
+                                "iterations": 41
+                            }
+                        ]
                     }
                 },
                 {
@@ -333,8 +1243,43 @@
                     "state_map": {
                         "3": "Bull",
                         "2": "Crisis",
-                        "0": "Bull",
-                        "1": "Crisis"
+                        "1": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -31145.14348882575,
+                        "starts": [
+                            {
+                                "seed": 9042,
+                                "log_likelihood": -31157.396840382113,
+                                "converged": true,
+                                "iterations": 53
+                            },
+                            {
+                                "seed": 9043,
+                                "log_likelihood": -31145.14348882575,
+                                "converged": true,
+                                "iterations": 71
+                            },
+                            {
+                                "seed": 9044,
+                                "log_likelihood": -31145.14349983806,
+                                "converged": true,
+                                "iterations": 48
+                            },
+                            {
+                                "seed": 9045,
+                                "log_likelihood": -31209.43169975488,
+                                "converged": true,
+                                "iterations": 38
+                            },
+                            {
+                                "seed": 9046,
+                                "log_likelihood": -31172.396174100482,
+                                "converged": true,
+                                "iterations": 74
+                            }
+                        ]
                     }
                 },
                 {
@@ -345,8 +1290,43 @@
                     "state_map": {
                         "2": "Bull",
                         "3": "Crisis",
-                        "1": "Bull",
-                        "0": "Crisis"
+                        "0": "Bull",
+                        "1": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -32643.524741071327,
+                        "starts": [
+                            {
+                                "seed": 10042,
+                                "log_likelihood": -32650.41914645245,
+                                "converged": true,
+                                "iterations": 61
+                            },
+                            {
+                                "seed": 10043,
+                                "log_likelihood": -32650.419590337606,
+                                "converged": true,
+                                "iterations": 61
+                            },
+                            {
+                                "seed": 10044,
+                                "log_likelihood": -32650.419573464555,
+                                "converged": true,
+                                "iterations": 72
+                            },
+                            {
+                                "seed": 10045,
+                                "log_likelihood": -32643.524741071327,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 10046,
+                                "log_likelihood": -32650.41960038687,
+                                "converged": true,
+                                "iterations": 43
+                            }
+                        ]
                     }
                 },
                 {
@@ -355,10 +1335,45 @@
                     "test_start": "2021-01-04",
                     "test_end": "2021-12-31",
                     "state_map": {
-                        "1": "Bull",
-                        "3": "Crisis",
-                        "0": "Transition",
-                        "2": "Crisis"
+                        "2": "Bull",
+                        "1": "Crisis",
+                        "3": "Bull",
+                        "0": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -34320.00242157125,
+                        "starts": [
+                            {
+                                "seed": 11042,
+                                "log_likelihood": -34328.78181334948,
+                                "converged": true,
+                                "iterations": 95
+                            },
+                            {
+                                "seed": 11043,
+                                "log_likelihood": -34328.78175477266,
+                                "converged": true,
+                                "iterations": 95
+                            },
+                            {
+                                "seed": 11044,
+                                "log_likelihood": -34323.298842851684,
+                                "converged": true,
+                                "iterations": 54
+                            },
+                            {
+                                "seed": 11045,
+                                "log_likelihood": -34320.00242157125,
+                                "converged": true,
+                                "iterations": 35
+                            },
+                            {
+                                "seed": 11046,
+                                "log_likelihood": -34328.78176377545,
+                                "converged": true,
+                                "iterations": 95
+                            }
+                        ]
                     }
                 },
                 {
@@ -367,10 +1382,45 @@
                     "test_start": "2022-01-03",
                     "test_end": "2022-12-30",
                     "state_map": {
-                        "1": "Bull",
-                        "3": "Crisis",
-                        "0": "Transition",
-                        "2": "Crisis"
+                        "0": "Bull",
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -36247.41445376711,
+                        "starts": [
+                            {
+                                "seed": 12042,
+                                "log_likelihood": -36270.35925543776,
+                                "converged": true,
+                                "iterations": 44
+                            },
+                            {
+                                "seed": 12043,
+                                "log_likelihood": -36247.41457104096,
+                                "converged": true,
+                                "iterations": 68
+                            },
+                            {
+                                "seed": 12044,
+                                "log_likelihood": -36247.41456939355,
+                                "converged": true,
+                                "iterations": 103
+                            },
+                            {
+                                "seed": 12045,
+                                "log_likelihood": -36247.41445376711,
+                                "converged": true,
+                                "iterations": 65
+                            },
+                            {
+                                "seed": 12046,
+                                "log_likelihood": -36247.41453443693,
+                                "converged": true,
+                                "iterations": 82
+                            }
+                        ]
                     }
                 },
                 {
@@ -379,10 +1429,45 @@
                     "test_start": "2023-01-03",
                     "test_end": "2023-12-29",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
                         "2": "Bull",
-                        "1": "Crisis"
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -38551.912299937525,
+                        "starts": [
+                            {
+                                "seed": 13042,
+                                "log_likelihood": -38578.04214128052,
+                                "converged": true,
+                                "iterations": 51
+                            },
+                            {
+                                "seed": 13043,
+                                "log_likelihood": -38578.04214813729,
+                                "converged": true,
+                                "iterations": 48
+                            },
+                            {
+                                "seed": 13044,
+                                "log_likelihood": -39237.963890952306,
+                                "converged": true,
+                                "iterations": 186
+                            },
+                            {
+                                "seed": 13045,
+                                "log_likelihood": -38551.9123215297,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 13046,
+                                "log_likelihood": -38551.912299937525,
+                                "converged": true,
+                                "iterations": 44
+                            }
+                        ]
                     }
                 },
                 {
@@ -392,9 +1477,44 @@
                     "test_end": "2024-12-31",
                     "state_map": {
                         "0": "Bull",
-                        "2": "Crisis",
-                        "3": "Transition",
+                        "3": "Crisis",
+                        "2": "Bull",
                         "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -40392.77705764795,
+                        "starts": [
+                            {
+                                "seed": 14042,
+                                "log_likelihood": -40436.451696454766,
+                                "converged": true,
+                                "iterations": 73
+                            },
+                            {
+                                "seed": 14043,
+                                "log_likelihood": -40393.18740051231,
+                                "converged": true,
+                                "iterations": 82
+                            },
+                            {
+                                "seed": 14044,
+                                "log_likelihood": -40436.451695615455,
+                                "converged": true,
+                                "iterations": 73
+                            },
+                            {
+                                "seed": 14045,
+                                "log_likelihood": -40436.451688989306,
+                                "converged": true,
+                                "iterations": 79
+                            },
+                            {
+                                "seed": 14046,
+                                "log_likelihood": -40392.77705764795,
+                                "converged": true,
+                                "iterations": 60
+                            }
+                        ]
                     }
                 },
                 {
@@ -403,10 +1523,45 @@
                     "test_start": "2025-01-02",
                     "test_end": "2025-12-31",
                     "state_map": {
+                        "3": "Bull",
+                        "1": "Crisis",
                         "2": "Bull",
-                        "3": "Crisis",
-                        "0": "Transition",
-                        "1": "Crisis"
+                        "0": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -42186.931044577286,
+                        "starts": [
+                            {
+                                "seed": 15042,
+                                "log_likelihood": -42186.931044577286,
+                                "converged": true,
+                                "iterations": 122
+                            },
+                            {
+                                "seed": 15043,
+                                "log_likelihood": -42186.9310598926,
+                                "converged": true,
+                                "iterations": 115
+                            },
+                            {
+                                "seed": 15044,
+                                "log_likelihood": -42186.93106493405,
+                                "converged": true,
+                                "iterations": 147
+                            },
+                            {
+                                "seed": 15045,
+                                "log_likelihood": -42186.93107619881,
+                                "converged": true,
+                                "iterations": 123
+                            },
+                            {
+                                "seed": 15046,
+                                "log_likelihood": -43511.36173958082,
+                                "converged": true,
+                                "iterations": 94
+                            }
+                        ]
                     }
                 },
                 {
@@ -415,10 +1570,45 @@
                     "test_start": "2026-01-02",
                     "test_end": "2026-10-26",
                     "state_map": {
-                        "3": "Bull",
-                        "2": "Crisis",
+                        "2": "Bull",
+                        "3": "Crisis",
                         "0": "Bull",
-                        "1": "Bull"
+                        "1": "Transition"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -43937.61576505904,
+                        "starts": [
+                            {
+                                "seed": 16042,
+                                "log_likelihood": -43937.61577313955,
+                                "converged": true,
+                                "iterations": 236
+                            },
+                            {
+                                "seed": 16043,
+                                "log_likelihood": -43937.61576505904,
+                                "converged": true,
+                                "iterations": 91
+                            },
+                            {
+                                "seed": 16044,
+                                "log_likelihood": -43937.61577743845,
+                                "converged": true,
+                                "iterations": 174
+                            },
+                            {
+                                "seed": 16045,
+                                "log_likelihood": -43937.61577154688,
+                                "converged": true,
+                                "iterations": 241
+                            },
+                            {
+                                "seed": 16046,
+                                "log_likelihood": -43937.61579159131,
+                                "converged": true,
+                                "iterations": 173
+                            }
+                        ]
                     }
                 }
             ]
@@ -433,10 +1623,45 @@
                     "test_start": "2010-01-04",
                     "test_end": "2010-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -18635.635860566716,
+                        "starts": [
+                            {
+                                "seed": 42,
+                                "log_likelihood": -18687.02125847536,
+                                "converged": true,
+                                "iterations": 26
+                            },
+                            {
+                                "seed": 43,
+                                "log_likelihood": -19042.070843197176,
+                                "converged": true,
+                                "iterations": 166
+                            },
+                            {
+                                "seed": 44,
+                                "log_likelihood": -18687.021247420966,
+                                "converged": true,
+                                "iterations": 51
+                            },
+                            {
+                                "seed": 45,
+                                "log_likelihood": -18635.635860566716,
+                                "converged": true,
+                                "iterations": 26
+                            },
+                            {
+                                "seed": 46,
+                                "log_likelihood": -18687.02125013255,
+                                "converged": true,
+                                "iterations": 36
+                            }
+                        ]
                     }
                 },
                 {
@@ -445,10 +1670,45 @@
                     "test_start": "2011-01-03",
                     "test_end": "2011-12-30",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
+                        "3": "Bull",
+                        "2": "Crisis",
                         "1": "Bull",
-                        "2": "Bull"
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -20996.178888643142,
+                        "starts": [
+                            {
+                                "seed": 1042,
+                                "log_likelihood": -21050.88805304937,
+                                "converged": true,
+                                "iterations": 29
+                            },
+                            {
+                                "seed": 1043,
+                                "log_likelihood": -20996.178888643142,
+                                "converged": true,
+                                "iterations": 62
+                            },
+                            {
+                                "seed": 1044,
+                                "log_likelihood": -21038.596328987252,
+                                "converged": true,
+                                "iterations": 19
+                            },
+                            {
+                                "seed": 1045,
+                                "log_likelihood": -21038.596323844118,
+                                "converged": true,
+                                "iterations": 24
+                            },
+                            {
+                                "seed": 1046,
+                                "log_likelihood": -21038.59632041667,
+                                "converged": true,
+                                "iterations": 29
+                            }
+                        ]
                     }
                 },
                 {
@@ -457,10 +1717,45 @@
                     "test_start": "2012-01-03",
                     "test_end": "2012-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -23062.527065891623,
+                        "starts": [
+                            {
+                                "seed": 2042,
+                                "log_likelihood": -23062.5270804175,
+                                "converged": true,
+                                "iterations": 33
+                            },
+                            {
+                                "seed": 2043,
+                                "log_likelihood": -23062.527065891623,
+                                "converged": true,
+                                "iterations": 26
+                            },
+                            {
+                                "seed": 2044,
+                                "log_likelihood": -23062.52707345096,
+                                "converged": true,
+                                "iterations": 45
+                            },
+                            {
+                                "seed": 2045,
+                                "log_likelihood": -23062.527068970667,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 2046,
+                                "log_likelihood": -23062.527073903428,
+                                "converged": true,
+                                "iterations": 78
+                            }
+                        ]
                     }
                 },
                 {
@@ -469,10 +1764,45 @@
                     "test_start": "2013-01-02",
                     "test_end": "2013-12-31",
                     "state_map": {
-                        "3": "Bull",
-                        "2": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -25209.473446157645,
+                        "starts": [
+                            {
+                                "seed": 3042,
+                                "log_likelihood": -25209.530452023257,
+                                "converged": true,
+                                "iterations": 43
+                            },
+                            {
+                                "seed": 3043,
+                                "log_likelihood": -25209.473446157645,
+                                "converged": true,
+                                "iterations": 48
+                            },
+                            {
+                                "seed": 3044,
+                                "log_likelihood": -25209.530445569588,
+                                "converged": true,
+                                "iterations": 42
+                            },
+                            {
+                                "seed": 3045,
+                                "log_likelihood": -25209.530440264924,
+                                "converged": true,
+                                "iterations": 71
+                            },
+                            {
+                                "seed": 3046,
+                                "log_likelihood": -25209.530456062905,
+                                "converged": true,
+                                "iterations": 33
+                            }
+                        ]
                     }
                 },
                 {
@@ -481,10 +1811,45 @@
                     "test_start": "2014-01-02",
                     "test_end": "2014-12-31",
                     "state_map": {
+                        "1": "Bull",
+                        "0": "Crisis",
                         "2": "Bull",
-                        "3": "Crisis",
-                        "0": "Bull",
-                        "1": "Crisis"
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -27504.369097034316,
+                        "starts": [
+                            {
+                                "seed": 4042,
+                                "log_likelihood": -27504.369100438053,
+                                "converged": true,
+                                "iterations": 30
+                            },
+                            {
+                                "seed": 4043,
+                                "log_likelihood": -27514.35783881669,
+                                "converged": true,
+                                "iterations": 133
+                            },
+                            {
+                                "seed": 4044,
+                                "log_likelihood": -27504.36910400256,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 4045,
+                                "log_likelihood": -27504.369097034316,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 4046,
+                                "log_likelihood": -27504.36910321269,
+                                "converged": true,
+                                "iterations": 38
+                            }
+                        ]
                     }
                 },
                 {
@@ -496,7 +1861,42 @@
                         "1": "Bull",
                         "3": "Crisis",
                         "0": "Bull",
-                        "2": "Bull"
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -29735.156129433974,
+                        "starts": [
+                            {
+                                "seed": 5042,
+                                "log_likelihood": -29738.01688814581,
+                                "converged": true,
+                                "iterations": 39
+                            },
+                            {
+                                "seed": 5043,
+                                "log_likelihood": -29735.156129433974,
+                                "converged": true,
+                                "iterations": 40
+                            },
+                            {
+                                "seed": 5044,
+                                "log_likelihood": -29738.01689974168,
+                                "converged": true,
+                                "iterations": 39
+                            },
+                            {
+                                "seed": 5045,
+                                "log_likelihood": -29738.01690917533,
+                                "converged": true,
+                                "iterations": 29
+                            },
+                            {
+                                "seed": 5046,
+                                "log_likelihood": -29738.01689666694,
+                                "converged": true,
+                                "iterations": 38
+                            }
+                        ]
                     }
                 },
                 {
@@ -505,10 +1905,45 @@
                     "test_start": "2016-01-04",
                     "test_end": "2016-12-30",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis",
+                        "2": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -32228.152088140338,
+                        "starts": [
+                            {
+                                "seed": 6042,
+                                "log_likelihood": -32228.18144743757,
+                                "converged": true,
+                                "iterations": 27
+                            },
+                            {
+                                "seed": 6043,
+                                "log_likelihood": -32228.18144985979,
+                                "converged": true,
+                                "iterations": 35
+                            },
+                            {
+                                "seed": 6044,
+                                "log_likelihood": -32302.78657051911,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 6045,
+                                "log_likelihood": -32228.152088140338,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 6046,
+                                "log_likelihood": -32228.152142166757,
+                                "converged": true,
+                                "iterations": 51
+                            }
+                        ]
                     }
                 },
                 {
@@ -517,10 +1952,45 @@
                     "test_start": "2017-01-03",
                     "test_end": "2017-12-29",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -34657.88127630853,
+                        "starts": [
+                            {
+                                "seed": 7042,
+                                "log_likelihood": -34657.95044147629,
+                                "converged": true,
+                                "iterations": 51
+                            },
+                            {
+                                "seed": 7043,
+                                "log_likelihood": -34657.88127630853,
+                                "converged": true,
+                                "iterations": 82
+                            },
+                            {
+                                "seed": 7044,
+                                "log_likelihood": -34657.95165171392,
+                                "converged": true,
+                                "iterations": 38
+                            },
+                            {
+                                "seed": 7045,
+                                "log_likelihood": -34698.55652992823,
+                                "converged": true,
+                                "iterations": 59
+                            },
+                            {
+                                "seed": 7046,
+                                "log_likelihood": -34658.69157208979,
+                                "converged": true,
+                                "iterations": 86
+                            }
+                        ]
                     }
                 },
                 {
@@ -530,9 +2000,44 @@
                     "test_end": "2018-12-31",
                     "state_map": {
                         "3": "Bull",
-                        "2": "Crisis",
-                        "1": "Bull",
-                        "0": "Bull"
+                        "1": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -36759.98817897035,
+                        "starts": [
+                            {
+                                "seed": 8042,
+                                "log_likelihood": -36759.98817897035,
+                                "converged": true,
+                                "iterations": 91
+                            },
+                            {
+                                "seed": 8043,
+                                "log_likelihood": -36766.69284115924,
+                                "converged": true,
+                                "iterations": 41
+                            },
+                            {
+                                "seed": 8044,
+                                "log_likelihood": -36766.692851559106,
+                                "converged": true,
+                                "iterations": 42
+                            },
+                            {
+                                "seed": 8045,
+                                "log_likelihood": -36767.52086876813,
+                                "converged": true,
+                                "iterations": 46
+                            },
+                            {
+                                "seed": 8046,
+                                "log_likelihood": -36766.69280958453,
+                                "converged": true,
+                                "iterations": 46
+                            }
+                        ]
                     }
                 },
                 {
@@ -541,10 +2046,45 @@
                     "test_start": "2019-01-02",
                     "test_end": "2019-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
                         "2": "Bull",
-                        "1": "Bull"
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "1": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -39036.05726580208,
+                        "starts": [
+                            {
+                                "seed": 9042,
+                                "log_likelihood": -39065.92120218454,
+                                "converged": true,
+                                "iterations": 33
+                            },
+                            {
+                                "seed": 9043,
+                                "log_likelihood": -39036.05726580208,
+                                "converged": true,
+                                "iterations": 39
+                            },
+                            {
+                                "seed": 9044,
+                                "log_likelihood": -39065.921178074444,
+                                "converged": true,
+                                "iterations": 35
+                            },
+                            {
+                                "seed": 9045,
+                                "log_likelihood": -39055.863904549326,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 9046,
+                                "log_likelihood": -39044.76378272223,
+                                "converged": true,
+                                "iterations": 121
+                            }
+                        ]
                     }
                 },
                 {
@@ -553,10 +2093,45 @@
                     "test_start": "2020-01-02",
                     "test_end": "2020-12-31",
                     "state_map": {
+                        "2": "Bull",
+                        "3": "Crisis",
                         "1": "Bull",
-                        "2": "Crisis",
-                        "0": "Bull",
-                        "3": "Bull"
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -40904.4457936066,
+                        "starts": [
+                            {
+                                "seed": 10042,
+                                "log_likelihood": -40946.877328378636,
+                                "converged": true,
+                                "iterations": 95
+                            },
+                            {
+                                "seed": 10043,
+                                "log_likelihood": -40946.87733980533,
+                                "converged": true,
+                                "iterations": 82
+                            },
+                            {
+                                "seed": 10044,
+                                "log_likelihood": -40904.4457936066,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 10045,
+                                "log_likelihood": -40922.93967651393,
+                                "converged": true,
+                                "iterations": 69
+                            },
+                            {
+                                "seed": 10046,
+                                "log_likelihood": -41803.66196386751,
+                                "converged": true,
+                                "iterations": 86
+                            }
+                        ]
                     }
                 },
                 {
@@ -565,10 +2140,45 @@
                     "test_start": "2021-01-04",
                     "test_end": "2021-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
                         "2": "Bull",
-                        "1": "Bull"
+                        "3": "Crisis",
+                        "1": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -42894.257781260305,
+                        "starts": [
+                            {
+                                "seed": 11042,
+                                "log_likelihood": -43041.951420534395,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 11043,
+                                "log_likelihood": -43041.951408661866,
+                                "converged": true,
+                                "iterations": 35
+                            },
+                            {
+                                "seed": 11044,
+                                "log_likelihood": -42894.257781260305,
+                                "converged": true,
+                                "iterations": 126
+                            },
+                            {
+                                "seed": 11045,
+                                "log_likelihood": -43041.95140278403,
+                                "converged": true,
+                                "iterations": 47
+                            },
+                            {
+                                "seed": 11046,
+                                "log_likelihood": -43041.95139568004,
+                                "converged": true,
+                                "iterations": 33
+                            }
+                        ]
                     }
                 },
                 {
@@ -577,10 +2187,45 @@
                     "test_start": "2022-01-03",
                     "test_end": "2022-12-30",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
                         "1": "Bull",
-                        "2": "Bull"
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -45294.94418365118,
+                        "starts": [
+                            {
+                                "seed": 12042,
+                                "log_likelihood": -45294.94418365118,
+                                "converged": true,
+                                "iterations": 74
+                            },
+                            {
+                                "seed": 12043,
+                                "log_likelihood": -45387.79919893432,
+                                "converged": true,
+                                "iterations": 38
+                            },
+                            {
+                                "seed": 12044,
+                                "log_likelihood": -45387.79918780928,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 12045,
+                                "log_likelihood": -45387.799382432946,
+                                "converged": true,
+                                "iterations": 42
+                            },
+                            {
+                                "seed": 12046,
+                                "log_likelihood": -45387.79946966452,
+                                "converged": true,
+                                "iterations": 62
+                            }
+                        ]
                     }
                 },
                 {
@@ -589,10 +2234,45 @@
                     "test_start": "2023-01-03",
                     "test_end": "2023-12-29",
                     "state_map": {
-                        "3": "Bull",
-                        "2": "Crisis",
                         "1": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis",
+                        "0": "Bull",
+                        "2": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -47836.36154362655,
+                        "starts": [
+                            {
+                                "seed": 13042,
+                                "log_likelihood": -47879.71243182116,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 13043,
+                                "log_likelihood": -47879.67318664255,
+                                "converged": true,
+                                "iterations": 46
+                            },
+                            {
+                                "seed": 13044,
+                                "log_likelihood": -47879.67315488732,
+                                "converged": true,
+                                "iterations": 37
+                            },
+                            {
+                                "seed": 13045,
+                                "log_likelihood": -47836.36154362655,
+                                "converged": true,
+                                "iterations": 100
+                            },
+                            {
+                                "seed": 13046,
+                                "log_likelihood": -48307.08870969899,
+                                "converged": true,
+                                "iterations": 31
+                            }
+                        ]
                     }
                 },
                 {
@@ -601,10 +2281,45 @@
                     "test_start": "2024-01-02",
                     "test_end": "2024-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "3": "Crisis",
-                        "2": "Bull",
-                        "1": "Bull"
+                        "1": "Bull",
+                        "2": "Crisis",
+                        "3": "Bull",
+                        "0": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -50213.95054352675,
+                        "starts": [
+                            {
+                                "seed": 14042,
+                                "log_likelihood": -50213.95054638527,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 14043,
+                                "log_likelihood": -50213.95055818384,
+                                "converged": true,
+                                "iterations": 27
+                            },
+                            {
+                                "seed": 14044,
+                                "log_likelihood": -50213.9505506293,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 14045,
+                                "log_likelihood": -50214.19025815342,
+                                "converged": true,
+                                "iterations": 29
+                            },
+                            {
+                                "seed": 14046,
+                                "log_likelihood": -50213.95054352675,
+                                "converged": true,
+                                "iterations": 37
+                            }
+                        ]
                     }
                 },
                 {
@@ -614,9 +2329,44 @@
                     "test_end": "2025-12-31",
                     "state_map": {
                         "1": "Bull",
-                        "3": "Crisis",
+                        "2": "Crisis",
                         "0": "Bull",
-                        "2": "Bull"
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -52490.798145213594,
+                        "starts": [
+                            {
+                                "seed": 15042,
+                                "log_likelihood": -52552.30226848017,
+                                "converged": true,
+                                "iterations": 29
+                            },
+                            {
+                                "seed": 15043,
+                                "log_likelihood": -52552.30225111121,
+                                "converged": true,
+                                "iterations": 34
+                            },
+                            {
+                                "seed": 15044,
+                                "log_likelihood": -52490.798145213594,
+                                "converged": true,
+                                "iterations": 57
+                            },
+                            {
+                                "seed": 15045,
+                                "log_likelihood": -52552.64453933458,
+                                "converged": true,
+                                "iterations": 24
+                            },
+                            {
+                                "seed": 15046,
+                                "log_likelihood": -52552.302270758526,
+                                "converged": true,
+                                "iterations": 27
+                            }
+                        ]
                     }
                 },
                 {
@@ -626,9 +2376,44 @@
                     "test_end": "2026-10-26",
                     "state_map": {
                         "1": "Bull",
-                        "3": "Crisis",
+                        "0": "Crisis",
                         "2": "Bull",
-                        "0": "Bull"
+                        "3": "Crisis"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -54678.51428271175,
+                        "starts": [
+                            {
+                                "seed": 16042,
+                                "log_likelihood": -54678.51428271175,
+                                "converged": true,
+                                "iterations": 135
+                            },
+                            {
+                                "seed": 16043,
+                                "log_likelihood": -54998.13206267943,
+                                "converged": true,
+                                "iterations": 147
+                            },
+                            {
+                                "seed": 16044,
+                                "log_likelihood": -54751.40079798924,
+                                "converged": true,
+                                "iterations": 71
+                            },
+                            {
+                                "seed": 16045,
+                                "log_likelihood": -54679.04978217903,
+                                "converged": true,
+                                "iterations": 84
+                            },
+                            {
+                                "seed": 16046,
+                                "log_likelihood": -54751.400823874494,
+                                "converged": true,
+                                "iterations": 49
+                            }
+                        ]
                     }
                 }
             ]
@@ -645,8 +2430,43 @@
                     "state_map": {
                         "1": "Bull",
                         "3": "Crisis",
-                        "2": "Bull",
+                        "2": "Crisis",
                         "0": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -18217.406191053058,
+                        "starts": [
+                            {
+                                "seed": 42,
+                                "log_likelihood": -18800.02479916666,
+                                "converged": true,
+                                "iterations": 46
+                            },
+                            {
+                                "seed": 43,
+                                "log_likelihood": -18375.258406421857,
+                                "converged": true,
+                                "iterations": 108
+                            },
+                            {
+                                "seed": 44,
+                                "log_likelihood": -18217.406191053058,
+                                "converged": true,
+                                "iterations": 43
+                            },
+                            {
+                                "seed": 45,
+                                "log_likelihood": -18740.079015155006,
+                                "converged": true,
+                                "iterations": 61
+                            },
+                            {
+                                "seed": 46,
+                                "log_likelihood": -18800.02673454093,
+                                "converged": true,
+                                "iterations": 58
+                            }
+                        ]
                     }
                 },
                 {
@@ -656,9 +2476,44 @@
                     "test_end": "2022-12-31",
                     "state_map": {
                         "1": "Bull",
+                        "2": "Crisis",
                         "3": "Crisis",
-                        "0": "Bull",
-                        "2": "Bull"
+                        "0": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -21517.385225044316,
+                        "starts": [
+                            {
+                                "seed": 1042,
+                                "log_likelihood": -21519.63206975679,
+                                "converged": true,
+                                "iterations": 24
+                            },
+                            {
+                                "seed": 1043,
+                                "log_likelihood": -21517.385225044316,
+                                "converged": true,
+                                "iterations": 41
+                            },
+                            {
+                                "seed": 1044,
+                                "log_likelihood": -21522.638380815053,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 1045,
+                                "log_likelihood": -21518.39998341212,
+                                "converged": true,
+                                "iterations": 46
+                            },
+                            {
+                                "seed": 1046,
+                                "log_likelihood": -21519.63208279931,
+                                "converged": true,
+                                "iterations": 22
+                            }
+                        ]
                     }
                 },
                 {
@@ -669,8 +2524,43 @@
                     "state_map": {
                         "0": "Bull",
                         "3": "Crisis",
-                        "1": "Bull",
-                        "2": "Crisis"
+                        "1": "Crisis",
+                        "2": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -24647.66000140489,
+                        "starts": [
+                            {
+                                "seed": 2042,
+                                "log_likelihood": -24648.088956219024,
+                                "converged": true,
+                                "iterations": 27
+                            },
+                            {
+                                "seed": 2043,
+                                "log_likelihood": -24647.6600049072,
+                                "converged": true,
+                                "iterations": 32
+                            },
+                            {
+                                "seed": 2044,
+                                "log_likelihood": -24647.66000140489,
+                                "converged": true,
+                                "iterations": 31
+                            },
+                            {
+                                "seed": 2045,
+                                "log_likelihood": -24647.66001464842,
+                                "converged": true,
+                                "iterations": 17
+                            },
+                            {
+                                "seed": 2046,
+                                "log_likelihood": -24647.66000206753,
+                                "converged": true,
+                                "iterations": 29
+                            }
+                        ]
                     }
                 },
                 {
@@ -679,10 +2569,45 @@
                     "test_start": "2024-01-01",
                     "test_end": "2024-12-31",
                     "state_map": {
-                        "2": "Bull",
-                        "3": "Crisis",
                         "1": "Bull",
-                        "0": "Crisis"
+                        "3": "Crisis",
+                        "2": "Crisis",
+                        "0": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -27480.00007255556,
+                        "starts": [
+                            {
+                                "seed": 3042,
+                                "log_likelihood": -27482.558009958044,
+                                "converged": true,
+                                "iterations": 130
+                            },
+                            {
+                                "seed": 3043,
+                                "log_likelihood": -27480.00007255556,
+                                "converged": true,
+                                "iterations": 36
+                            },
+                            {
+                                "seed": 3044,
+                                "log_likelihood": -27480.727345678177,
+                                "converged": true,
+                                "iterations": 59
+                            },
+                            {
+                                "seed": 3045,
+                                "log_likelihood": -27480.00007525601,
+                                "converged": true,
+                                "iterations": 28
+                            },
+                            {
+                                "seed": 3046,
+                                "log_likelihood": -28498.05316038569,
+                                "converged": true,
+                                "iterations": 30
+                            }
+                        ]
                     }
                 },
                 {
@@ -691,10 +2616,45 @@
                     "test_start": "2025-01-01",
                     "test_end": "2025-12-31",
                     "state_map": {
-                        "0": "Bull",
-                        "2": "Crisis",
-                        "1": "Bull",
-                        "3": "Bull"
+                        "2": "Bull",
+                        "1": "Crisis",
+                        "3": "Crisis",
+                        "0": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -30516.76268816004,
+                        "starts": [
+                            {
+                                "seed": 4042,
+                                "log_likelihood": -30516.762691485274,
+                                "converged": true,
+                                "iterations": 52
+                            },
+                            {
+                                "seed": 4043,
+                                "log_likelihood": -30516.762694428,
+                                "converged": true,
+                                "iterations": 80
+                            },
+                            {
+                                "seed": 4044,
+                                "log_likelihood": -30516.76268905127,
+                                "converged": true,
+                                "iterations": 44
+                            },
+                            {
+                                "seed": 4045,
+                                "log_likelihood": -30516.762702817086,
+                                "converged": true,
+                                "iterations": 56
+                            },
+                            {
+                                "seed": 4046,
+                                "log_likelihood": -30516.76268816004,
+                                "converged": true,
+                                "iterations": 38
+                            }
+                        ]
                     }
                 },
                 {
@@ -703,10 +2663,45 @@
                     "test_start": "2026-01-01",
                     "test_end": "2026-10-26",
                     "state_map": {
-                        "2": "Bull",
-                        "1": "Crisis",
                         "0": "Bull",
-                        "3": "Bull"
+                        "3": "Crisis",
+                        "2": "Crisis",
+                        "1": "Bull"
+                    },
+                    "fit": {
+                        "best_log_likelihood": -33412.730374787505,
+                        "starts": [
+                            {
+                                "seed": 5042,
+                                "log_likelihood": -33412.730374787505,
+                                "converged": true,
+                                "iterations": 137
+                            },
+                            {
+                                "seed": 5043,
+                                "log_likelihood": -33412.730379801294,
+                                "converged": true,
+                                "iterations": 130
+                            },
+                            {
+                                "seed": 5044,
+                                "log_likelihood": -33412.7303955404,
+                                "converged": true,
+                                "iterations": 118
+                            },
+                            {
+                                "seed": 5045,
+                                "log_likelihood": -33412.73038516388,
+                                "converged": true,
+                                "iterations": 73
+                            },
+                            {
+                                "seed": 5046,
+                                "log_likelihood": -33412.73038285341,
+                                "converged": true,
+                                "iterations": 75
+                            }
+                        ]
                     }
                 }
             ]

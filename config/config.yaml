@@ -18,6 +18,7 @@ model:
   n_states: 4
   covariance_type: "diag"
   n_iter: 2000
+  n_init: 5             # random EM starts per fold; best training likelihood wins
   smoothing_window: 21  # trailing, not centered
   refit_cadence: "annual"
   min_train_days: 2268  # approx 9 years of initial data to capture full macro cycle

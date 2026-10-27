@@ -72,11 +72,12 @@ def run_backfill(run_id=DEFAULT_RUN_ID):
 
             # Walk-forward HMM: filtered probabilities, NaN inside the
             # initial training window.
-            raw_labels, probs, _ = walk_forward_predict(features, FEATURE_COLUMNS, cfg, asset_name=asset_name)
-            write_regimes(conn, raw_labels, probs, asset_name, run_id)
+            _, probs, _ = walk_forward_predict(features, FEATURE_COLUMNS, cfg, asset_name=asset_name)
 
-            # Evaluate every strategy on the same out-of-sample window.
+            # Evaluate every strategy on the same out-of-sample window, and
+            # store the exact signal the HMM strategy traded.
             ev = evaluate_asset(features, probs, cfg, asset_name)
+            write_regimes(conn, ev["signal"], asset_name, run_id)
             write_evaluation_window(conn, run_id, asset_name, ev["oos_start"], ev["oos_end"], ev["ann_factor"])
             for strategy, bt in ev["backtests"].items():
                 write_backtest_daily(conn, bt, asset_name, run_id, strategy=strategy)

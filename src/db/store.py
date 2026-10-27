@@ -11,7 +11,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 
 # Must match "PRAGMA user_version" in schema.sql. Bump both together whenever
 # a table's columns or keys change.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 def get_git_sha():
     try:
@@ -148,22 +148,22 @@ def write_run(conn, run_id, cfg, strategy_name="hmm_walk_forward", notes=""):
     conn.commit()
     return run_id
 
-def write_regimes(conn, labels_series, probs_df, asset_id, run_id):
+REGIME_COLUMNS = ['raw_label', 'p_bull', 'p_transition', 'p_crisis',
+                  'label', 'sp_bull', 'sp_transition', 'sp_crisis', 'target_weight']
+
+
+def write_regimes(conn, signal_df, asset_id, run_id):
+    """Store the signal frame from src.models.signal.compute_signal.
+
+    Only days with a prediction (out-of-sample) are written.
+    """
     data = []
-    # Both should have the same DatetimeIndex
-    for date_idx, label in labels_series.items():
-        if pd.isna(label): continue
+    for date_idx, row in signal_df.dropna(subset=['raw_label']).iterrows():
         date_str = str(date_idx.date()) if isinstance(date_idx, pd.Timestamp) else str(date_idx)
-        row_probs = probs_df.loc[date_idx]
-        data.append((
-            asset_id, date_str, run_id, 
-            -1, # state_raw (no longer perfectly applicable across folds)
-            str(label),
-            float(row_probs.get('Bull', 0.0)),
-            float(row_probs.get('Transition', 0.0)),
-            float(row_probs.get('Crisis', 0.0))
-        ))
-    _upsert_many(conn, 'regimes', ['asset_id', 'date', 'run_id', 'state_raw', 'label', 'p_bull', 'p_transition', 'p_crisis'], data, ['asset_id', 'date', 'run_id'])
+        values = [row[c] if c in ('raw_label', 'label') else float(row[c]) for c in REGIME_COLUMNS]
+        data.append((asset_id, date_str, run_id, *values))
+    _upsert_many(conn, 'regimes', ['asset_id', 'date', 'run_id'] + REGIME_COLUMNS, data,
+                 ['asset_id', 'date', 'run_id'])
     conn.commit()
 
 def write_backtest_daily(conn, btest_df, asset_id, run_id, strategy="hmm"):

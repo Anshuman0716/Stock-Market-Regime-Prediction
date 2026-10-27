@@ -26,8 +26,12 @@ def test_hand_computed_indicators():
     # Since price strictly went up every single day, RSI must be exactly 100.0
     assert np.isclose(features['rsi'].iloc[-1], 100.0)
     
-    # ATR with High = Close+1, Low = Close-1 => True Range is always exactly 2.0
-    assert np.isclose(features['atr'].iloc[-1], 2.0)
+    # ATR with High = Close+1, Low = Close-1 => True Range is always exactly 2.0,
+    # so ATR as a percent of price on the last day is 2 / 149.
+    assert np.isclose(features['atr_pct'].iloc[-1], 2.0 / 149.0)
+
+    # Every day closed higher, so all 20-day volume was on up-days: flow = +1.
+    assert np.isclose(features['obv_flow_20'].iloc[-1], 1.0)
     
     # VIX should map exactly
     assert features['vix'].iloc[-1] == 20.0
@@ -51,3 +55,29 @@ def test_nan_and_short_frame():
     
     features = build_features(df, vix)
     assert len(features) == 0
+
+
+def test_features_are_scale_free():
+    """Multiplying every price by 10 must not change any feature.
+
+    This is what keeps features comparable between 2000 and 2025: a feature
+    that changed here would drift as the index level rises.
+    """
+    rng = np.random.default_rng(0)
+    n = 120
+    dates = pd.date_range('2020-01-01', periods=n)
+    close = 100 * np.cumprod(1 + rng.normal(0, 0.01, n))
+    df = pd.DataFrame({'Close': close, 'High': close * 1.01, 'Low': close * 0.99,
+                       'Open': close, 'Volume': rng.integers(1_000, 5_000, n).astype(float)}, index=dates)
+    vix = pd.Series(20.0, index=dates)
+
+    base = build_features(df, vix)
+    scaled_df = df.copy()
+    scaled_df[['Close', 'High', 'Low', 'Open']] *= 10
+    scaled = build_features(scaled_df, vix)
+    pd.testing.assert_frame_equal(base, scaled, rtol=1e-9)
+
+
+def test_volume_flow_is_bounded(sample_spx, sample_vix):
+    features = build_features(sample_spx, sample_vix['Close'])
+    assert features['obv_flow_20'].between(-1, 1).all()

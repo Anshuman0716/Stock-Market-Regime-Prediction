@@ -14,7 +14,7 @@
 --    database when it does not match, because CREATE TABLE IF NOT EXISTS
 --    would silently keep an old table layout.
 
-PRAGMA user_version = 2;
+PRAGMA user_version = 3;
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id TEXT PRIMARY KEY,
@@ -54,15 +54,23 @@ CREATE TABLE IF NOT EXISTS backtest_runs (
     notes TEXT
 );
 
+-- The trading signal (src/models/signal.py), one row per out-of-sample day.
+-- raw_label / p_*  : unsmoothed filtered HMM output
+-- label / sp_*     : trailing-smoothed, what the strategy and dashboard use
+-- target_weight    : position decided at that day's close (= sp_bull)
 CREATE TABLE IF NOT EXISTS regimes (
     asset_id TEXT,
     date TEXT,
     run_id TEXT,
-    state_raw INTEGER,
-    label TEXT,
+    raw_label TEXT,
     p_bull REAL,
     p_transition REAL,
     p_crisis REAL,
+    label TEXT,
+    sp_bull REAL,
+    sp_transition REAL,
+    sp_crisis REAL,
+    target_weight REAL,
     PRIMARY KEY (asset_id, date, run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id)

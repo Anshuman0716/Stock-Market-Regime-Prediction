@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import json
@@ -41,7 +40,7 @@ def validate_artifacts(cfg):
         
     current_hash = get_config_hash(cfg)
     if manifest.get('config_hash') != current_hash:
-        return False, f"Config mismatch. The models were trained under a different config. Please run `python scripts/train.py`."
+        return False, "Config mismatch. The models were trained under a different config. Please run `python scripts/train.py`."
         
     return True, manifest
 
@@ -101,8 +100,9 @@ def load_timeline_data(asset_id, run_id):
         SELECT 
             p.date, 
             p.close, 
-            r.label as regime_label, 
-            r.p_bull, r.p_transition, r.p_crisis,
+            r.label as regime_label,
+            r.sp_bull as p_bull, r.sp_transition as p_transition, r.sp_crisis as p_crisis,
+            r.target_weight,
             h.net_return as strat_net_return,
             bh.net_return as bh_net_return
         FROM prices p
@@ -155,11 +155,13 @@ st.caption(f"As of {current_date} (latest date in the store). "
            f"Out-of-sample period shown: {df.index[0]:%Y-%m-%d} to {df.index[-1]:%Y-%m-%d}.")
 
 color_map = {'Bull': '🟢', 'Transition': '🟡', 'Crisis': '🔴'}
-col1, col2, col3, col4 = st.columns(4)
+# Smoothed values: the same signal the backtest trades (src/models/signal.py).
+col1, col2, col3, col4, col5 = st.columns(5)
 col1.metric("Current Regime",  f"{color_map.get(current_regime,'⚪')} {current_regime}")
 col2.metric("P(Bull)", f"{current_row.get('p_bull', 0.0):.2%}")
 col3.metric("P(Transition)", f"{current_row.get('p_transition', 0.0):.2%}")
 col4.metric("P(Crisis)", f"{current_row.get('p_crisis', 0.0):.2%}")
+col5.metric("Target Exposure", f"{current_row.get('target_weight', 0.0):.0%}")
 
 # ── 3. Regime chart ───────────────────────────────────────────────
 st.markdown("### Regime Detection Chart (Walk-Forward)")

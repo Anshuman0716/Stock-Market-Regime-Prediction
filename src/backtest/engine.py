@@ -1,17 +1,9 @@
 import logging
 import pandas as pd
-import numpy as np
 
 from src.backtest.risk import estimate_transaction_costs
 
 logger = logging.getLogger(__name__)
-
-def compute_target_weight(regime_labels):
-    """
-    Interface for sizing positions based on regimes.
-    Currently implements binary exposure (1 for Bull, 0 otherwise).
-    """
-    return np.where(regime_labels == 'Bull', 1.0, 0.0)
 
 def run_backtest(df, target_weights, asset_name="spx", use_dynamic_costs=True, cost_bps=0.0):
     """

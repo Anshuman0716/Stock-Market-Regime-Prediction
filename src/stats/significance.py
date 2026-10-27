@@ -67,15 +67,25 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
     ci_lower = np.percentile(diffs, 2.5)
     ci_upper = np.percentile(diffs, 97.5)
     
-    # Two-sided p-value calculation
-    # If the observed difference is positive, how many bootstrap samples are <= 0?
-    if obs_diff > 0:
-        p_val = 2 * np.mean(diffs <= 0)
-    else:
-        p_val = 2 * np.mean(diffs >= 0)
-        
-    p_val = min(p_val, 1.0)
-    
+    # Two-sided p-value for H0: "no Sharpe difference".
+    #
+    # Why centre the bootstrap distribution: the bootstrap draws show how the
+    # Sharpe difference VARIES around its own centre, which is roughly the
+    # observed value, not zero. To ask "how unusual is our result if the
+    # true difference were 0?", we shift the draws to mean 0 and count how
+    # often a shifted draw is at least as far from 0 as the observed value.
+    #
+    # An earlier version counted draws on the "wrong side" of zero and
+    # doubled the count. That breaks when the draws are not centred exactly
+    # on the observed value: with a small positive difference and a slightly
+    # lower bootstrap centre, more than half the draws fall below zero and
+    # the p-value hit the 1.0 cap.
+    #
+    # The +1 in numerator and denominator stops a finite number of draws
+    # from ever reporting p = 0 exactly.
+    centred = diffs - diffs.mean()
+    p_val = (1 + np.sum(np.abs(centred) >= abs(obs_diff))) / (1 + n_bootstraps)
+
     return {
         "diff": obs_diff,
         "ci_lower": ci_lower,

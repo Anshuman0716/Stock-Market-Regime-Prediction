@@ -1,8 +1,7 @@
 """
-Risk metrics, position sizing, and transaction cost modeling.
+Risk metrics (VaR / CVaR) and transaction cost modeling.
 """
 import numpy as np
-import pandas as pd
 from scipy.stats import norm
 
 # --- Risk Metrics (VaR / CVaR) ---
@@ -63,20 +62,8 @@ def compute_cornish_fisher_cvar(returns, confidence_level=0.95):
     return -tail_losses.mean()
 
 
-# --- Position Sizing ---
-
-def compute_target_weight_proba(prob_df):
-    """
-    Probability-weighted position sizing.
-    Replaces binary exposure. 
-    Weight = P(Bull)
-    """
-    weight = pd.Series(0.0, index=prob_df.index)
-    if 'Bull' in prob_df.columns:
-        weight += prob_df['Bull'].fillna(0.0)
-    
-    # Cap at 1.0 just in case
-    return weight.clip(lower=0.0, upper=1.0)
+# Position sizing (target weight = smoothed P(Bull)) is defined once, in
+# src/models/signal.py.
 
 
 # --- Transaction Costs ---
