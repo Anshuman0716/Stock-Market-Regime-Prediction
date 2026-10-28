@@ -496,17 +496,41 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 
 ## 8. How to Run Locally
 
-Requires **Python 3.10–3.12**. `requirements.txt` pins `numpy<2.0`, which has no wheels for 3.13.
+Requires **Python 3.10–3.12; use 3.12.**
+
+> **Not Python 3.13.** `requirements.txt` pins `numpy<2.0`, and numpy 1.26 has no ready-made package for 3.13. On 3.13, `pip` tries to compile numpy from source and fails, typically with `metadata-generation-failed` or `NumPy requires GCC >= 8.4`. A plain `python -m venv` or `pip install` uses whatever `python` is first on your PATH, which is often 3.13, so create the environment with 3.12 **explicitly**, as below.
 
 ```bash
 git clone https://github.com/Anshuman0716/Stock-Market-Regime-Prediction.git
 cd Stock-Market-Regime-Prediction
+```
 
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Mac / Linux
-pip install -r requirements.txt               # or requirements-dev.txt for notebooks + lint
+**Option A, with [uv](https://docs.astral.sh/uv/) (recommended).** uv downloads Python 3.12 itself if it isn't installed, so it works whatever else is on the machine:
 
+```bash
+uv venv .venv --python 3.12
+uv pip install --python .venv/bin/python -r requirements.txt                 # Mac / Linux
+uv pip install --python .venv\Scripts\python.exe -r requirements.txt         # Windows
+```
+
+An environment made by uv has **no `pip` of its own**. Typing `pip install ...` there can fall through to the system Python (3.13) and fail as above, so always install with `uv pip install --python <the .venv's python> ...`.
+
+**Option B, with an installed Python 3.12:**
+
+```bash
+py -3.12 -m venv .venv               # Windows (python.org installer; `py -0p` lists what you have)
+# python3.12 -m venv .venv           # Mac / Linux
+.venv\Scripts\activate               # Windows
+# source .venv/bin/activate          # Mac / Linux
+python --version                     # must print Python 3.12.x
+python -m pip install -r requirements.txt    # `python -m pip` = the environment's pip, never the system one
+```
+
+Use `requirements-dev.txt` instead of `requirements.txt` for the notebooks and lint tools.
+
+Then, with the environment activated (or calling `.venv/bin/python` / `.venv\Scripts\python.exe` directly):
+
+```bash
 python scripts/run_pipeline.py                 # train + evaluate + write the store (~3.5 min)
 python scripts/run_pipeline.py --reuse-models  # daily refresh with saved models (~15 s)
 python scripts/forward_test.py                 # forward tests of v1.0 and v2.0 on the same new days
