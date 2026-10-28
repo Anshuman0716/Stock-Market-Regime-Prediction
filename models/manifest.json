@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-28T10:36:40.104921",
-  "config_hash": "fc7370074882e64eeb4ad4731065821e",
-  "git_sha": "5d9517f9d78cb0e8080891c56f96c6f00f4613ef",
+  "created_at": "2026-10-28T11:34:08.296434",
+  "config_hash": "e10c9615f94ecdb2dd9ed4cda57b28b8",
+  "git_sha": "bc5586870d29e000359a8b342c291fe77753bc08",
   "assets": {
     "spx": {
       "training_start": "2000-02-08",
@@ -58,7 +58,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -15809.667901647106,
+            "best_log_likelihood": -15809.667901647152,
             "starts": [
               {
                 "seed": 42,
@@ -68,25 +68,25 @@
               },
               {
                 "seed": 43,
-                "log_likelihood": -15824.756700392534,
+                "log_likelihood": -15824.756700393442,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 44,
-                "log_likelihood": -15809.667901647106,
+                "log_likelihood": -15809.667901647152,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 45,
-                "log_likelihood": -15825.263414909057,
+                "log_likelihood": -15825.26341490985,
                 "converged": true,
                 "iterations": 56
               },
               {
                 "seed": 46,
-                "log_likelihood": -15809.667907543517,
+                "log_likelihood": -15809.667907543762,
                 "converged": true,
                 "iterations": 51
               }
@@ -102,8 +102,8 @@
           "state_map": {
             "2": "Bull",
             "3": "Crisis",
-            "1": "Transition",
-            "0": "Transition"
+            "0": "Transition",
+            "1": "Transition"
           },
           "states": [
             {
@@ -144,7 +144,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -17776.665034889564,
+            "best_log_likelihood": -17776.665034889244,
             "starts": [
               {
                 "seed": 1042,
@@ -154,19 +154,19 @@
               },
               {
                 "seed": 1043,
-                "log_likelihood": -17777.184222632397,
+                "log_likelihood": -17777.184222633052,
                 "converged": true,
                 "iterations": 44
               },
               {
                 "seed": 1044,
-                "log_likelihood": -17776.665044381898,
+                "log_likelihood": -17776.66504438177,
                 "converged": true,
                 "iterations": 56
               },
               {
                 "seed": 1045,
-                "log_likelihood": -17776.665034889564,
+                "log_likelihood": -17776.665034889244,
                 "converged": true,
                 "iterations": 41
               },
@@ -230,23 +230,23 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -19685.07467599953,
+            "best_log_likelihood": -19685.074675998712,
             "starts": [
               {
                 "seed": 2042,
-                "log_likelihood": -19685.209644323273,
+                "log_likelihood": -19685.209644323062,
                 "converged": true,
                 "iterations": 38
               },
               {
                 "seed": 2043,
-                "log_likelihood": -19685.209629211346,
+                "log_likelihood": -19685.20962921151,
                 "converged": true,
                 "iterations": 33
               },
               {
                 "seed": 2044,
-                "log_likelihood": -19685.209622982493,
+                "log_likelihood": -19685.209622982697,
                 "converged": true,
                 "iterations": 34
               },
@@ -258,7 +258,7 @@
               },
               {
                 "seed": 2046,
-                "log_likelihood": -19685.07467599953,
+                "log_likelihood": -19685.074675998712,
                 "converged": true,
                 "iterations": 36
               }
@@ -326,25 +326,25 @@
               },
               {
                 "seed": 3043,
-                "log_likelihood": -21341.431707941207,
+                "log_likelihood": -21341.43170794058,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 3044,
-                "log_likelihood": -21341.292502590146,
+                "log_likelihood": -21341.2925025903,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 3045,
-                "log_likelihood": -21341.431721288554,
+                "log_likelihood": -21341.431721287445,
                 "converged": true,
                 "iterations": 25
               },
               {
                 "seed": 3046,
-                "log_likelihood": -21341.2925111781,
+                "log_likelihood": -21341.292511178053,
                 "converged": true,
                 "iterations": 110
               }
@@ -402,35 +402,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -22675.62613540218,
+            "best_log_likelihood": -22675.626135401577,
             "starts": [
               {
                 "seed": 4042,
-                "log_likelihood": -22675.626319645668,
+                "log_likelihood": -22675.626319645435,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 4043,
-                "log_likelihood": -22675.62635783793,
+                "log_likelihood": -22675.626357838613,
                 "converged": true,
                 "iterations": 45
               },
               {
                 "seed": 4044,
-                "log_likelihood": -22675.62613540218,
+                "log_likelihood": -22675.626135401577,
                 "converged": true,
                 "iterations": 25
               },
               {
                 "seed": 4045,
-                "log_likelihood": -22675.62613603538,
+                "log_likelihood": -22675.626136034884,
                 "converged": true,
                 "iterations": 49
               },
               {
                 "seed": 4046,
-                "log_likelihood": -22675.62633575718,
+                "log_likelihood": -22675.62633575792,
                 "converged": true,
                 "iterations": 35
               }
@@ -446,8 +446,8 @@
           "state_map": {
             "0": "Bull",
             "2": "Crisis",
-            "1": "Transition",
-            "3": "Transition"
+            "3": "Transition",
+            "1": "Transition"
           },
           "states": [
             {
@@ -488,11 +488,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -24259.68328119943,
+            "best_log_likelihood": -24259.683281200567,
             "starts": [
               {
                 "seed": 5042,
-                "log_likelihood": -24263.933702449856,
+                "log_likelihood": -24263.93370245038,
                 "converged": true,
                 "iterations": 28
               },
@@ -504,19 +504,19 @@
               },
               {
                 "seed": 5044,
-                "log_likelihood": -24263.378267571206,
+                "log_likelihood": -24263.378267571745,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 5045,
-                "log_likelihood": -24263.933845169962,
+                "log_likelihood": -24263.933845170643,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 5046,
-                "log_likelihood": -24259.68328119943,
+                "log_likelihood": -24259.683281200567,
                 "converged": true,
                 "iterations": 40
               }
@@ -532,8 +532,8 @@
           "state_map": {
             "2": "Bull",
             "3": "Crisis",
-            "0": "Transition",
-            "1": "Transition"
+            "1": "Transition",
+            "0": "Transition"
           },
           "states": [
             {
@@ -578,7 +578,7 @@
             "starts": [
               {
                 "seed": 6042,
-                "log_likelihood": -26107.822165498597,
+                "log_likelihood": -26107.82216549771,
                 "converged": true,
                 "iterations": 34
               },
@@ -590,19 +590,19 @@
               },
               {
                 "seed": 6044,
-                "log_likelihood": -26106.795734259016,
+                "log_likelihood": -26106.79573425822,
                 "converged": true,
                 "iterations": 120
               },
               {
                 "seed": 6045,
-                "log_likelihood": -26120.31222242042,
+                "log_likelihood": -26120.31222241983,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 6046,
-                "log_likelihood": -26120.31298421363,
+                "log_likelihood": -26120.312984213957,
                 "converged": true,
                 "iterations": 52
               }
@@ -618,8 +618,8 @@
           "state_map": {
             "1": "Bull",
             "3": "Crisis",
-            "2": "Bull",
-            "0": "Transition"
+            "0": "Transition",
+            "2": "Bull"
           },
           "states": [
             {
@@ -660,11 +660,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27957.202445674306,
+            "best_log_likelihood": -27957.202445674004,
             "starts": [
               {
                 "seed": 7042,
-                "log_likelihood": -27957.20253524865,
+                "log_likelihood": -27957.202535244487,
                 "converged": true,
                 "iterations": 29
               },
@@ -676,19 +676,19 @@
               },
               {
                 "seed": 7044,
-                "log_likelihood": -27963.318513663056,
+                "log_likelihood": -27963.3185136611,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 7045,
-                "log_likelihood": -27957.202445674306,
+                "log_likelihood": -27957.202445674004,
                 "converged": true,
                 "iterations": 91
               },
               {
                 "seed": 7046,
-                "log_likelihood": -27963.31872323866,
+                "log_likelihood": -27963.318723239332,
                 "converged": true,
                 "iterations": 52
               }
@@ -704,8 +704,8 @@
           "state_map": {
             "2": "Bull",
             "1": "Crisis",
-            "0": "Transition",
-            "3": "Crisis"
+            "3": "Crisis",
+            "0": "Transition"
           },
           "states": [
             {
@@ -756,19 +756,19 @@
               },
               {
                 "seed": 8043,
-                "log_likelihood": -29684.154905846797,
+                "log_likelihood": -29684.15490584584,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 8044,
-                "log_likelihood": -29684.15490570706,
+                "log_likelihood": -29684.154905710646,
                 "converged": true,
                 "iterations": 22
               },
               {
                 "seed": 8045,
-                "log_likelihood": -29684.15490596406,
+                "log_likelihood": -29684.154905962692,
                 "converged": true,
                 "iterations": 36
               },
@@ -790,8 +790,8 @@
           "state_map": {
             "1": "Bull",
             "0": "Crisis",
-            "2": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "2": "Bull"
           },
           "states": [
             {
@@ -836,7 +836,7 @@
             "starts": [
               {
                 "seed": 9042,
-                "log_likelihood": -31432.007996153596,
+                "log_likelihood": -31432.007996152417,
                 "converged": true,
                 "iterations": 39
               },
@@ -848,7 +848,7 @@
               },
               {
                 "seed": 9044,
-                "log_likelihood": -31432.007998387806,
+                "log_likelihood": -31432.007998388173,
                 "converged": true,
                 "iterations": 97
               },
@@ -860,7 +860,7 @@
               },
               {
                 "seed": 9046,
-                "log_likelihood": -31432.00799164619,
+                "log_likelihood": -31432.007991648505,
                 "converged": true,
                 "iterations": 27
               }
@@ -876,8 +876,8 @@
           "state_map": {
             "1": "Bull",
             "2": "Crisis",
-            "0": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "0": "Bull"
           },
           "states": [
             {
@@ -918,35 +918,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -33080.736949312144,
+            "best_log_likelihood": -33080.73694931077,
             "starts": [
               {
                 "seed": 10042,
-                "log_likelihood": -33083.26413759996,
+                "log_likelihood": -33083.26413759755,
                 "converged": true,
                 "iterations": 53
               },
               {
                 "seed": 10043,
-                "log_likelihood": -33080.736949312144,
+                "log_likelihood": -33080.73694931077,
                 "converged": true,
                 "iterations": 164
               },
               {
                 "seed": 10044,
-                "log_likelihood": -33126.73049472109,
+                "log_likelihood": -33126.730494718,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 10045,
-                "log_likelihood": -33083.26419303548,
+                "log_likelihood": -33083.2641930359,
                 "converged": true,
                 "iterations": 55
               },
               {
                 "seed": 10046,
-                "log_likelihood": -33080.73700371376,
+                "log_likelihood": -33080.73700371354,
                 "converged": true,
                 "iterations": 45
               }
@@ -962,8 +962,8 @@
           "state_map": {
             "1": "Bull",
             "2": "Crisis",
-            "0": "Bull",
-            "3": "Transition"
+            "3": "Transition",
+            "0": "Bull"
           },
           "states": [
             {
@@ -1004,11 +1004,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -34018.73189270307,
+            "best_log_likelihood": -34018.73189269799,
             "starts": [
               {
                 "seed": 11042,
-                "log_likelihood": -34018.73189270307,
+                "log_likelihood": -34018.73189269799,
                 "converged": true,
                 "iterations": 40
               },
@@ -1020,19 +1020,19 @@
               },
               {
                 "seed": 11044,
-                "log_likelihood": -34018.731925510496,
+                "log_likelihood": -34018.731925514265,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 11045,
-                "log_likelihood": -34018.73191507007,
+                "log_likelihood": -34018.73191507139,
                 "converged": true,
                 "iterations": 63
               },
               {
                 "seed": 11046,
-                "log_likelihood": -34018.73193817196,
+                "log_likelihood": -34018.73193817096,
                 "converged": true,
                 "iterations": 41
               }
@@ -1048,8 +1048,8 @@
           "state_map": {
             "0": "Bull",
             "1": "Crisis",
-            "2": "Bull",
-            "3": "Transition"
+            "3": "Transition",
+            "2": "Bull"
           },
           "states": [
             {
@@ -1090,7 +1090,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -36030.05671701686,
+            "best_log_likelihood": -36030.05671701948,
             "starts": [
               {
                 "seed": 12042,
@@ -1100,25 +1100,25 @@
               },
               {
                 "seed": 12043,
-                "log_likelihood": -36030.05671945308,
+                "log_likelihood": -36030.056719453714,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 12044,
-                "log_likelihood": -36030.056753881894,
+                "log_likelihood": -36030.056753879304,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 12045,
-                "log_likelihood": -36030.05671701686,
+                "log_likelihood": -36030.05671701948,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 12046,
-                "log_likelihood": -36030.05672647368,
+                "log_likelihood": -36030.05672647107,
                 "converged": true,
                 "iterations": 39
               }
@@ -1134,8 +1134,8 @@
           "state_map": {
             "0": "Bull",
             "3": "Crisis",
-            "2": "Bull",
-            "1": "Transition"
+            "1": "Transition",
+            "2": "Bull"
           },
           "states": [
             {
@@ -1186,7 +1186,7 @@
               },
               {
                 "seed": 13043,
-                "log_likelihood": -38210.17284860646,
+                "log_likelihood": -38210.17284860705,
                 "converged": true,
                 "iterations": 47
               },
@@ -1198,7 +1198,7 @@
               },
               {
                 "seed": 13045,
-                "log_likelihood": -38210.172845745874,
+                "log_likelihood": -38210.17284574734,
                 "converged": true,
                 "iterations": 46
               },
@@ -1220,8 +1220,8 @@
           "state_map": {
             "3": "Bull",
             "2": "Crisis",
-            "1": "Bull",
-            "0": "Transition"
+            "0": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -1262,29 +1262,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -40019.01537095565,
+            "best_log_likelihood": -40019.01537095321,
             "starts": [
               {
                 "seed": 14042,
-                "log_likelihood": -40019.01539768399,
+                "log_likelihood": -40019.01539768055,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 14043,
-                "log_likelihood": -40020.39280177902,
+                "log_likelihood": -40020.39280177735,
                 "converged": true,
                 "iterations": 69
               },
               {
                 "seed": 14044,
-                "log_likelihood": -40020.39285261069,
+                "log_likelihood": -40020.39285261094,
                 "converged": true,
                 "iterations": 53
               },
               {
                 "seed": 14045,
-                "log_likelihood": -40019.01537095565,
+                "log_likelihood": -40019.01537095321,
                 "converged": true,
                 "iterations": 43
               },
@@ -1306,8 +1306,8 @@
           "state_map": {
             "2": "Bull",
             "0": "Crisis",
-            "3": "Bull",
-            "1": "Transition"
+            "1": "Transition",
+            "3": "Bull"
           },
           "states": [
             {
@@ -1348,17 +1348,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -41604.87875654384,
+            "best_log_likelihood": -41604.878756541744,
             "starts": [
               {
                 "seed": 15042,
-                "log_likelihood": -41604.87876037403,
+                "log_likelihood": -41604.87876037629,
                 "converged": true,
                 "iterations": 108
               },
               {
                 "seed": 15043,
-                "log_likelihood": -41604.878760575135,
+                "log_likelihood": -41604.878760572865,
                 "converged": true,
                 "iterations": 50
               },
@@ -1370,13 +1370,13 @@
               },
               {
                 "seed": 15045,
-                "log_likelihood": -41604.87875654384,
+                "log_likelihood": -41604.878756541744,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 15046,
-                "log_likelihood": -41604.87875823454,
+                "log_likelihood": -41604.87875823394,
                 "converged": true,
                 "iterations": 47
               }
@@ -1392,8 +1392,8 @@
           "state_map": {
             "0": "Bull",
             "3": "Crisis",
-            "1": "Bull",
-            "2": "Transition"
+            "2": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -1434,17 +1434,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -43308.00426427395,
+            "best_log_likelihood": -43308.004264275114,
             "starts": [
               {
                 "seed": 16042,
-                "log_likelihood": -43308.00426427395,
+                "log_likelihood": -43308.004264275114,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 16043,
-                "log_likelihood": -43308.004299468674,
+                "log_likelihood": -43308.00429947352,
                 "converged": true,
                 "iterations": 77
               },
@@ -1456,13 +1456,13 @@
               },
               {
                 "seed": 16045,
-                "log_likelihood": -43309.251587756975,
+                "log_likelihood": -43309.25158775522,
                 "converged": true,
                 "iterations": 66
               },
               {
                 "seed": 16046,
-                "log_likelihood": -43309.25157427226,
+                "log_likelihood": -43309.2515742734,
                 "converged": true,
                 "iterations": 56
               }
@@ -1484,8 +1484,8 @@
           "state_map": {
             "1": "Bull",
             "2": "Crisis",
-            "3": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "3": "Bull"
           },
           "states": [
             {
@@ -1526,29 +1526,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -16538.103817486834,
+            "best_log_likelihood": -16538.103817486135,
             "starts": [
               {
                 "seed": 42,
-                "log_likelihood": -16538.103964798313,
+                "log_likelihood": -16538.103964798393,
                 "converged": true,
                 "iterations": 111
               },
               {
                 "seed": 43,
-                "log_likelihood": -16538.103817486834,
+                "log_likelihood": -16538.103817486135,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 44,
-                "log_likelihood": -17399.817038467678,
+                "log_likelihood": -17399.81703846709,
                 "converged": true,
                 "iterations": 60
               },
               {
                 "seed": 45,
-                "log_likelihood": -17399.817044767547,
+                "log_likelihood": -17399.817044768097,
                 "converged": true,
                 "iterations": 61
               },
@@ -1568,10 +1568,10 @@
           "test_start": "2011-01-03",
           "test_end": "2011-12-30",
           "state_map": {
-            "2": "Bull",
-            "0": "Crisis",
+            "3": "Bull",
             "1": "Crisis",
-            "3": "Bull"
+            "0": "Crisis",
+            "2": "Bull"
           },
           "states": [
             {
@@ -1612,17 +1612,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -19002.390121323893,
+            "best_log_likelihood": -19002.390121324148,
             "starts": [
               {
                 "seed": 1042,
-                "log_likelihood": -19084.94209786011,
+                "log_likelihood": -19084.942097858948,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 1043,
-                "log_likelihood": -19014.71141543103,
+                "log_likelihood": -19014.71141543206,
                 "converged": true,
                 "iterations": 45
               },
@@ -1634,13 +1634,13 @@
               },
               {
                 "seed": 1045,
-                "log_likelihood": -19002.390121323893,
+                "log_likelihood": -19002.390121324148,
                 "converged": true,
                 "iterations": 69
               },
               {
                 "seed": 1046,
-                "log_likelihood": -19148.244958086718,
+                "log_likelihood": -19148.24495808751,
                 "converged": true,
                 "iterations": 24
               }
@@ -1656,8 +1656,8 @@
           "state_map": {
             "1": "Bull",
             "2": "Crisis",
-            "3": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "3": "Bull"
           },
           "states": [
             {
@@ -1698,7 +1698,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -20251.037698661232,
+            "best_log_likelihood": -20251.037698660653,
             "starts": [
               {
                 "seed": 2042,
@@ -1708,7 +1708,7 @@
               },
               {
                 "seed": 2043,
-                "log_likelihood": -20944.03213609513,
+                "log_likelihood": -20944.032136094487,
                 "converged": true,
                 "iterations": 28
               },
@@ -1720,13 +1720,13 @@
               },
               {
                 "seed": 2045,
-                "log_likelihood": -20251.037698661232,
+                "log_likelihood": -20251.037698660653,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 2046,
-                "log_likelihood": -20922.69630911571,
+                "log_likelihood": -20922.696309115032,
                 "converged": true,
                 "iterations": 243
               }
@@ -1742,8 +1742,8 @@
           "state_map": {
             "1": "Bull",
             "3": "Crisis",
-            "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "0": "Bull"
           },
           "states": [
             {
@@ -1784,7 +1784,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -21745.050150412186,
+            "best_log_likelihood": -21745.05015041178,
             "starts": [
               {
                 "seed": 3042,
@@ -1794,25 +1794,25 @@
               },
               {
                 "seed": 3043,
-                "log_likelihood": -21745.050201735456,
+                "log_likelihood": -21745.050201734324,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 3044,
-                "log_likelihood": -22547.302731224037,
+                "log_likelihood": -22547.302731224627,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 3045,
-                "log_likelihood": -21745.05020970306,
+                "log_likelihood": -21745.05020970156,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 3046,
-                "log_likelihood": -21745.050150412186,
+                "log_likelihood": -21745.05015041178,
                 "converged": true,
                 "iterations": 54
               }
@@ -1828,8 +1828,8 @@
           "state_map": {
             "0": "Bull",
             "2": "Crisis",
-            "1": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -1880,13 +1880,13 @@
               },
               {
                 "seed": 4043,
-                "log_likelihood": -22937.12621138994,
+                "log_likelihood": -22937.126211390358,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 4044,
-                "log_likelihood": -22937.126252034363,
+                "log_likelihood": -22937.12625203413,
                 "converged": true,
                 "iterations": 40
               },
@@ -1898,7 +1898,7 @@
               },
               {
                 "seed": 4046,
-                "log_likelihood": -22937.12624440369,
+                "log_likelihood": -22937.126244404237,
                 "converged": true,
                 "iterations": 37
               }
@@ -1914,8 +1914,8 @@
           "state_map": {
             "0": "Bull",
             "2": "Crisis",
-            "1": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -1960,13 +1960,13 @@
             "starts": [
               {
                 "seed": 5042,
-                "log_likelihood": -24451.50576382116,
+                "log_likelihood": -24451.505763820496,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 5043,
-                "log_likelihood": -24451.505704951374,
+                "log_likelihood": -24451.505704951207,
                 "converged": true,
                 "iterations": 168
               },
@@ -1984,7 +1984,7 @@
               },
               {
                 "seed": 5046,
-                "log_likelihood": -24451.505713251507,
+                "log_likelihood": -24451.5057132526,
                 "converged": true,
                 "iterations": 31
               }
@@ -2000,8 +2000,8 @@
           "state_map": {
             "2": "Bull",
             "3": "Crisis",
-            "1": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -2042,7 +2042,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -26068.282214684823,
+            "best_log_likelihood": -26068.28221468497,
             "starts": [
               {
                 "seed": 6042,
@@ -2064,13 +2064,13 @@
               },
               {
                 "seed": 6045,
-                "log_likelihood": -26085.896626585945,
+                "log_likelihood": -26085.89662658779,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 6046,
-                "log_likelihood": -26068.282214684823,
+                "log_likelihood": -26068.28221468497,
                 "converged": true,
                 "iterations": 30
               }
@@ -2086,8 +2086,8 @@
           "state_map": {
             "0": "Bull",
             "3": "Crisis",
-            "1": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -2128,35 +2128,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27872.168111941806,
+            "best_log_likelihood": -27872.16811194283,
             "starts": [
               {
                 "seed": 7042,
-                "log_likelihood": -27872.168111941806,
+                "log_likelihood": -27872.16811194283,
                 "converged": true,
                 "iterations": 78
               },
               {
                 "seed": 7043,
-                "log_likelihood": -27891.327102951538,
+                "log_likelihood": -27891.327102952404,
                 "converged": true,
                 "iterations": 70
               },
               {
                 "seed": 7044,
-                "log_likelihood": -27872.168117025358,
+                "log_likelihood": -27872.168117026788,
                 "converged": true,
                 "iterations": 43
               },
               {
                 "seed": 7045,
-                "log_likelihood": -28173.4941118492,
+                "log_likelihood": -28173.494111850574,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 7046,
-                "log_likelihood": -28173.494117764298,
+                "log_likelihood": -28173.494117764832,
                 "converged": true,
                 "iterations": 36
               }
@@ -2172,8 +2172,8 @@
           "state_map": {
             "0": "Bull",
             "3": "Crisis",
-            "2": "Bull",
-            "1": "Crisis"
+            "1": "Crisis",
+            "2": "Bull"
           },
           "states": [
             {
@@ -2214,35 +2214,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -29406.042335512604,
+            "best_log_likelihood": -29406.042335513586,
             "starts": [
               {
                 "seed": 8042,
-                "log_likelihood": -29412.15836194451,
+                "log_likelihood": -29412.158361942606,
                 "converged": true,
                 "iterations": 59
               },
               {
                 "seed": 8043,
-                "log_likelihood": -29406.042335512604,
+                "log_likelihood": -29406.042335513586,
                 "converged": true,
                 "iterations": 45
               },
               {
                 "seed": 8044,
-                "log_likelihood": -29412.1582961368,
+                "log_likelihood": -29412.158296137786,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 8045,
-                "log_likelihood": -29412.604831168675,
+                "log_likelihood": -29412.604831167097,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 8046,
-                "log_likelihood": -29406.04234577617,
+                "log_likelihood": -29406.042345776048,
                 "converged": true,
                 "iterations": 41
               }
@@ -2258,8 +2258,8 @@
           "state_map": {
             "3": "Bull",
             "2": "Crisis",
-            "1": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -2300,29 +2300,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -31145.143488825168,
+            "best_log_likelihood": -31145.143488824004,
             "starts": [
               {
                 "seed": 9042,
-                "log_likelihood": -31157.396840380257,
+                "log_likelihood": -31157.39684037968,
                 "converged": true,
                 "iterations": 53
               },
               {
                 "seed": 9043,
-                "log_likelihood": -31145.143488825168,
+                "log_likelihood": -31145.143488824004,
                 "converged": true,
                 "iterations": 71
               },
               {
                 "seed": 9044,
-                "log_likelihood": -31145.14349983725,
+                "log_likelihood": -31145.143499838625,
                 "converged": true,
                 "iterations": 48
               },
               {
                 "seed": 9045,
-                "log_likelihood": -31209.431699756533,
+                "log_likelihood": -31209.431699753,
                 "converged": true,
                 "iterations": 38
               },
@@ -2344,8 +2344,8 @@
           "state_map": {
             "2": "Bull",
             "3": "Crisis",
-            "0": "Transition",
-            "1": "Crisis"
+            "1": "Crisis",
+            "0": "Transition"
           },
           "states": [
             {
@@ -2386,17 +2386,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -32643.524741072582,
+            "best_log_likelihood": -32643.52474107271,
             "starts": [
               {
                 "seed": 10042,
-                "log_likelihood": -32650.41914645022,
+                "log_likelihood": -32650.419146452517,
                 "converged": true,
                 "iterations": 61
               },
               {
                 "seed": 10043,
-                "log_likelihood": -32650.419590339814,
+                "log_likelihood": -32650.419590338497,
                 "converged": true,
                 "iterations": 61
               },
@@ -2408,13 +2408,13 @@
               },
               {
                 "seed": 10045,
-                "log_likelihood": -32643.524741072582,
+                "log_likelihood": -32643.52474107271,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 10046,
-                "log_likelihood": -32650.419600384874,
+                "log_likelihood": -32650.41960038671,
                 "converged": true,
                 "iterations": 43
               }
@@ -2430,8 +2430,8 @@
           "state_map": {
             "2": "Bull",
             "1": "Crisis",
-            "3": "Bull",
-            "0": "Transition"
+            "0": "Transition",
+            "3": "Bull"
           },
           "states": [
             {
@@ -2472,17 +2472,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -34320.00242156949,
+            "best_log_likelihood": -34320.00242157059,
             "starts": [
               {
                 "seed": 11042,
-                "log_likelihood": -34328.781813346315,
+                "log_likelihood": -34328.78181334726,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 11043,
-                "log_likelihood": -34328.781754772004,
+                "log_likelihood": -34328.78175477067,
                 "converged": true,
                 "iterations": 95
               },
@@ -2494,13 +2494,13 @@
               },
               {
                 "seed": 11045,
-                "log_likelihood": -34320.00242156949,
+                "log_likelihood": -34320.00242157059,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 11046,
-                "log_likelihood": -34328.78176377473,
+                "log_likelihood": -34328.78176377691,
                 "converged": true,
                 "iterations": 95
               }
@@ -2516,8 +2516,8 @@
           "state_map": {
             "0": "Bull",
             "2": "Crisis",
-            "3": "Bull",
-            "1": "Transition"
+            "1": "Transition",
+            "3": "Bull"
           },
           "states": [
             {
@@ -2558,35 +2558,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -36247.41445376555,
+            "best_log_likelihood": -36247.41445376537,
             "starts": [
               {
                 "seed": 12042,
-                "log_likelihood": -36270.35925543647,
+                "log_likelihood": -36270.35925543693,
                 "converged": true,
                 "iterations": 44
               },
               {
                 "seed": 12043,
-                "log_likelihood": -36247.41457103949,
+                "log_likelihood": -36247.4145710426,
                 "converged": true,
                 "iterations": 68
               },
               {
                 "seed": 12044,
-                "log_likelihood": -36247.41456939671,
+                "log_likelihood": -36247.41456939794,
                 "converged": true,
                 "iterations": 103
               },
               {
                 "seed": 12045,
-                "log_likelihood": -36247.41445376555,
+                "log_likelihood": -36247.41445376537,
                 "converged": true,
                 "iterations": 65
               },
               {
                 "seed": 12046,
-                "log_likelihood": -36247.41453443497,
+                "log_likelihood": -36247.414534432995,
                 "converged": true,
                 "iterations": 82
               }
@@ -2602,8 +2602,8 @@
           "state_map": {
             "2": "Bull",
             "3": "Crisis",
-            "0": "Transition",
-            "1": "Transition"
+            "1": "Transition",
+            "0": "Transition"
           },
           "states": [
             {
@@ -2644,35 +2644,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -38551.91229993618,
+            "best_log_likelihood": -38551.91229993532,
             "starts": [
               {
                 "seed": 13042,
-                "log_likelihood": -38578.042141280726,
+                "log_likelihood": -38578.04214127726,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 13043,
-                "log_likelihood": -38578.04214813472,
+                "log_likelihood": -38578.04214813733,
                 "converged": true,
                 "iterations": 48
               },
               {
                 "seed": 13044,
-                "log_likelihood": -39237.96389095217,
+                "log_likelihood": -39237.96389095227,
                 "converged": true,
                 "iterations": 186
               },
               {
                 "seed": 13045,
-                "log_likelihood": -38551.91232152796,
+                "log_likelihood": -38551.91232152689,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 13046,
-                "log_likelihood": -38551.91229993618,
+                "log_likelihood": -38551.91229993532,
                 "converged": true,
                 "iterations": 44
               }
@@ -2688,8 +2688,8 @@
           "state_map": {
             "0": "Bull",
             "3": "Crisis",
-            "2": "Bull",
-            "1": "Transition"
+            "1": "Transition",
+            "2": "Bull"
           },
           "states": [
             {
@@ -2730,35 +2730,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -40392.77705764636,
+            "best_log_likelihood": -40392.77705764453,
             "starts": [
               {
                 "seed": 14042,
-                "log_likelihood": -40436.45169644945,
+                "log_likelihood": -40436.451696452015,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 14043,
-                "log_likelihood": -40393.18740051514,
+                "log_likelihood": -40393.187400516814,
                 "converged": true,
                 "iterations": 82
               },
               {
                 "seed": 14044,
-                "log_likelihood": -40436.45169561934,
+                "log_likelihood": -40436.45169561805,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 14045,
-                "log_likelihood": -40436.4516889878,
+                "log_likelihood": -40436.451688989386,
                 "converged": true,
                 "iterations": 79
               },
               {
                 "seed": 14046,
-                "log_likelihood": -40392.77705764636,
+                "log_likelihood": -40392.77705764453,
                 "converged": true,
                 "iterations": 60
               }
@@ -2774,8 +2774,8 @@
           "state_map": {
             "3": "Bull",
             "1": "Crisis",
-            "2": "Bull",
-            "0": "Transition"
+            "0": "Transition",
+            "2": "Bull"
           },
           "states": [
             {
@@ -2816,23 +2816,23 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -42186.931044577286,
+            "best_log_likelihood": -42186.931044580866,
             "starts": [
               {
                 "seed": 15042,
-                "log_likelihood": -42186.931044577286,
+                "log_likelihood": -42186.931044580866,
                 "converged": true,
                 "iterations": 122
               },
               {
                 "seed": 15043,
-                "log_likelihood": -42186.93105989703,
+                "log_likelihood": -42186.93105989525,
                 "converged": true,
                 "iterations": 115
               },
               {
                 "seed": 15044,
-                "log_likelihood": -42186.93106493222,
+                "log_likelihood": -42186.93106493182,
                 "converged": true,
                 "iterations": 147
               },
@@ -2844,7 +2844,7 @@
               },
               {
                 "seed": 15046,
-                "log_likelihood": -43511.36173957862,
+                "log_likelihood": -43511.36173958287,
                 "converged": true,
                 "iterations": 94
               }
@@ -2860,8 +2860,8 @@
           "state_map": {
             "2": "Bull",
             "3": "Crisis",
-            "0": "Bull",
-            "1": "Transition"
+            "1": "Transition",
+            "0": "Bull"
           },
           "states": [
             {
@@ -2906,7 +2906,7 @@
             "starts": [
               {
                 "seed": 16042,
-                "log_likelihood": -43937.615773134814,
+                "log_likelihood": -43937.61577314136,
                 "converged": true,
                 "iterations": 236
               },
@@ -2918,13 +2918,13 @@
               },
               {
                 "seed": 16044,
-                "log_likelihood": -43937.615777439976,
+                "log_likelihood": -43937.615777435254,
                 "converged": true,
                 "iterations": 174
               },
               {
                 "seed": 16045,
-                "log_likelihood": -43937.61577154705,
+                "log_likelihood": -43937.6157715453,
                 "converged": true,
                 "iterations": 241
               },
@@ -2950,10 +2950,10 @@
           "test_start": "2010-01-04",
           "test_end": "2010-12-31",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
             "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "3": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -2990,21 +2990,21 @@
               "vol": 0.35556500234521127,
               "mu": 0.056732289448528116,
               "sharpe": 0.1595553248332574,
-              "label": "Crisis"
+              "label": "Transition"
             }
           ],
           "fit": {
-            "best_log_likelihood": -18635.635860566632,
+            "best_log_likelihood": -18635.635860566927,
             "starts": [
               {
                 "seed": 42,
-                "log_likelihood": -18687.021258475183,
+                "log_likelihood": -18687.021258475255,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 43,
-                "log_likelihood": -19042.07084319688,
+                "log_likelihood": -19042.07084319699,
                 "converged": true,
                 "iterations": 166
               },
@@ -3016,13 +3016,13 @@
               },
               {
                 "seed": 45,
-                "log_likelihood": -18635.635860566632,
+                "log_likelihood": -18635.635860566927,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 46,
-                "log_likelihood": -18687.021250132617,
+                "log_likelihood": -18687.02125013255,
                 "converged": true,
                 "iterations": 36
               }
@@ -3036,10 +3036,10 @@
           "test_start": "2011-01-03",
           "test_end": "2011-12-30",
           "state_map": {
-            "3": "Bull",
-            "2": "Crisis",
             "1": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "2": "Transition",
+            "3": "Bull"
           },
           "states": [
             {
@@ -3067,7 +3067,7 @@
               "vol": 0.34490144345501234,
               "mu": -0.026636161902217452,
               "sharpe": -0.07722832828819916,
-              "label": "Crisis"
+              "label": "Transition"
             },
             {
               "state": 3,
@@ -3080,35 +3080,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -20996.17888864379,
+            "best_log_likelihood": -20996.178888643815,
             "starts": [
               {
                 "seed": 1042,
-                "log_likelihood": -21050.888053049577,
+                "log_likelihood": -21050.888053050083,
                 "converged": true,
                 "iterations": 29
               },
               {
                 "seed": 1043,
-                "log_likelihood": -20996.17888864379,
+                "log_likelihood": -20996.178888643815,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 1044,
-                "log_likelihood": -21038.596328987234,
+                "log_likelihood": -21038.596328987223,
                 "converged": true,
                 "iterations": 19
               },
               {
                 "seed": 1045,
-                "log_likelihood": -21038.59632384367,
+                "log_likelihood": -21038.596323844205,
                 "converged": true,
                 "iterations": 24
               },
               {
                 "seed": 1046,
-                "log_likelihood": -21038.59632041667,
+                "log_likelihood": -21038.596320416502,
                 "converged": true,
                 "iterations": 29
               }
@@ -3122,10 +3122,10 @@
           "test_start": "2012-01-03",
           "test_end": "2012-12-31",
           "state_map": {
-            "0": "Bull",
-            "2": "Crisis",
             "1": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "2": "Transition",
+            "0": "Bull"
           },
           "states": [
             {
@@ -3153,7 +3153,7 @@
               "vol": 0.34950389694220957,
               "mu": 0.06549569681586928,
               "sharpe": 0.18739618467458458,
-              "label": "Crisis"
+              "label": "Transition"
             },
             {
               "state": 3,
@@ -3166,7 +3166,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -23062.527065890907,
+            "best_log_likelihood": -23062.527065891147,
             "starts": [
               {
                 "seed": 2042,
@@ -3176,25 +3176,25 @@
               },
               {
                 "seed": 2043,
-                "log_likelihood": -23062.527065890907,
+                "log_likelihood": -23062.527065891147,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 2044,
-                "log_likelihood": -23062.52707345176,
+                "log_likelihood": -23062.52707345053,
                 "converged": true,
                 "iterations": 45
               },
               {
                 "seed": 2045,
-                "log_likelihood": -23062.527068970674,
+                "log_likelihood": -23062.527068970536,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 2046,
-                "log_likelihood": -23062.527073903737,
+                "log_likelihood": -23062.5270739031,
                 "converged": true,
                 "iterations": 78
               }
@@ -3208,10 +3208,10 @@
           "test_start": "2013-01-02",
           "test_end": "2013-12-31",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
             "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "3": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -3248,7 +3248,7 @@
               "vol": 0.342242536517225,
               "mu": 0.013451297015450583,
               "sharpe": 0.03930340498389095,
-              "label": "Crisis"
+              "label": "Transition"
             }
           ],
           "fit": {
@@ -3256,7 +3256,7 @@
             "starts": [
               {
                 "seed": 3042,
-                "log_likelihood": -25209.530452022685,
+                "log_likelihood": -25209.530452023206,
                 "converged": true,
                 "iterations": 43
               },
@@ -3274,13 +3274,13 @@
               },
               {
                 "seed": 3045,
-                "log_likelihood": -25209.530440265353,
+                "log_likelihood": -25209.53044026494,
                 "converged": true,
                 "iterations": 71
               },
               {
                 "seed": 3046,
-                "log_likelihood": -25209.530456063912,
+                "log_likelihood": -25209.530456062726,
                 "converged": true,
                 "iterations": 33
               }
@@ -3294,10 +3294,10 @@
           "test_start": "2014-01-02",
           "test_end": "2014-12-31",
           "state_map": {
-            "1": "Bull",
-            "0": "Crisis",
             "2": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "0": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -3307,7 +3307,7 @@
               "vol": 0.34266265935505524,
               "mu": 0.007470593816524503,
               "sharpe": 0.02180159878110247,
-              "label": "Crisis"
+              "label": "Transition"
             },
             {
               "state": 1,
@@ -3338,7 +3338,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27504.369097034618,
+            "best_log_likelihood": -27504.36909703404,
             "starts": [
               {
                 "seed": 4042,
@@ -3348,25 +3348,25 @@
               },
               {
                 "seed": 4043,
-                "log_likelihood": -27514.357838816486,
+                "log_likelihood": -27514.357838817545,
                 "converged": true,
                 "iterations": 133
               },
               {
                 "seed": 4044,
-                "log_likelihood": -27504.369104001937,
+                "log_likelihood": -27504.36910400298,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 4045,
-                "log_likelihood": -27504.369097034618,
+                "log_likelihood": -27504.36909703404,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 4046,
-                "log_likelihood": -27504.369103211797,
+                "log_likelihood": -27504.36910321101,
                 "converged": true,
                 "iterations": 38
               }
@@ -3380,10 +3380,10 @@
           "test_start": "2015-01-02",
           "test_end": "2015-12-31",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
             "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "3": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -3420,11 +3420,11 @@
               "vol": 0.3430164561042131,
               "mu": -0.028392209417251228,
               "sharpe": -0.0827721495922204,
-              "label": "Crisis"
+              "label": "Transition"
             }
           ],
           "fit": {
-            "best_log_likelihood": -29735.156129434137,
+            "best_log_likelihood": -29735.156129434396,
             "starts": [
               {
                 "seed": 5042,
@@ -3434,25 +3434,25 @@
               },
               {
                 "seed": 5043,
-                "log_likelihood": -29735.156129434137,
+                "log_likelihood": -29735.156129434396,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 5044,
-                "log_likelihood": -29738.01689974302,
+                "log_likelihood": -29738.01689974407,
                 "converged": true,
                 "iterations": 39
               },
               {
                 "seed": 5045,
-                "log_likelihood": -29738.016909174898,
+                "log_likelihood": -29738.01690917449,
                 "converged": true,
                 "iterations": 29
               },
               {
                 "seed": 5046,
-                "log_likelihood": -29738.016896669174,
+                "log_likelihood": -29738.016896668152,
                 "converged": true,
                 "iterations": 38
               }
@@ -3466,10 +3466,10 @@
           "test_start": "2016-01-04",
           "test_end": "2016-12-30",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
             "2": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "3": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -3510,17 +3510,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -32228.152088140134,
+            "best_log_likelihood": -32228.152088141516,
             "starts": [
               {
                 "seed": 6042,
-                "log_likelihood": -32228.18144743801,
+                "log_likelihood": -32228.1814474368,
                 "converged": true,
                 "iterations": 27
               },
               {
                 "seed": 6043,
-                "log_likelihood": -32228.18144986054,
+                "log_likelihood": -32228.181449861047,
                 "converged": true,
                 "iterations": 35
               },
@@ -3532,13 +3532,13 @@
               },
               {
                 "seed": 6045,
-                "log_likelihood": -32228.152088140134,
+                "log_likelihood": -32228.152088141516,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 6046,
-                "log_likelihood": -32228.152142167317,
+                "log_likelihood": -32228.1521421676,
                 "converged": true,
                 "iterations": 51
               }
@@ -3552,10 +3552,10 @@
           "test_start": "2017-01-03",
           "test_end": "2017-12-29",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
             "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "3": "Transition",
+            "1": "Bull"
           },
           "states": [
             {
@@ -3592,27 +3592,27 @@
               "vol": 0.3314089957917786,
               "mu": -0.012467913780421367,
               "sharpe": -0.03762092743027062,
-              "label": "Crisis"
+              "label": "Transition"
             }
           ],
           "fit": {
-            "best_log_likelihood": -34657.88127630814,
+            "best_log_likelihood": -34657.88127630948,
             "starts": [
               {
                 "seed": 7042,
-                "log_likelihood": -34657.95044147537,
+                "log_likelihood": -34657.95044147751,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 7043,
-                "log_likelihood": -34657.88127630814,
+                "log_likelihood": -34657.88127630948,
                 "converged": true,
                 "iterations": 82
               },
               {
                 "seed": 7044,
-                "log_likelihood": -34657.95165171209,
+                "log_likelihood": -34657.95165171362,
                 "converged": true,
                 "iterations": 38
               },
@@ -3624,7 +3624,7 @@
               },
               {
                 "seed": 7046,
-                "log_likelihood": -34658.69157208833,
+                "log_likelihood": -34658.69157208971,
                 "converged": true,
                 "iterations": 86
               }
@@ -3638,10 +3638,10 @@
           "test_start": "2018-01-02",
           "test_end": "2018-12-31",
           "state_map": {
-            "3": "Bull",
-            "1": "Crisis",
             "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "1": "Crisis",
+            "3": "Transition"
           },
           "states": [
             {
@@ -3678,27 +3678,27 @@
               "vol": 0.11425183912042887,
               "mu": 0.04537407633004553,
               "sharpe": 0.39714088350226295,
-              "label": "Bull"
+              "label": "Transition"
             }
           ],
           "fit": {
-            "best_log_likelihood": -36759.988178970365,
+            "best_log_likelihood": -36759.988178971296,
             "starts": [
               {
                 "seed": 8042,
-                "log_likelihood": -36759.988178970365,
+                "log_likelihood": -36759.988178971296,
                 "converged": true,
                 "iterations": 91
               },
               {
                 "seed": 8043,
-                "log_likelihood": -36766.692841159886,
+                "log_likelihood": -36766.6928411588,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 8044,
-                "log_likelihood": -36766.69285155826,
+                "log_likelihood": -36766.692851558975,
                 "converged": true,
                 "iterations": 42
               },
@@ -3710,7 +3710,7 @@
               },
               {
                 "seed": 8046,
-                "log_likelihood": -36766.6928095829,
+                "log_likelihood": -36766.69280958357,
                 "converged": true,
                 "iterations": 46
               }
@@ -3724,10 +3724,10 @@
           "test_start": "2019-01-02",
           "test_end": "2019-12-31",
           "state_map": {
-            "2": "Bull",
-            "3": "Crisis",
             "0": "Bull",
-            "1": "Crisis"
+            "1": "Crisis",
+            "3": "Crisis",
+            "2": "Transition"
           },
           "states": [
             {
@@ -3755,7 +3755,7 @@
               "vol": 0.11311848578959731,
               "mu": 0.031216459538402724,
               "sharpe": 0.27596249472845646,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 3,
@@ -3768,29 +3768,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -39036.057265801515,
+            "best_log_likelihood": -39036.057265802825,
             "starts": [
               {
                 "seed": 9042,
-                "log_likelihood": -39065.92120218644,
+                "log_likelihood": -39065.92120218512,
                 "converged": true,
                 "iterations": 33
               },
               {
                 "seed": 9043,
-                "log_likelihood": -39036.057265801515,
+                "log_likelihood": -39036.057265802825,
                 "converged": true,
                 "iterations": 39
               },
               {
                 "seed": 9044,
-                "log_likelihood": -39065.92117807473,
+                "log_likelihood": -39065.921178074925,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 9045,
-                "log_likelihood": -39055.863904550606,
+                "log_likelihood": -39055.863904548976,
                 "converged": true,
                 "iterations": 32
               },
@@ -3810,10 +3810,10 @@
           "test_start": "2020-01-02",
           "test_end": "2020-12-31",
           "state_map": {
-            "2": "Bull",
-            "3": "Crisis",
             "1": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "3": "Crisis",
+            "2": "Transition"
           },
           "states": [
             {
@@ -3841,7 +3841,7 @@
               "vol": 0.11124050988860412,
               "mu": 0.01946172528806455,
               "sharpe": 0.1749517806737263,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 3,
@@ -3854,23 +3854,23 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -40904.44579360601,
+            "best_log_likelihood": -40904.445793602245,
             "starts": [
               {
                 "seed": 10042,
-                "log_likelihood": -40946.877328376926,
+                "log_likelihood": -40946.87732837599,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 10043,
-                "log_likelihood": -40946.877339807004,
+                "log_likelihood": -40946.877339805666,
                 "converged": true,
                 "iterations": 82
               },
               {
                 "seed": 10044,
-                "log_likelihood": -40904.44579360601,
+                "log_likelihood": -40904.445793602245,
                 "converged": true,
                 "iterations": 28
               },
@@ -3882,7 +3882,7 @@
               },
               {
                 "seed": 10046,
-                "log_likelihood": -41803.661963869126,
+                "log_likelihood": -41803.66196387257,
                 "converged": true,
                 "iterations": 86
               }
@@ -3896,10 +3896,10 @@
           "test_start": "2021-01-04",
           "test_end": "2021-12-31",
           "state_map": {
-            "2": "Bull",
-            "3": "Crisis",
             "1": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "3": "Crisis",
+            "2": "Transition"
           },
           "states": [
             {
@@ -3927,7 +3927,7 @@
               "vol": 0.11324690596331395,
               "mu": 0.011822603458005341,
               "sharpe": 0.10439670167973722,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 3,
@@ -3940,35 +3940,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -42894.257781258966,
+            "best_log_likelihood": -42894.25778125909,
             "starts": [
               {
                 "seed": 11042,
-                "log_likelihood": -43041.951420536585,
+                "log_likelihood": -43041.95142053386,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 11043,
-                "log_likelihood": -43041.95140866217,
+                "log_likelihood": -43041.95140866462,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 11044,
-                "log_likelihood": -42894.257781258966,
+                "log_likelihood": -42894.25778125909,
                 "converged": true,
                 "iterations": 126
               },
               {
                 "seed": 11045,
-                "log_likelihood": -43041.95140278282,
+                "log_likelihood": -43041.95140278413,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 11046,
-                "log_likelihood": -43041.95139567721,
+                "log_likelihood": -43041.951395680604,
                 "converged": true,
                 "iterations": 33
               }
@@ -3982,10 +3982,10 @@
           "test_start": "2022-01-03",
           "test_end": "2022-12-30",
           "state_map": {
-            "1": "Bull",
-            "2": "Crisis",
             "3": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "2": "Crisis",
+            "1": "Transition"
           },
           "states": [
             {
@@ -4004,7 +4004,7 @@
               "vol": 0.11356571250515539,
               "mu": 0.02093626597708597,
               "sharpe": 0.18435375885248423,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 2,
@@ -4036,25 +4036,25 @@
               },
               {
                 "seed": 12043,
-                "log_likelihood": -45387.79919893368,
+                "log_likelihood": -45387.79919893338,
                 "converged": true,
                 "iterations": 38
               },
               {
                 "seed": 12044,
-                "log_likelihood": -45387.79918780953,
+                "log_likelihood": -45387.79918780741,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 12045,
-                "log_likelihood": -45387.79938242702,
+                "log_likelihood": -45387.799382429796,
                 "converged": true,
                 "iterations": 42
               },
               {
                 "seed": 12046,
-                "log_likelihood": -45387.79946966386,
+                "log_likelihood": -45387.79946966549,
                 "converged": true,
                 "iterations": 62
               }
@@ -4068,10 +4068,10 @@
           "test_start": "2023-01-03",
           "test_end": "2023-12-29",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
             "0": "Bull",
-            "2": "Crisis"
+            "2": "Crisis",
+            "3": "Crisis",
+            "1": "Transition"
           },
           "states": [
             {
@@ -4090,7 +4090,7 @@
               "vol": 0.11781632982283473,
               "mu": 0.0318433253690303,
               "sharpe": 0.27027938671077617,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 2,
@@ -4112,7 +4112,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -47836.36154362909,
+            "best_log_likelihood": -47836.36154362402,
             "starts": [
               {
                 "seed": 13042,
@@ -4122,25 +4122,25 @@
               },
               {
                 "seed": 13043,
-                "log_likelihood": -47879.67318664515,
+                "log_likelihood": -47879.67318664569,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 13044,
-                "log_likelihood": -47879.673154887045,
+                "log_likelihood": -47879.67315488388,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 13045,
-                "log_likelihood": -47836.36154362909,
+                "log_likelihood": -47836.36154362402,
                 "converged": true,
                 "iterations": 100
               },
               {
                 "seed": 13046,
-                "log_likelihood": -48307.08870969955,
+                "log_likelihood": -48307.08870969576,
                 "converged": true,
                 "iterations": 31
               }
@@ -4154,10 +4154,10 @@
           "test_start": "2024-01-02",
           "test_end": "2024-12-31",
           "state_map": {
-            "1": "Bull",
-            "2": "Crisis",
             "3": "Bull",
-            "0": "Crisis"
+            "0": "Crisis",
+            "2": "Transition",
+            "1": "Transition"
           },
           "states": [
             {
@@ -4176,7 +4176,7 @@
               "vol": 0.11804773081544945,
               "mu": 0.05478938069970763,
               "sharpe": 0.46412904611748024,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 2,
@@ -4185,7 +4185,7 @@
               "vol": 0.3296948306178708,
               "mu": -0.008492030728378255,
               "sharpe": -0.025757245609412817,
-              "label": "Crisis"
+              "label": "Transition"
             },
             {
               "state": 3,
@@ -4198,7 +4198,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -50213.95054353136,
+            "best_log_likelihood": -50213.950543525316,
             "starts": [
               {
                 "seed": 14042,
@@ -4208,7 +4208,7 @@
               },
               {
                 "seed": 14043,
-                "log_likelihood": -50213.95055818047,
+                "log_likelihood": -50213.950558181066,
                 "converged": true,
                 "iterations": 27
               },
@@ -4226,7 +4226,7 @@
               },
               {
                 "seed": 14046,
-                "log_likelihood": -50213.95054353136,
+                "log_likelihood": -50213.950543525316,
                 "converged": true,
                 "iterations": 37
               }
@@ -4240,10 +4240,10 @@
           "test_start": "2025-01-02",
           "test_end": "2025-12-31",
           "state_map": {
-            "1": "Bull",
-            "2": "Crisis",
             "0": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "2": "Crisis",
+            "1": "Transition"
           },
           "states": [
             {
@@ -4262,7 +4262,7 @@
               "vol": 0.11635571686565432,
               "mu": 0.04110165292292203,
               "sharpe": 0.3532413707731996,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 2,
@@ -4284,7 +4284,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -52490.79814521217,
+            "best_log_likelihood": -52490.79814521085,
             "starts": [
               {
                 "seed": 15042,
@@ -4300,19 +4300,19 @@
               },
               {
                 "seed": 15044,
-                "log_likelihood": -52490.79814521217,
+                "log_likelihood": -52490.79814521085,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 15045,
-                "log_likelihood": -52552.64453933172,
+                "log_likelihood": -52552.64453933826,
                 "converged": true,
                 "iterations": 24
               },
               {
                 "seed": 15046,
-                "log_likelihood": -52552.30227075384,
+                "log_likelihood": -52552.30227075705,
                 "converged": true,
                 "iterations": 27
               }
@@ -4326,10 +4326,10 @@
           "test_start": "2026-01-02",
           "test_end": "2026-10-27",
           "state_map": {
-            "1": "Bull",
-            "0": "Crisis",
             "2": "Bull",
-            "3": "Crisis"
+            "3": "Crisis",
+            "0": "Crisis",
+            "1": "Transition"
           },
           "states": [
             {
@@ -4348,7 +4348,7 @@
               "vol": 0.11526614211286543,
               "mu": 0.05292477754535256,
               "sharpe": 0.459152849008602,
-              "label": "Bull"
+              "label": "Transition"
             },
             {
               "state": 2,
@@ -4370,35 +4370,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -54678.51428270888,
+            "best_log_likelihood": -54678.51428271076,
             "starts": [
               {
                 "seed": 16042,
-                "log_likelihood": -54678.51428270888,
+                "log_likelihood": -54678.51428271076,
                 "converged": true,
                 "iterations": 135
               },
               {
                 "seed": 16043,
-                "log_likelihood": -54998.13206268017,
+                "log_likelihood": -54998.13206268047,
                 "converged": true,
                 "iterations": 147
               },
               {
                 "seed": 16044,
-                "log_likelihood": -54751.40079798652,
+                "log_likelihood": -54751.40079798947,
                 "converged": true,
                 "iterations": 71
               },
               {
                 "seed": 16045,
-                "log_likelihood": -54679.04978217496,
+                "log_likelihood": -54679.049782178496,
                 "converged": true,
                 "iterations": 84
               },
               {
                 "seed": 16046,
-                "log_likelihood": -54751.400823875105,
+                "log_likelihood": -54751.400823873286,
                 "converged": true,
                 "iterations": 49
               }
@@ -4418,10 +4418,10 @@
           "test_start": "2021-01-01",
           "test_end": "2021-12-31",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
+            "0": "Bull",
             "2": "Crisis",
-            "0": "Bull"
+            "3": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -4462,7 +4462,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -18217.406191052854,
+            "best_log_likelihood": -18217.406191053316,
             "starts": [
               {
                 "seed": 42,
@@ -4478,13 +4478,13 @@
               },
               {
                 "seed": 44,
-                "log_likelihood": -18217.406191052854,
+                "log_likelihood": -18217.406191053316,
                 "converged": true,
                 "iterations": 43
               },
               {
                 "seed": 45,
-                "log_likelihood": -18740.079015154413,
+                "log_likelihood": -18740.079015154923,
                 "converged": true,
                 "iterations": 61
               },
@@ -4504,10 +4504,10 @@
           "test_start": "2022-01-01",
           "test_end": "2022-12-31",
           "state_map": {
-            "1": "Bull",
-            "2": "Crisis",
+            "0": "Bull",
             "3": "Crisis",
-            "0": "Bull"
+            "2": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -4548,7 +4548,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -21517.38522504381,
+            "best_log_likelihood": -21517.385225044658,
             "starts": [
               {
                 "seed": 1042,
@@ -4558,25 +4558,25 @@
               },
               {
                 "seed": 1043,
-                "log_likelihood": -21517.38522504381,
+                "log_likelihood": -21517.385225044658,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 1044,
-                "log_likelihood": -21522.638380814467,
+                "log_likelihood": -21522.638380814547,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 1045,
-                "log_likelihood": -21518.399983412168,
+                "log_likelihood": -21518.39998341214,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 1046,
-                "log_likelihood": -21519.63208279936,
+                "log_likelihood": -21519.632082799482,
                 "converged": true,
                 "iterations": 22
               }
@@ -4590,10 +4590,10 @@
           "test_start": "2023-01-01",
           "test_end": "2023-12-31",
           "state_map": {
-            "0": "Bull",
+            "2": "Bull",
             "3": "Crisis",
             "1": "Crisis",
-            "2": "Bull"
+            "0": "Bull"
           },
           "states": [
             {
@@ -4634,11 +4634,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -24647.66000140419,
+            "best_log_likelihood": -24647.660001405424,
             "starts": [
               {
                 "seed": 2042,
-                "log_likelihood": -24648.088956220192,
+                "log_likelihood": -24648.088956219126,
                 "converged": true,
                 "iterations": 27
               },
@@ -4650,19 +4650,19 @@
               },
               {
                 "seed": 2044,
-                "log_likelihood": -24647.66000140419,
+                "log_likelihood": -24647.660001405424,
                 "converged": true,
                 "iterations": 31
               },
               {
                 "seed": 2045,
-                "log_likelihood": -24647.660014647783,
+                "log_likelihood": -24647.660014647383,
                 "converged": true,
                 "iterations": 17
               },
               {
                 "seed": 2046,
-                "log_likelihood": -24647.660002068144,
+                "log_likelihood": -24647.66000206757,
                 "converged": true,
                 "iterations": 29
               }
@@ -4676,10 +4676,10 @@
           "test_start": "2024-01-01",
           "test_end": "2024-12-31",
           "state_map": {
-            "1": "Bull",
-            "3": "Crisis",
+            "0": "Bull",
             "2": "Crisis",
-            "0": "Bull"
+            "3": "Crisis",
+            "1": "Bull"
           },
           "states": [
             {
@@ -4724,7 +4724,7 @@
             "starts": [
               {
                 "seed": 3042,
-                "log_likelihood": -27482.558009956643,
+                "log_likelihood": -27482.558009957567,
                 "converged": true,
                 "iterations": 130
               },
@@ -4736,19 +4736,19 @@
               },
               {
                 "seed": 3044,
-                "log_likelihood": -27480.727345677227,
+                "log_likelihood": -27480.72734567898,
                 "converged": true,
                 "iterations": 59
               },
               {
                 "seed": 3045,
-                "log_likelihood": -27480.00007525682,
+                "log_likelihood": -27480.00007525519,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 3046,
-                "log_likelihood": -28498.053160385207,
+                "log_likelihood": -28498.053160385483,
                 "converged": true,
                 "iterations": 30
               }
@@ -4762,10 +4762,10 @@
           "test_start": "2025-01-01",
           "test_end": "2025-12-31",
           "state_map": {
-            "2": "Bull",
-            "1": "Crisis",
+            "0": "Bull",
             "3": "Crisis",
-            "0": "Bull"
+            "1": "Crisis",
+            "2": "Bull"
           },
           "states": [
             {
@@ -4806,35 +4806,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -30516.762688159244,
+            "best_log_likelihood": -30516.762688159342,
             "starts": [
               {
                 "seed": 4042,
-                "log_likelihood": -30516.76269148556,
+                "log_likelihood": -30516.762691482345,
                 "converged": true,
                 "iterations": 52
               },
               {
                 "seed": 4043,
-                "log_likelihood": -30516.762694425917,
+                "log_likelihood": -30516.762694424633,
                 "converged": true,
                 "iterations": 80
               },
               {
                 "seed": 4044,
-                "log_likelihood": -30516.76268905109,
+                "log_likelihood": -30516.762689051335,
                 "converged": true,
                 "iterations": 44
               },
               {
                 "seed": 4045,
-                "log_likelihood": -30516.762702817086,
+                "log_likelihood": -30516.762702818043,
                 "converged": true,
                 "iterations": 56
               },
               {
                 "seed": 4046,
-                "log_likelihood": -30516.762688159244,
+                "log_likelihood": -30516.762688159342,
                 "converged": true,
                 "iterations": 38
               }
@@ -4848,10 +4848,10 @@
           "test_start": "2026-01-01",
           "test_end": "2026-10-26",
           "state_map": {
-            "0": "Bull",
-            "3": "Crisis",
+            "1": "Bull",
             "2": "Crisis",
-            "1": "Bull"
+            "3": "Crisis",
+            "0": "Bull"
           },
           "states": [
             {
@@ -4902,25 +4902,25 @@
               },
               {
                 "seed": 5043,
-                "log_likelihood": -33412.73037980181,
+                "log_likelihood": -33412.73037979989,
                 "converged": true,
                 "iterations": 130
               },
               {
                 "seed": 5044,
-                "log_likelihood": -33412.730395540166,
+                "log_likelihood": -33412.73039554127,
                 "converged": true,
                 "iterations": 118
               },
               {
                 "seed": 5045,
-                "log_likelihood": -33412.73038516497,
+                "log_likelihood": -33412.730385165356,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 5046,
-                "log_likelihood": -33412.73038285379,
+                "log_likelihood": -33412.73038285277,
                 "converged": true,
                 "iterations": 75
               }

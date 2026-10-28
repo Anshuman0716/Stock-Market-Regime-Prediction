@@ -162,7 +162,7 @@ def ledoit_wolf_sharpe_diff(returns_a, returns_b, ann_factor):
         "se": se_diff
     }
 
-def adjust_pvalues(p_values, method='holm'):
+def adjust_pvalues(p_values):
     """
     Holm-Bonferroni adjustment for a family of tests (here: every asset x
     every baseline). Implemented by hand to avoid a statsmodels dependency.

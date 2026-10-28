@@ -9,8 +9,6 @@ from the plumbing.
 """
 import pandas as pd
 
-from src.backtest.engine import run_backtest
-
 
 def buy_and_hold_weights(index):
     """Always 100% invested."""
@@ -51,17 +49,3 @@ def vol_target_weights(volatility, max_weight=1.0):
     norm = vol.expanding().mean()
     weights = (norm / vol.where(vol > 0)).clip(upper=max_weight)
     return weights.fillna(0.0)  # flat until a volatility estimate exists
-
-
-# --- Convenience wrappers (kept for notebooks that call them directly) ------
-
-def get_buy_and_hold(df, cost_bps):
-    """Run the buy-and-hold baseline through the backtest engine."""
-    return run_backtest(df, buy_and_hold_weights(df.index), cost_bps=cost_bps)
-
-
-def get_200dma_filter(df, cost_bps):
-    """Run the 200-day moving-average baseline through the backtest engine."""
-    if "Close" not in df.columns:
-        raise ValueError("DataFrame must contain 'Close' to compute 200DMA.")
-    return run_backtest(df, dma200_weights(df["Close"]), cost_bps=cost_bps)

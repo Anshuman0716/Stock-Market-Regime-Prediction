@@ -79,15 +79,6 @@ def out_of_sample_start(probs):
     return has_pred.idxmax()
 
 
-def hmm_target_weights(probs, smoothing_window):
-    """
-    Target weight for the HMM strategy, taken from the shared signal
-    definition (src/models/signal.py) so the backtest trades exactly what
-    the dashboard shows and what paper trading would trade.
-    """
-    return compute_signal(probs, smoothing_window)["target_weight"]
-
-
 def build_target_weights(features, signal):
     """Target weights (decided at each day's close) for every strategy.
 

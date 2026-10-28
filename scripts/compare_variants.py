@@ -6,8 +6,9 @@ each setup on the same data.
 
 Variants (each adds one change to the one before):
   1. step5     - labeling "absolute", index returns, cash earns 0, NASDAQ spread 1 bp
-  2. labeling  - + labeling "relative"
-  3. current   - + tradable funds, T-bill cash, ONEQ spread (= config/config.yaml)
+  2. labeling  - + labeling "relative" (judged against the asset's own Sharpe)
+  3. anchors   - + labeling "sharpe" (best/worst-earning anchors, not calmest/most volatile)
+  4. current   - + tradable funds, T-bill cash, ONEQ spread (= config/config.yaml)
 
 Each variant trains into its own temporary folder, so the live store and
 models are never touched. The summary goes to data/variants.json, which
@@ -44,7 +45,7 @@ METRICS = ["Sharpe", "CAGR", "Max DD", "Avg. Exposure"]
 
 
 def variant_configs(cfg):
-    """The three setups, each one change away from the previous."""
+    """The setups, each one change away from the previous."""
     step5 = copy.deepcopy(cfg)
     step5["model"]["labeling"]["rule"] = "absolute"
     step5["backtest"].pop("instruments", None)
@@ -54,9 +55,13 @@ def variant_configs(cfg):
     labeling = copy.deepcopy(step5)
     labeling["model"]["labeling"]["rule"] = "relative"
 
+    anchors = copy.deepcopy(step5)
+    anchors["model"]["labeling"]["rule"] = "sharpe"
+
     return [
         ("step5", "Step 5 setup: fixed Sharpe bars, index returns, 0% on cash", step5),
         ("labeling", "+ relative labeling rule", labeling),
+        ("anchors", "+ Sharpe-anchored labeling rule", anchors),
         ("current", "+ tradable funds (SPY, ONEQ, GLD) and T-bill cash = current setup", copy.deepcopy(cfg)),
     ]
 

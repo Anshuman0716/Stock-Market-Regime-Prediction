@@ -23,12 +23,12 @@ model:
   refit_cadence: "annual"
   min_train_days: 2268  # approx 9 years of initial data to capture full macro cycle
   # How each fold's hidden states become Bull / Transition / Crisis, using
-  # training data only (src/models/labeling.py). "relative": a middle-
-  # volatility state is Bull only if its Sharpe beats both bull_sharpe and
-  # the asset's own training-window Sharpe. "absolute": the fixed bars
-  # used up to Step 5.
+  # training data only (src/models/labeling.py). "sharpe": best-earning
+  # state is Bull, worst is Crisis, the rest are Bull only if they beat both
+  # bull_sharpe and the asset's own training-window Sharpe. "relative"
+  # (Step 6) and "absolute" (up to Step 5) anchor on volatility instead.
   labeling:
-    rule: "relative"
+    rule: "sharpe"
     bull_sharpe: 0.2
     crisis_sharpe: -0.1
 

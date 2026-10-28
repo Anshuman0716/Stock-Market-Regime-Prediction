@@ -18,6 +18,8 @@ made.
 | `gate_phase1.md`, `gate_phase2.md` | Review checklists for the first two build phases |
 | `phase2_summary.md` | Why the feature set, covariance type and training window were changed |
 | `statistical_findings.md` | First significance tests and feature ablation (numbers superseded) |
+| `final_audit.md` | Pre-roadmap model-validation review. Its findings (duplicated smoothing, raw labels in the database, backfill re-fitting) were fixed in Steps 2–3 |
+| `number_provenance.md` | Where the pre-roadmap README numbers came from. Those numbers, including the "56% → 22% drawdown" claim, came from the evaluation bug fixed in Step 1 |
 | `figures/bic_aic_sweep.png` | Early BIC / AIC sweep over the number of states |
 
 What changed since, in short:
@@ -30,3 +32,6 @@ What changed since, in short:
   replaced by a bounded volume-flow measure (Step 2).
 - **One pipeline, one store.** `scripts/run_pipeline.py` trains once and
   writes everything the dashboard and notebooks read (Step 3).
+- **Realistic P&L and a tougher test (Steps 6–7).** Tradable funds, interest
+  on cash, a volatility-targeting baseline, and states labeled by what they
+  earned rather than how calm they were.

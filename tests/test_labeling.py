@@ -130,3 +130,48 @@ def test_unknown_rule_is_rejected():
     df, hidden = _strong_uptrend_states()
     with pytest.raises(ValueError, match="labeling rule"):
         rank_and_map_states(df, hidden, n_states=4, rule="mode")
+
+
+# ── The "sharpe" rule (default from Step 7): anchors by earnings, not calm ───
+
+def _gold_like_states():
+    """Calmest state is a quiet drift that earns less than holding the asset;
+    the rally happens in a more volatile state."""
+    return _states({
+        0: (0.0001, 0.005),   # calmest: quiet drift, Sharpe ~ 0.3
+        1: (0.005, 0.015),    # rally, Sharpe ~ 5.3
+        2: (-0.002, 0.010),   # sell-off, Sharpe ~ -3.2
+        3: (0.0001, 0.025),   # most volatile, but directionless: Sharpe ~ 0.06
+    })
+
+
+def test_sharpe_rule_does_not_call_a_quiet_drift_bull():
+    df, hidden = _gold_like_states()
+    assert 0.3 < asset_sharpe(df, 252)  # the drift earns less than holding the asset
+    assert rank_and_map_states(df, hidden, n_states=4, rule="sharpe") == {
+        0: "Transition", 1: "Bull", 2: "Crisis", 3: "Transition"}
+    # The volatility anchor calls the drift Bull and the directionless state Crisis.
+    assert rank_and_map_states(df, hidden, n_states=4, rule="relative") == {
+        0: "Bull", 1: "Bull", 2: "Crisis", 3: "Crisis"}
+
+
+def test_sharpe_rule_matches_volatility_anchors_for_stock_like_states():
+    """Stocks: the calmest state earns the most and the most volatile the
+    least, so both anchoring choices give the same labels."""
+    df, hidden = _states({
+        0: (0.0008, 0.006),    # calm rally
+        1: (0.0001, 0.011),    # choppy
+        2: (-0.0003, 0.016),   # weak
+        3: (-0.003, 0.035),    # crash
+    })
+    assert (rank_and_map_states(df, hidden, n_states=4, rule="sharpe")
+            == rank_and_map_states(df, hidden, n_states=4, rule="relative"))
+
+
+def test_sharpe_rule_always_has_a_bull_and_a_crisis_state():
+    rng = np.random.default_rng(3)
+    for _ in range(20):
+        spec = {k: (rng.normal(0, 0.002), rng.uniform(0.004, 0.03)) for k in range(4)}
+        df, hidden = _states(spec)
+        labels = set(rank_and_map_states(df, hidden, n_states=4, rule="sharpe").values())
+        assert {"Bull", "Crisis"} <= labels

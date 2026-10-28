@@ -9,7 +9,8 @@ import pandas as pd
 import pytest
 
 from src.data.loader import get_ann_factor
-from src.backtest.evaluation import evaluate_asset, out_of_sample_start, hmm_target_weights
+from src.backtest.evaluation import evaluate_asset, out_of_sample_start
+from src.models.signal import compute_signal
 from src.backtest.metrics import compute_sharpe, compute_cagr, compute_sortino
 from src.stats.significance import block_bootstrap_sharpe_diff, run_significance_suite
 
@@ -87,10 +88,10 @@ def test_pre_oos_crash_does_not_affect_results():
 def test_hmm_weights_are_trailing_only():
     """Changing a future probability must not change today's weight."""
     _, probs = _synthetic(oos_from=300)
-    w1 = hmm_target_weights(probs, 5)
+    w1 = compute_signal(probs, 5)["target_weight"]
     probs2 = probs.copy()
     probs2.iloc[400:, 0] = 0.0
-    w2 = hmm_target_weights(probs2, 5)
+    w2 = compute_signal(probs2, 5)["target_weight"]
     pd.testing.assert_series_equal(w1.iloc[:400], w2.iloc[:400])
 
 

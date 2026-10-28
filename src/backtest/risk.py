@@ -54,20 +54,6 @@ def compute_cornish_fisher_var(returns, confidence_level=0.95):
 
     return -(mean + z_cf * std)
 
-def compute_cornish_fisher_cvar(returns, confidence_level=0.95):
-    """
-    Cornish-Fisher Daily CVaR. Approximated using the tail of the Cornish-Fisher VaR.
-    """
-    returns = returns.dropna()
-    if len(returns) == 0:
-        return np.nan
-    var_cf = compute_cornish_fisher_var(returns, confidence_level)
-    tail_losses = returns[returns <= -var_cf]
-    if len(tail_losses) == 0:
-        return np.nan
-    return -tail_losses.mean()
-
-
 # Position sizing (target weight = smoothed P(Bull)) is defined once, in
 # src/models/signal.py.
 

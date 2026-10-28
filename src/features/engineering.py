@@ -126,6 +126,16 @@ def build_features(df, vix_close):
     return features
 
 def assert_no_lookahead(build_fn, df, vix_close, n_checks=20, seed=42):
+    """
+    Property check: features at day t must not change when later rows are deleted.
+
+    Builds features on the full history once, then on the history cut at
+    `n_checks` random days t, and compares the row at t. If any indicator
+    used data after t (a centered window, a backward fill, a full-sample
+    statistic), the two values differ and this raises AssertionError.
+
+    Returns the number of cut points that were checked and matched.
+    """
     full_features = build_fn(df, vix_close)
     if full_features.empty:
         raise ValueError("build_fn returned an empty DataFrame on full data.")
@@ -162,16 +172,3 @@ def assert_no_lookahead(build_fn, df, vix_close, n_checks=20, seed=42):
         passed += 1
 
     return passed
-
-if __name__ == "__main__":
-    import sys
-    sys.path.insert(0, ".")
-    from src.data.loader import load_config, download_prices
-
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
-    cfg = load_config()
-    data = download_prices(config=cfg)
-    spx = data["spx"]
-    features = build_features(spx, spx["VIX_Close"])
-    assert len(features.columns) == 8, f"Expected 8 cols, got {len(features.columns)}"
-    print("ALL CHECKS PASSED")
