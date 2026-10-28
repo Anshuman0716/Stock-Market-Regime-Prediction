@@ -9,11 +9,11 @@ from src.backtest.metrics import compute_sharpe
 def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60, n_bootstraps=2000, seed=42):
     """
     Computes a moving-block bootstrap confidence interval and p-value for the difference in Sharpe ratios.
-    
+
     Why block bootstrap: Daily returns are autocorrelated and volatility clusters. An i.i.d. bootstrap
     would destroy this temporal structure, resulting in artificially narrow confidence intervals.
     We use block_size=60 (approx 1 quarter) to preserve short/medium-term macroeconomic autocorrelation.
-    
+
     Parameters
     ----------
     returns_a : pd.Series or np.ndarray
@@ -22,7 +22,7 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
         Returns of strategy B (e.g., Baseline)
     ann_factor : int
         Annualization factor (252 for equities, 365 for crypto)
-        
+
     Returns
     -------
     dict
@@ -32,12 +32,12 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
         p_value: two-sided p-value
     """
     rng = np.random.default_rng(seed)
-    
+
     # Ensure inputs are numpy arrays
     ra = np.asarray(returns_a)
     rb = np.asarray(returns_b)
     n = len(ra)
-    
+
     if len(ra) != len(rb):
         raise ValueError("returns_a and returns_b must cover the same dates.")
     if n < 2 * block_size:
@@ -47,7 +47,7 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
         return compute_sharpe(r, ann_factor)
 
     obs_diff = calc_sharpe(ra) - calc_sharpe(rb)
-    
+
     # Block bootstrap
     diffs = np.empty(n_bootstraps)
     for i in range(n_bootstraps):
@@ -55,18 +55,18 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
         # We sample n // block_size + 1 blocks to cover the array
         num_blocks = int(np.ceil(n / block_size))
         starts = rng.integers(0, n - block_size + 1, size=num_blocks)
-        
+
         # Build the bootstrap sample
         idx = np.concatenate([np.arange(s, s + block_size) for s in starts])[:n]
-        
+
         r_a_boot = ra[idx]
         r_b_boot = rb[idx]
-        
+
         diffs[i] = calc_sharpe(r_a_boot) - calc_sharpe(r_b_boot)
-        
+
     ci_lower = np.percentile(diffs, 2.5)
     ci_upper = np.percentile(diffs, 97.5)
-    
+
     # Two-sided p-value for H0: "no Sharpe difference".
     #
     # Why centre the bootstrap distribution: the bootstrap draws show how the
@@ -96,30 +96,31 @@ def block_bootstrap_sharpe_diff(returns_a, returns_b, ann_factor, block_size=60,
 def ledoit_wolf_sharpe_diff(returns_a, returns_b, ann_factor):
     """
     Parametric cross-check for Sharpe ratio difference based on the robust Delta method
-    with HAC (Heteroskedasticity and Autocorrelation Consistent) standard errors, 
+    with HAC (Heteroskedasticity and Autocorrelation Consistent) standard errors,
     similar in spirit to the Ledoit-Wolf (2008) robust Sharpe test.
     """
     ra = np.asarray(returns_a)
     rb = np.asarray(returns_b)
     n = len(ra)
-    
+
     mu_a, mu_b = np.mean(ra), np.mean(rb)
     var_a, var_b = np.var(ra, ddof=0), np.var(rb, ddof=0)
-    
+
     sharpe_a = (mu_a / np.sqrt(var_a)) if var_a > 0 else 0
     sharpe_b = (mu_b / np.sqrt(var_b)) if var_b > 0 else 0
-    
+
     obs_diff = (sharpe_a - sharpe_b) * np.sqrt(ann_factor)
-    
+
     # Simplified HAC Delta Method
-    # Define moment conditions m_t = [r_{a,t} - mu_a, r_{b,t} - mu_b, (r_{a,t}-mu_a)^2 - var_a, (r_{b,t}-mu_b)^2 - var_b]
+    # Define moment conditions
+    # m_t = [r_{a,t} - mu_a, r_{b,t} - mu_b, (r_{a,t}-mu_a)^2 - var_a, (r_{b,t}-mu_b)^2 - var_b]
     m = np.column_stack([
         ra - mu_a,
         rb - mu_b,
         (ra - mu_a)**2 - var_a,
         (rb - mu_b)**2 - var_b
     ])
-    
+
     # Estimate long-run covariance of moments (Newey-West style, lag=5)
     lag = 5
     omega = np.dot(m.T, m) / n
@@ -127,7 +128,7 @@ def ledoit_wolf_sharpe_diff(returns_a, returns_b, ann_factor):
         gamma_j = np.dot(m[j:].T, m[:-j]) / n
         weight = 1 - j / (lag + 1)
         omega += weight * (gamma_j + gamma_j.T)
-        
+
     # Jacobian of Sharpe wrt moments
     # f(mu, var) = mu / sqrt(var)
     # df/dmu = 1/sqrt(var), df/dvar = -0.5 * mu / var^(3/2)
@@ -141,20 +142,20 @@ def ledoit_wolf_sharpe_diff(returns_a, returns_b, ann_factor):
         ])
     else:
         grad = np.zeros(4)
-        
+
     # Variance of the difference in Sharpe (daily)
     var_diff = np.dot(grad.T, np.dot(omega, grad))
-    
+
     # Annualize standard error
     se_diff = np.sqrt(var_diff / n) * np.sqrt(ann_factor)
-    
+
     # Z-test
     if se_diff > 0:
         z_stat = obs_diff / se_diff
         p_value = 2 * (1 - norm.cdf(abs(z_stat)))
     else:
         p_value = 1.0
-        
+
     return {
         "diff": obs_diff,
         "p_value": p_value,
@@ -169,19 +170,19 @@ def adjust_pvalues(p_values, method='holm'):
     """
     p_values = np.array(p_values)
     m = len(p_values)
-    
+
     # Sort indices
     order = np.argsort(p_values)
     sorted_pvals = p_values[order]
-    
+
     adjusted = np.zeros(m)
     current_max = 0.0
-    
+
     for i, p in enumerate(sorted_pvals):
         adj_p = p * (m - i)
         current_max = min(max(current_max, adj_p), 1.0)
         adjusted[order[i]] = current_max
-        
+
     return adjusted
 
 

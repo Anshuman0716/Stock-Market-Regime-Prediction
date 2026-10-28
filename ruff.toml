@@ -1,0 +1,12 @@
+# Lint settings for this project (`ruff check .`). Kept deliberately small:
+# real errors (F), basic style (E, W) and import order is left to the author.
+line-length = 120
+extend-exclude = ["venv", ".venv"]
+
+[lint]
+select = ["E", "F", "W"]
+
+[lint.per-file-ignores]
+# Notebooks share one setup cell: it must chdir to the repo root before the
+# project imports (E402), and not every notebook uses every name it imports (F401).
+"notebooks/*.ipynb" = ["E402", "F401"]

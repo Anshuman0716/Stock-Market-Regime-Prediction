@@ -66,7 +66,7 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=25
         Sharpe > 0.2  -> Bull       (volatile rallies)
         Sharpe < -0.1 -> Crisis     (secondary sell-offs)
         otherwise     -> Transition (choppy / sideways)
-    
+
     Parameters
     ----------
     train_df : pd.DataFrame
@@ -89,7 +89,7 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=25
 
     # Sort states by volatility ascending
     stats.sort(key=lambda x: x["vol"])
-    
+
     # Merge rule:
     # 1. Lowest volatility state -> Bull
     # 2. Highest volatility state -> Crisis
@@ -97,12 +97,12 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=25
     #    - If Sharpe > 0.2 -> Bull (captures volatile rallies like 2024)
     #    - If Sharpe < -0.1 -> Crisis (captures secondary selloffs)
     #    - Else -> Transition (choppy/sideways)
-    
+
     state_map = {}
     if n_states == 4:
         state_map[stats[0]["state"]] = "Bull"
         state_map[stats[3]["state"]] = "Crisis"
-        
+
         for i in [1, 2]:
             if stats[i]["sharpe"] > 0.2:
                 state_map[stats[i]["state"]] = "Bull"
@@ -116,7 +116,7 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=25
         state_map[stats[-1]["state"]] = "Crisis"
         for i in range(1, len(stats) - 1):
             state_map[stats[i]["state"]] = "Transition"
-            
+
     return state_map
 
 
@@ -128,7 +128,7 @@ def save_fold_artifact(fold_idx, model, scaler, state_map, directory="models", t
     """
     os.makedirs(directory, exist_ok=True)
     filepath = os.path.join(directory, f"hmm_fold_{fold_idx}.joblib")
-    
+
     artifact = {
         "model": model,
         "scaler": scaler,
@@ -136,7 +136,7 @@ def save_fold_artifact(fold_idx, model, scaler, state_map, directory="models", t
         "fold_idx": fold_idx,
         "train_end": None if train_end is None else str(train_end),
     }
-    
+
     joblib.dump(artifact, filepath)
     return filepath
 

@@ -352,7 +352,8 @@ with tabs[4]:
         folds = load("load_folds", RUN_ID, asset)
         ft = pd.DataFrame({
             "Trades in": folds["test_start"].dt.year,
-            "Trained on": folds["train_start"].dt.strftime("%Y-%m-%d") + " → " + folds["train_end"].dt.strftime("%Y-%m-%d"),
+            "Trained on": (folds["train_start"].dt.strftime("%Y-%m-%d") + " → "
+                           + folds["train_end"].dt.strftime("%Y-%m-%d")),
             "Best log-likelihood": folds["best_log_likelihood"],
             "Starts converged": folds["n_converged"].astype(str) + " / " + folds["n_starts"].astype(str),
             "Bull states": folds["n_bull_states"], "Transition states": folds["n_transition_states"],
@@ -383,7 +384,8 @@ with tabs[5]:
         Asset=significance["asset_id"].map(asset_name),
         Baseline=significance["baseline"].map(STRATEGY_NAMES),
         _order=significance["asset_id"].map({a: i for i, a in enumerate(ASSETS)}),
-    ).sort_values(["_order", "baseline"])[["Asset", "Baseline", "sharpe_diff", "ci_lower", "ci_upper", "p_value", "p_value_hac", "p_value_holm"]]
+    ).sort_values(["_order", "baseline"])[["Asset", "Baseline", "sharpe_diff", "ci_lower", "ci_upper",
+                                           "p_value", "p_value_hac", "p_value_holm"]]
     st.dataframe(st_table, hide_index=True, use_container_width=True,
                  column_config={"sharpe_diff": num_col("Sharpe diff."), "ci_lower": num_col("95% low"),
                                 "ci_upper": num_col("95% high"), "p_value": num_col("p (bootstrap)", 3),

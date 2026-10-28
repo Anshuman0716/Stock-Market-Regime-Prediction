@@ -1,0 +1,11 @@
+# Development tools on top of the runtime requirements:
+#   pip install -r requirements-dev.txt
+-r requirements.txt
+
+# Run the notebooks headlessly (CI executes all four against the committed store)
+nbconvert>=7.16,<8.0
+nbclient>=0.10,<0.11
+ipykernel>=6.29,<7.0
+
+# Lint (settings in ruff.toml)
+ruff>=0.6,<1.0

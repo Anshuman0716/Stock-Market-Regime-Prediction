@@ -1,79 +1,84 @@
-import pytest
+"""
+Tests for the backtest engine, metrics and baselines: execution lag, costs,
+hand-computed metrics and causality of the baselines.
+"""
 import numpy as np
 import pandas as pd
+import pytest
+
+from src.backtest.baselines import buy_and_hold_weights, dma200_weights
 from src.backtest.engine import run_backtest
 from src.backtest.metrics import get_all_metrics
 
-def test_hand_computed_metrics():
-    # 1. metrics against hand-computed values on a tiny synthetic return series
-    # A series with known Sharpe and a known 50% drawdown
-    # To get 50% drawdown: 1.0 -> 0.5. Let's make returns: 0.0, -0.5, +1.0
-    # Portfolio: 1.0 -> 1.0 -> 0.5 -> 1.0. Max DD is exactly 0.5 (50%).
+
+def test_max_drawdown_hand_computed():
+    # Equity 1.0 -> 1.0 -> 0.5 -> 1.0: the worst fall from a peak is exactly 50%.
     returns = pd.Series([0.0, -0.5, 1.0])
-    weights = pd.Series([1.0, 1.0, 1.0])
-    
-    metrics = get_all_metrics(returns, weights, ann_factor=252, asset_name='test')
-    assert np.isclose(metrics['Max DD'], -0.5)
+    metrics = get_all_metrics(returns, pd.Series([1.0, 1.0, 1.0]), ann_factor=252, asset_name="test")
+    assert np.isclose(metrics["Max DD"], -0.5)
 
-def test_signal_lag():
-    # 2. signal lag: construct a synthetic series where a lookahead bug would
-    # produce an impossibly high Sharpe, and assert it doesn't.
-    # If the market alternates +10%, -10%, +10%, -10%
-    # And our target_weight perfectly predicts it on the SAME day:
-    dates = pd.date_range('2020-01-01', periods=10)
-    returns = pd.Series([0.1, -0.1, 0.1, -0.1, 0.1, -0.1, 0.1, -0.1, 0.1, -0.1], index=dates)
-    
-    # Perfect oracle targets
-    target_weights = pd.Series([1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0], index=dates)
-    
-    df = pd.DataFrame({'returns': returns})
-    
-    res = run_backtest(df, target_weights, cost_bps=0.0)
-    
-    # Due to lag, the target_weight for day t is executed at t+1 and earns return at t+2.
-    # So the weights earned will NOT match the perfect oracle, meaning the strategy shouldn't just win perfectly.
-    # A lookahead bug would give us only the +0.1 returns.
-    # Because of lag, we will actually hold the asset on the -0.1 days instead!
-    # target at t=0 (weight=1) -> executed entering t=2. t=2 return is 0.1, so we win.
-    # target at t=1 (weight=0) -> executed entering t=3. t=3 return is -0.1, we hold 0 weight.
-    # Wait, t=0 target is 1. executed_weight at t=2 is 1. 
-    # With this exact pattern, lag 2 actually perfectly aligns with the 2-day cycle!
-    # Let's use a non-repeating pattern to prove it.
-    
-    returns2 = pd.Series([0.1, 0.1, -0.5, 0.1, 0.1], index=dates[:5])
-    target_weights2 = pd.Series([0.0, 0.0, 0.0, 0.0, 0.0], index=dates[:5])
-    # The oracle says 0 everywhere because of the -0.5. If we set target to 1 right BEFORE the drop:
-    # Say we know day 2 is -0.5. 
-    target_weights_buggy = pd.Series([1.0, 0.0, 1.0, 1.0, 1.0], index=dates[:5])
-    # If there was no lag, we would have 0 weight on day 2 and miss the -0.5.
-    df2 = pd.DataFrame({'returns': returns2})
-    res2 = run_backtest(df2, target_weights_buggy, cost_bps=0.0)
-    
-    # Because of lag, the weight held at day 2 is the target from day 0, which is 1.0.
-    # So we DO suffer the -0.5 drop!
-    assert res2['net_return'].iloc[2] == -0.5
 
-def test_cost_model_arithmetic():
-    # 3. cost model arithmetic: turnover x cost equals the expected drag
-    dates = pd.date_range('2020-01-01', periods=4)
-    returns = pd.Series([0.0, 0.0, 0.0, 0.0], index=dates)
-    # Target weights cause turnover
-    target_weights = pd.Series([1.0, 0.0, 1.0, 0.0], index=dates)
-    df = pd.DataFrame({'returns': returns})
-    
-    # Cost = 100 bps = 0.01 per unit of turnover
-    res = run_backtest(df, target_weights, cost_bps=100.0)
-    
-    # turnover is diff of executed_weights (shifted 2).
-    # target: [1.0, 0.0, 1.0, 0.0]
-    # executed: [0.0, 0.0, 1.0, 0.0]
-    # turnover: [0.0, 0.0, 1.0, 1.0]
-    # expected cost: [0, 0, 0.01, 0.01]
-    
-    np.testing.assert_allclose(res['cost'].values, [0.0, 0.0, 0.01, 0.01])
-    
-    # 4. zero-cost vs full-cost runs differ
-    res_zero = run_backtest(df, target_weights, cost_bps=0.0)
-    assert res_zero['cost'].sum() == 0.0
-    assert res['cost'].sum() > 0.0
-    assert res_zero['net_return'].sum() > res['net_return'].sum()
+def test_weight_held_is_target_from_two_days_earlier():
+    """A weight decided at day t's close is traded at t+1's close and earns
+    day t+2's return. Checked on every day, not just one."""
+    rng = np.random.default_rng(0)
+    dates = pd.bdate_range("2020-01-01", periods=30)
+    returns = pd.Series(rng.normal(0, 0.01, 30), index=dates)
+    target = pd.Series(rng.uniform(0, 1, 30), index=dates)
+
+    res = run_backtest(pd.DataFrame({"returns": returns}), target, cost_bps=0.0)
+
+    expected_weight = target.shift(2).fillna(0.0)
+    np.testing.assert_allclose(res["executed_weight"], expected_weight)
+    np.testing.assert_allclose(res["net_return"], expected_weight * returns)
+
+
+def test_oracle_signal_cannot_dodge_a_known_crash():
+    """A target that 'knows' day 2 crashes only changes the weight from day 4,
+    so the crash is still taken. A look-ahead bug would avoid it."""
+    dates = pd.bdate_range("2020-01-01", periods=5)
+    returns = pd.Series([0.1, 0.1, -0.5, 0.1, 0.1], index=dates)
+    target = pd.Series([1.0, 1.0, 0.0, 1.0, 1.0], index=dates)  # flat exactly on the crash day
+    res = run_backtest(pd.DataFrame({"returns": returns}), target, cost_bps=0.0)
+    assert res["net_return"].iloc[2] == -0.5
+
+
+def test_cost_is_turnover_times_rate():
+    dates = pd.bdate_range("2020-01-01", periods=4)
+    df = pd.DataFrame({"returns": [0.0, 0.0, 0.0, 0.0]}, index=dates)
+    target = pd.Series([1.0, 0.0, 1.0, 0.0], index=dates)
+
+    # Held weights [0, 0, 1, 0] -> turnover [0, 0, 1, 1] -> cost at 100 bps.
+    res = run_backtest(df, target, cost_bps=100.0)
+    np.testing.assert_allclose(res["cost"].values, [0.0, 0.0, 0.01, 0.01])
+
+    free = run_backtest(df, target, cost_bps=0.0)
+    assert free["cost"].sum() == 0.0
+    assert free["net_return"].sum() > res["net_return"].sum()
+
+
+def test_cost_argument_is_required():
+    dates = pd.bdate_range("2020-01-01", periods=3)
+    with pytest.raises(TypeError):
+        run_backtest(pd.DataFrame({"returns": [0.0] * 3}, index=dates), pd.Series(1.0, index=dates))
+
+
+def test_buy_and_hold_is_always_fully_invested():
+    idx = pd.bdate_range("2020-01-01", periods=10)
+    assert (buy_and_hold_weights(idx) == 1.0).all()
+
+
+def test_dma200_is_flat_during_warm_up_and_causal():
+    rng = np.random.default_rng(3)
+    idx = pd.bdate_range("2015-01-01", periods=400)
+    close = pd.Series(100 * np.cumprod(1 + rng.normal(0, 0.01, 400)), index=idx)
+    w = dma200_weights(close)
+
+    # No average exists for the first 199 days: stay flat rather than guess.
+    assert (w.iloc[:199] == 0).all()
+    assert set(w.unique()) <= {0.0, 1.0}
+
+    # Changing future prices must not change any earlier weight.
+    shocked = close.copy()
+    shocked.iloc[300:] *= 3
+    pd.testing.assert_series_equal(dma200_weights(shocked).iloc[:300], w.iloc[:300])

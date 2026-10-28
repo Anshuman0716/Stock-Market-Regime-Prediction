@@ -1,12 +1,14 @@
 # Market Regime Detection System
 
+[![Tests](https://github.com/Anshuman0716/Stock-Market-Regime-Prediction/actions/workflows/tests.yml/badge.svg)](https://github.com/Anshuman0716/Stock-Market-Regime-Prediction/actions/workflows/tests.yml)
+
 **A quantitative data science & risk project**
 
 This project labels each trading day as **Bull, Transition or Crisis** using a 4-state Gaussian Hidden Markov Model (HMM) trained on 8 technical and macro features. It then tests whether moving in and out of the market based on those labels beats simple baselines after trading costs. It covers the S&P 500, NASDAQ, Gold and Bitcoin.
 
 The project's priority is an **honest evaluation**: no look-ahead bias anywhere in the pipeline, strictly out-of-sample results, the same costs and execution lag for every strategy, and statistical tests that correct for multiple comparisons.
 
-> **Status:** Steps 1–4 of 5 of the improvement roadmap are complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/run_pipeline.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`. Separate runs agree to within 10⁻¹¹ on every metric, and a refresh that reuses the saved models reproduces a full retrain exactly.
+> **Status:** all 5 steps of the improvement roadmap are complete (see [Roadmap](#9-roadmap)). All numbers below come from `scripts/run_pipeline.py` run on data up to **2026-10-26** and are read straight from `data/regime_store.db`. Separate runs agree to within 10⁻¹¹ on every metric, and a refresh that reuses the saved models reproduces a full retrain exactly.
 
 ---
 
@@ -201,11 +203,15 @@ Design notes:
 ├── scripts/
 │   ├── run_pipeline.py           # Run everything → models/ + data/regime_store.db
 │   └── paper_trade.py            # Alpaca paper-trading scaffold (dry run by default)
-├── tests/                        # pytest: look-ahead, lag, costs, evaluation, signal, pipeline, dashboard
-├── notebooks/                    # EDA, model development, backtest, SQL analysis
+├── tests/                        # pytest: look-ahead, lag, costs, labeling, risk, store, signal, pipeline, dashboard
+├── notebooks/                    # Analysis notebooks; read the store only (see below)
+├── docs/archive/                 # Historical project notes (numbers superseded; see its README)
 ├── models/                       # Persisted fold artifacts (model + scaler + state map)
-├── data/regime_store.db          # SQLite store read by the dashboard
-└── app.py                        # Streamlit dashboard (layout only; reads the store)
+├── data/regime_store.db          # SQLite store read by the dashboard and notebooks
+├── app.py                        # Streamlit dashboard (layout only; reads the store)
+├── requirements.txt              # Runtime dependencies
+├── requirements-dev.txt          # + notebook execution and lint tools
+└── ruff.toml                     # Lint settings
 ```
 
 ### SQLite tables
@@ -223,6 +229,17 @@ Design notes:
 | `regime_profiles`, `regime_transitions`, `regime_spells` | Out-of-sample description of the regimes: frequency, persistence, returns, average features |
 
 The schema is versioned with `PRAGMA user_version`; an out-of-date database is rebuilt automatically.
+
+### Notebooks
+
+All four read only `data/regime_store.db` through `src/`, so they run offline and always describe the same run as the dashboard. They are committed with their outputs, and CI re-executes them on every push.
+
+| Notebook | What it covers |
+|---|---|
+| `01_eda_and_features` | Price histories; the 8 features over 26 years; checks that stored features rebuild exactly from stored prices and contain no look-ahead; feature correlations on the first training window; features by regime |
+| `02_model_development` | Model selection on the **first training window only**: parameter counts, BIC / AIC for 2–6 states (diagonal vs full covariance), sensitivity to the random EM start, how fold 0's states were labeled |
+| `03_backtest_and_risk` | Headline metrics, equity and drawdown curves, calendar years, stress episodes, how quickly the signal reacted in each episode, tail risk and costs, significance tests |
+| `04_sql_analysis` | The same questions in SQL (window functions, CTEs, gaps-and-islands), each **cross-checked** against the tables the pipeline stored |
 
 ---
 
@@ -262,12 +279,12 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 |---|---|
 | **Volatility-based labeling** | The calmest state is always called Bull. When a training window is very volatile overall (Bitcoin since 2014), the calmest state can still include crashes. |
 | **Gaussian emissions** | `hmmlearn`'s Gaussian HMM assumes normal returns within each state. Real returns have fat tails. |
-| **Detection lag** | The 21-day trailing smoothing delays reactions to regime changes by up to ~3 weeks. That's the price of zero look-ahead. |
+| **Detection lag** | The 21-day trailing smoothing delays reactions to regime changes. In the S&P 500 stress episodes the smoothed regime left Bull 13–36 trading days after the peak (it was already Transition at the 2011 peak), when buy-and-hold had already lost between 1% and 19% (notebook 03). That's the price of zero look-ahead. |
 | **No Transition state for Gold and Bitcoin** | With the current labeling rule, every Gold and Bitcoin fold maps its 4 states to Bull or Crisis only. The rule is worth revisiting. |
 | **Stress-episode dates are equity-based** | The episodes are S&P 500 peak-to-trough windows applied to every asset, which shows how Gold and Bitcoin behaved during *equity* stress, not during their own crashes. |
 | **Index-level backtest** | `^GSPC` / `^IXIC` are traded as if they were investable, which ignores ETF tracking error and fees. |
 | **Private `hmmlearn` API** | Filtered probabilities use `hmmlearn._hmmc.forward_log`, so `hmmlearn` is pinned to `>=0.3,<0.4`. |
-| **Notebooks and older docs** | `notebooks/` and the phase docs in `docs/` predate Steps 1–2. They may show old numbers, and notebooks 01 and 03 import functions that were replaced by `src/models/signal.py`. They'll be refreshed in Step 5. |
+| **Number of states** | BIC on the first training window keeps falling up to 6 states (notebook 02). Four states are used because each can be mapped to an economic regime; this is a judgement call, not a statistical optimum. |
 
 ---
 
@@ -282,12 +299,20 @@ cd Stock-Market-Regime-Prediction
 python -m venv .venv
 .venv\Scripts\activate          # Windows
 # source .venv/bin/activate     # Mac / Linux
-pip install -r requirements.txt
+pip install -r requirements.txt               # or requirements-dev.txt for notebooks + lint
 
 python scripts/run_pipeline.py                 # train + evaluate + write the store (~3.5 min)
 python scripts/run_pipeline.py --reuse-models  # daily refresh with saved models (~15 s)
-pytest tests/                                  # test suite
+pytest                                         # test suite
 streamlit run app.py                           # dashboard at http://localhost:8501
+```
+
+Development checks (what CI runs on every push, on Python 3.10, 3.11 and 3.12):
+
+```bash
+ruff check .                                   # lint (settings in ruff.toml)
+pytest                                         # tests
+jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb   # re-run the notebooks
 ```
 
 On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/) on Python 3.12.
@@ -302,7 +327,9 @@ On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/)
 | 2 | One signal definition shared by backtest, store, dashboard and paper trading; scale-free features; continuous forward pass; EM restarts | ✅ Done |
 | 3 | A single pipeline that trains once and writes everything (per-year and stress-episode metrics, fold info, regime profiles, transitions, chart series); fast refresh with saved models; crash-safe publishing; costs in config | ✅ Done |
 | 4 | Dashboard rebuild in Plotly: overview, regime timeline, performance vs baselines, risk, model insight, statistical evidence, paper trading; read-only, colour-blind-safe, tested headlessly | ✅ Done |
-| 5 | Repo clean-up, refreshed notebooks/docs, more tests, CI updates | ⏳ Next |
+| 5 | Notebooks rewritten to read the store (offline, cross-checked, executed in CI); old docs archived; tests for labeling, VaR/CVaR, baselines and the store; tests no longer write into the repo; lint; CI on Python 3.10–3.12 for every branch | ✅ Done |
+
+Possible next steps (not started): revisit the labeling rule so Gold and Bitcoin can have a Transition regime; backtest tradable ETFs instead of index levels; compare against a volatility-targeting baseline.
 
 ---
 
@@ -313,7 +340,8 @@ On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/)
 - **Features:** `ta`
 - **Data & persistence:** `yfinance`, SQLite, `joblib`, parquet
 - **UI:** `streamlit`, `plotly`
-- **Testing / CI:** `pytest`, GitHub Actions
+- **Analysis:** Jupyter notebooks, `matplotlib`
+- **Testing / CI:** `pytest`, `ruff`, GitHub Actions
 
 ---
 

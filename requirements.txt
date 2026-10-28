@@ -29,6 +29,9 @@ scikit-learn>=1.5,<1.7
 # Persistence
 joblib>=1.4,<1.5
 
+# Paper trading (scripts/paper_trade.py talks to the Alpaca REST API)
+requests>=2.31,<3.0
+
 # Config
 pyyaml>=6.0,<7.0
 

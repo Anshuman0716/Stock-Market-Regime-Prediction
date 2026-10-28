@@ -1,5 +1,9 @@
 """
-Risk metrics (VaR / CVaR) and transaction cost modeling.
+Daily tail-risk metrics: historical and Cornish-Fisher VaR / CVaR.
+
+Losses are returned as positive numbers (0.02 = a 2% one-day loss).
+Missing returns are dropped first, so an empty or all-missing series gives
+NaN instead of an error.
 """
 import numpy as np
 from scipy.stats import norm
@@ -9,17 +13,19 @@ from scipy.stats import norm
 # To scale to T days, one might use sqrt(T), but this understates risk under volatility clustering.
 
 def compute_historical_var(returns, confidence_level=0.95):
-    """Historical Daily Value at Risk (VaR)."""
+    """Historical Daily Value at Risk (VaR): the loss exceeded on (1 - level) of days."""
+    returns = returns.dropna()
     if len(returns) == 0:
         return np.nan
-    return -np.percentile(returns.dropna(), 100 * (1 - confidence_level))
+    return -np.percentile(returns, 100 * (1 - confidence_level))
 
 def compute_historical_cvar(returns, confidence_level=0.95):
-    """Historical Daily Conditional Value at Risk (CVaR)."""
+    """Historical Daily Conditional Value at Risk (CVaR): the average loss on the days beyond VaR."""
+    returns = returns.dropna()
     if len(returns) == 0:
         return np.nan
     var = compute_historical_var(returns, confidence_level)
-    tail_losses = returns.dropna()[returns.dropna() <= -var]
+    tail_losses = returns[returns <= -var]
     if len(tail_losses) == 0:
         return np.nan
     return -tail_losses.mean()
@@ -33,19 +39,19 @@ def compute_cornish_fisher_var(returns, confidence_level=0.95):
     returns = returns.dropna()
     if len(returns) < 4:
         return np.nan
-    
+
     z = norm.ppf(1 - confidence_level)
     mean = returns.mean()
     std = returns.std()
     skew = returns.skew()
     kurt = returns.kurtosis() # pandas kurtosis is excess kurtosis
-    
+
     if std == 0:
         return np.nan
-        
+
     # Cornish-Fisher expansion
     z_cf = z + (z**2 - 1) * skew / 6 + (z**3 - 3*z) * kurt / 24 - (2*z**3 - 5*z) * (skew**2) / 36
-    
+
     return -(mean + z_cf * std)
 
 def compute_cornish_fisher_cvar(returns, confidence_level=0.95):

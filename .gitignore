@@ -33,3 +33,9 @@ models/*.joblib
 *.swo
 .DS_Store
 Thumbs.db
+
+# ── Generated outputs that don't belong in git ───────────────────────
+models/test/
+notebooks/data/
+artifacts/
+.ruff_cache/

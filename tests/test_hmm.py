@@ -1,85 +1,58 @@
-import pytest
+"""
+Tests for the walk-forward HMM: training windows, per-fold scaling and
+filtered (forward-only) probabilities.
+"""
+import os
+
+import joblib
 import numpy as np
-import pandas as pd
 from hmmlearn.hmm import GaussianHMM
 
-from src.models.hmm import walk_forward_predict, predict_proba_filtered
-from src.features.engineering import build_features, FEATURE_COLUMNS
-from src.models.labeling import rank_and_map_states
+from src.features.engineering import FEATURE_COLUMNS, build_features
+from src.models.hmm import predict_proba_filtered, walk_forward_predict
 
-@pytest.fixture
-def mock_features(sample_spx, sample_vix):
-    # build a small feature set spanning a few years for walk forward
-    feat = build_features(sample_spx, sample_vix['Close'])
-    feat['returns'] = sample_spx['Close'].pct_change()
-    return feat.dropna()
+CFG = {"model": {"n_states": 3, "covariance_type": "diag", "n_iter": 10, "n_init": 1,
+                 "min_train_days": 200, "smoothing_window": 5}}
 
-def test_walk_forward_no_future_data_and_scaler_differs(mock_features):
-    # Mock config
-    cfg = {
-        'model': {
-            'n_states': 3,
-            'covariance_type': 'diag',
-            'n_iter': 10,
-            'min_train_days': 200,
-            'smoothing_window': 5
-        }
-    }
-    
-    # We will modify hmm.py slightly in our minds to assert on the artifacts if needed, 
-    # or we can test walk_forward_predict and check folds_info
-    raw_labels, out_probs, folds_info = walk_forward_predict(mock_features, FEATURE_COLUMNS, cfg, asset_name="test")
-    
-    # Check folds_info
-    assert len(folds_info) >= 1
-    
-    # 1. Walk-forward folds never include future data in their training window
-    for fold in folds_info:
-        # train_end must be strictly less than test_start
-        assert fold['train_end'] < fold['test_start']
-        
-    # The scaler is fit per fold (assert scaler statistics differ across folds)
-    # We can load the artifacts saved by walk_forward_predict to verify this.
-    import joblib
-    import os
-    if len(folds_info) > 1:
-        scaler0 = joblib.load(os.path.join("models", "test", "hmm_fold_0.joblib"))['scaler']
-        scaler1 = joblib.load(os.path.join("models", "test", "hmm_fold_1.joblib"))['scaler']
-        
-        # Check that the means are not exactly identical, proving they were fit independently on different data
-        assert not np.array_equal(scaler0.mean_, scaler1.mean_)
 
-def test_filtered_vs_smoothed():
-    # Filtered probabilities differ from full-sequence smoothed probabilities
-    # (if they are identical, the forward-only implementation silently regressed)
-    np.random.seed(42)
-    X = np.random.randn(100, 2)
-    
-    model = GaussianHMM(n_components=3, covariance_type="diag", n_iter=10, random_state=42)
-    model.fit(X)
-    
-    # hmmlearn's predict_proba uses the forward-backward algorithm (smoothed)
-    smoothed_probs = model.predict_proba(X)
-    
-    # Our explicitly filtered probabilities (forward-only)
-    filtered_probs = predict_proba_filtered(model, X)
-    
-    # They should sum to 1
-    assert np.allclose(filtered_probs.sum(axis=1), 1.0)
-    assert np.allclose(smoothed_probs.sum(axis=1), 1.0)
-    
-    # They should NOT be identical, because smoothed uses future data within the sequence
-    # and filtered does not.
-    assert not np.allclose(smoothed_probs, filtered_probs)
-    
-def test_state_mapping_deterministic():
-    # state->label mapping is deterministic given a seed
-    df = pd.DataFrame({
-        'returns': np.random.randn(1000)
-    })
-    states = np.random.randint(0, 3, size=1000)
-    
-    map1 = rank_and_map_states(df, states, n_states=3)
-    map2 = rank_and_map_states(df, states, n_states=3)
-    
-    assert map1 == map2
+def test_walk_forward_trains_on_the_past_and_scales_per_fold(sample_spx, sample_vix, tmp_path):
+    features = build_features(sample_spx, sample_vix["Close"])
+    _, _, folds = walk_forward_predict(features, FEATURE_COLUMNS, CFG, asset_name="test",
+                                       model_dir=str(tmp_path))
+    assert len(folds) >= 2, "sample data should give at least two yearly folds"
+
+    for fold in folds:
+        # Training always ends before the year it predicts.
+        assert fold["train_end"] < fold["test_start"]
+
+    # Each fold fits its own scaler on its own (longer) training window, so
+    # the fitted means differ. Identical means would suggest one scaler was
+    # fit once and reused, e.g. on the full sample.
+    s0 = joblib.load(os.path.join(tmp_path, "hmm_fold_0.joblib"))["scaler"]
+    s1 = joblib.load(os.path.join(tmp_path, "hmm_fold_1.joblib"))["scaler"]
+    assert not np.array_equal(s0.mean_, s1.mean_)
+
+
+def test_filtered_probabilities_differ_from_smoothed():
+    """Forward-only (filtered) probabilities must not equal forward-backward
+    (smoothed) ones; if they did, the filter would be silently using future rows."""
+    rng = np.random.default_rng(42)
+    X = rng.standard_normal((100, 2))
+    model = GaussianHMM(n_components=3, covariance_type="diag", n_iter=10, random_state=42).fit(X)
+
+    smoothed = model.predict_proba(X)
+    filtered = predict_proba_filtered(model, X)
+
+    assert np.allclose(filtered.sum(axis=1), 1.0)
+    assert not np.allclose(smoothed, filtered)
+    # The last row has no future to look at, so there the two must agree.
+    np.testing.assert_allclose(filtered[-1], smoothed[-1], atol=1e-8)
+
+
+def test_filtered_probability_at_t_ignores_later_rows():
+    rng = np.random.default_rng(1)
+    X = rng.standard_normal((80, 2))
+    model = GaussianHMM(n_components=2, covariance_type="diag", n_iter=10, random_state=0).fit(X)
+    full = predict_proba_filtered(model, X)
+    prefix = predict_proba_filtered(model, X[:50])
+    np.testing.assert_allclose(full[:50], prefix)

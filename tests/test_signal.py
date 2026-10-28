@@ -71,42 +71,42 @@ def test_fit_best_hmm_keeps_highest_likelihood():
     assert model.score(X) == pytest.approx(max(lls))
 
 
-def test_walk_forward_is_causal(features):
+def test_walk_forward_is_causal(features, tmp_path):
     """Deleting the last year of data must not change any earlier prediction.
 
     If any step (scaling, fitting, labeling, forward pass) peeked at later
     data, the predictions for the earlier years would move.
     """
-    _, full, _ = walk_forward_predict(features, FEATURE_COLUMNS, CFG, asset_name="test")
+    _, full, _ = walk_forward_predict(features, FEATURE_COLUMNS, CFG, model_dir=str(tmp_path / "full"))
     cut_year = features.index.year.max()
     truncated = features[features.index.year < cut_year]
-    _, part, _ = walk_forward_predict(truncated, FEATURE_COLUMNS, CFG, asset_name="test")
+    _, part, _ = walk_forward_predict(truncated, FEATURE_COLUMNS, CFG, model_dir=str(tmp_path / "part"))
     pd.testing.assert_frame_equal(full.loc[part.index], part)
 
 
-def test_live_signal_matches_backtest(features):
+def test_live_signal_matches_backtest(features, tmp_path):
     """The paper-trading path reproduces the backtest's probabilities exactly.
 
     For the latest fold, running predict_latest_probs (what paper_trade.py
     uses) over the full history must give the same test-year probabilities
     as walk_forward_predict produced.
     """
-    _, probs, folds = walk_forward_predict(features, FEATURE_COLUMNS, CFG, asset_name="test")
+    _, probs, folds = walk_forward_predict(features, FEATURE_COLUMNS, CFG, model_dir=str(tmp_path))
     last = folds[-1]
-    artifact = load_fold_artifact(last["fold_idx"], directory="models/test")
+    artifact = load_fold_artifact(last["fold_idx"], directory=str(tmp_path))
     live = predict_latest_probs(features, artifact, FEATURE_COLUMNS)
     test_rows = probs.index[probs.index.date >= last["test_start"]]
     pd.testing.assert_frame_equal(live.loc[test_rows], probs.loc[test_rows], check_dtype=False)
 
 
-def test_probabilities_continue_across_year_boundary(features):
+def test_probabilities_continue_across_year_boundary(features, tmp_path):
     """No reset on 1 January: the first test day of a fold is not the
     model's generic start distribution. We check the walk-forward output
     equals a single continuous forward pass for that fold."""
-    _, probs, folds = walk_forward_predict(features, FEATURE_COLUMNS, CFG, asset_name="test")
+    _, probs, folds = walk_forward_predict(features, FEATURE_COLUMNS, CFG, model_dir=str(tmp_path))
     assert len(folds) >= 2
     fold = folds[1]
-    artifact = load_fold_artifact(fold["fold_idx"], directory="models/test")
+    artifact = load_fold_artifact(fold["fold_idx"], directory=str(tmp_path))
     history = features[features.index.date <= fold["test_end"]]
     continuous = predict_latest_probs(history, artifact, FEATURE_COLUMNS)
     first_day = probs.index[probs.index.date >= fold["test_start"]][0]

@@ -133,6 +133,23 @@ def load_timeline(db_path, run_id, asset_id):
     return _read(db_path, sql, (run_id, asset_id), dates=("date",)).set_index("date")
 
 
+def load_prices(db_path, asset_id):
+    """Daily OHLCV for one asset (full history, not only the out-of-sample window)."""
+    return _read(db_path, "SELECT date, open, high, low, close, volume FROM prices WHERE asset_id = ? ORDER BY date",
+                 (asset_id,), dates=("date",)).set_index("date")
+
+
+def load_features(db_path, asset_id):
+    """The 8 model features for one asset, wide (one column per feature), full history.
+
+    The full history matters for notebooks: model-selection experiments must
+    use the first training window, which lies before the out-of-sample period.
+    """
+    df = _read(db_path, "SELECT date, feature_name, value FROM features WHERE asset_id = ?",
+               (asset_id,), dates=("date",))
+    return df.pivot(index="date", columns="feature_name", values="value").sort_index()
+
+
 def load_daily(db_path, run_id, asset_id):
     """Daily backtest rows for every strategy (long format)."""
     sql = """SELECT strategy, date, weight, net_return, turnover, cost, equity, drawdown, rolling_sharpe

@@ -32,7 +32,7 @@ def get_latest_model(asset_name="spx"):
     model_dir = Path(f"models/{asset_name}")
     if not model_dir.exists():
         raise FileNotFoundError(f"No models found for {asset_name}")
-    
+
     folds = []
     for f in model_dir.glob("hmm_fold_*.joblib"):
         try:
@@ -42,7 +42,7 @@ def get_latest_model(asset_name="spx"):
             pass
     if not folds:
         raise FileNotFoundError(f"No valid fold models found in {model_dir}")
-    
+
     latest_fold = max(folds)
     return load_fold_artifact(latest_fold, directory=str(model_dir))
 
@@ -91,7 +91,7 @@ def submit_order(symbol, qty, side, api_key, api_secret, dry_run=True):
     if dry_run:
         logger.info(f"[DRY RUN] Would submit order: {side} {qty} {symbol}")
         return {"status": "dry_run", "qty": qty, "side": side}
-        
+
     url = f"{ALPACA_API_BASE_URL}/v2/orders"
     headers = {
         "APCA-API-KEY-ID": api_key,
@@ -116,7 +116,8 @@ def log_trade(record, log_file="data/paper_trades.csv"):
     file_exists = os.path.isfile(log_file)
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     with open(log_file, 'a', newline='') as csvfile:
-        fieldnames = ['timestamp', 'asset', 'target_weight', 'current_weight', 'qty_ordered', 'side', 'dry_run', 'p_bull']
+        fieldnames = ['timestamp', 'asset', 'target_weight', 'current_weight', 'qty_ordered', 'side',
+                      'dry_run', 'p_bull']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if not file_exists:
             writer.writeheader()
@@ -127,12 +128,13 @@ def main():
     parser.add_argument('--asset', type=str, default='spx', help="Asset key to trade (e.g. spx)")
     parser.add_argument('--symbol', type=str, default='SPY', help="Broker symbol for the asset (e.g. SPY)")
     parser.add_argument('--live', action='store_true', help="Disable dry run and submit actual paper trades")
-    parser.add_argument('--max-weight-change', type=float, default=0.5, help="Guardrail: max allowed weight change in one day")
+    parser.add_argument('--max-weight-change', type=float, default=0.5,
+                        help="Guardrail: max allowed weight change in one day")
     args = parser.parse_args()
 
     api_key = os.environ.get("ALPACA_API_KEY_ID")
     api_secret = os.environ.get("ALPACA_API_SECRET_KEY")
-    
+
     if not args.live:
         logger.info("Running in DRY-RUN mode.")
     else:
@@ -145,13 +147,13 @@ def main():
     # Download prices config defaults to 'spx' etc.
     cfg = load_config()
     data = download_prices(cfg)
-    
+
     if args.asset not in data:
         logger.error(f"Asset '{args.asset}' not found in downloaded data.")
         sys.exit(1)
-        
+
     asset_df = data[args.asset]
-    
+
     # Guardrail: stale data check
     latest_date = asset_df.index[-1].date()
     today = datetime.now().date()
@@ -159,7 +161,7 @@ def main():
     if (today - latest_date).days > 3:
         logger.error(f"Guardrail tripped: Latest data is stale ({latest_date}). Today is {today}.")
         sys.exit(1)
-        
+
     features = build_features(asset_df, asset_df['VIX_Close'])
 
     # Guardrail: the latest trading day must have a full feature row.
