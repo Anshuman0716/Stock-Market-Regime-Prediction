@@ -40,7 +40,7 @@ matplotlib>=3.9,<3.11
 plotly>=5.22,<6.0
 
 # Dashboard
-streamlit>=1.37,<1.42
+streamlit>=1.45.1,<1.46   # 1.45.1 fixes the "Bad message format: Tried to use SessionInfo" popup on reconnect
 
 # Testing
 pytest>=8.2,<9.0
