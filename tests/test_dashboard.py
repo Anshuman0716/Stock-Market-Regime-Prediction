@@ -14,8 +14,9 @@ import yaml
 
 import src.pipeline as pipeline
 from src.dashboard import charts, data
-from src.dashboard.summary import headline_findings, scoreboard_table
-from src.dashboard.theme import STRATEGY_ORDER
+from src.backtest.portfolio import PORTFOLIO_ID, PortfolioSettings
+from src.dashboard.summary import headline_findings, portfolio_results, scoreboard_table
+from src.dashboard.theme import PORTFOLIO_STRATEGY_ORDER, STRATEGY_ORDER
 
 HERE = os.path.dirname(__file__)
 APP = os.path.join(HERE, "..", "app.py")
@@ -36,10 +37,14 @@ CFG = {
 }
 
 
-@pytest.fixture(scope="module")
-def store(tmp_path_factory):
-    """Build one synthetic store with the real pipeline, shared by every test here."""
-    tmp = tmp_path_factory.mktemp("dash")
+# The v2.0 portfolio over the two synthetic assets (fewer bootstrap draws to keep tests fast).
+PORTFOLIO_CFG = {"assets": ["spx", "gold"], "calendar_asset": "spx", "risk_parity_lookback": 63,
+                 "max_signal_staleness": 5, "execution_delay": 2, "ann_factor": 252,
+                 "significance": {"block_size": 60, "n_bootstraps": 200, "seed": 42, "alpha": 0.05},
+                 "forward_min_days": 252}
+
+
+def _build_store(tmp, cfg):
 
     def read(name):
         return pd.read_csv(os.path.join(HERE, "data", name), index_col="Date", parse_dates=True)
@@ -49,12 +54,25 @@ def store(tmp_path_factory):
     gold[["Open", "High", "Low", "Close"]] = gold[["Open", "High", "Low", "Close"]].iloc[::-1].values
 
     cfg_path = tmp / "config.yaml"
-    cfg_path.write_text(yaml.safe_dump(CFG))
+    cfg_path.write_text(yaml.safe_dump(cfg))
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(pipeline, "download_prices", lambda cfg, force_refresh=False: {"spx": spx, "gold": gold})
         pipeline.run_pipeline(config_path=str(cfg_path), db_path=str(tmp / "store.db"),
                               model_root=str(tmp / "models"), train=True)
     return str(tmp / "store.db")
+
+
+@pytest.fixture(scope="module")
+def store(tmp_path_factory):
+    """Build one synthetic store with the real pipeline, shared by every test here.
+    No portfolio section: this is also the 'portfolio not run yet' case."""
+    return _build_store(tmp_path_factory.mktemp("dash"), CFG)
+
+
+@pytest.fixture(scope="module")
+def portfolio_store(tmp_path_factory):
+    """The same store with the v2.0 portfolio built."""
+    return _build_store(tmp_path_factory.mktemp("dash_portfolio"), dict(CFG, portfolio=PORTFOLIO_CFG))
 
 
 def _raw(db, sql):
@@ -205,12 +223,67 @@ def test_app_renders_every_tab_for_every_asset(store, monkeypatch, tmp_path):
     monkeypatch.setenv("REGIME_PAPER_LOG", str(tmp_path / "no_log.csv"))
     at = AppTest.from_file(APP, default_timeout=120).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert len(at.tabs) == 7
+    assert len(at.tabs) == 8
     for asset in ["spx", "gold"]:
         at.sidebar.radio[0].set_value(asset).run()
         assert not at.exception, (asset, [e.value for e in at.exception])
     at.toggle[0].set_value(True).run()  # raw probabilities
     assert not at.exception
+
+
+def _app_text(at):
+    parts = [m.value for m in at.markdown] + [m.value for m in at.caption]
+    for kind in (at.info, at.error, at.success, at.warning):
+        parts += [m.value for m in kind]
+    return "\n".join(parts)
+
+
+def test_app_says_portfolio_not_run_yet_without_results(store, monkeypatch, tmp_path):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv("REGIME_DB_PATH", store)
+    monkeypatch.setenv("REGIME_PAPER_LOG", str(tmp_path / "no_log.csv"))
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    assert not at.exception
+    text = _app_text(at)
+    assert "Not run yet" in text and "Historical verdict" not in text
+    assert "strictly higher Sharpe ratio" in text      # the rule is shown even before any result
+
+
+def test_app_shows_the_portfolio_verdict_and_charts(portfolio_store, monkeypatch, tmp_path):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv("REGIME_DB_PATH", portfolio_store)
+    monkeypatch.setenv("REGIME_PAPER_LOG", str(tmp_path / "no_log.csv"))
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert len(at.tabs) == 8
+    settings = PortfolioSettings.from_config(dict(CFG, portfolio=PORTFOLIO_CFG))
+    expected = portfolio_results(portfolio_store, "main", settings)
+    text = _app_text(at)
+    assert f"{expected['verdict'].outcome}.**" in text and "Not run yet" not in text
+
+
+def test_portfolio_results_are_read_and_judged_from_the_store(store, portfolio_store):
+    settings = PortfolioSettings.from_config(dict(CFG, portfolio=PORTFOLIO_CFG))
+    assert portfolio_results(store, "main", settings) is None
+    res = portfolio_results(portfolio_store, "main", settings)
+    assert list(res["historical"].index.sort_values()) == sorted(PORTFOLIO_STRATEGY_ORDER)
+    assert len(res["significance"]) == 2 and res["forward_verdict"] is None
+    # The verdict uses exactly the stored historical numbers.
+    h = res["historical"]
+    higher = all(h.loc["regime_aware", "Sharpe"] > h.loc[b, "Sharpe"] for b in ("equal_weight", "risk_parity"))
+    shallower = all(h.loc["regime_aware", "Max DD"] >= h.loc[b, "Max DD"] for b in ("equal_weight", "risk_parity"))
+    assert (res["verdict"].outcome != "Fail") == (higher and shallower)
+
+
+def test_portfolio_charts_build_from_stored_rows(portfolio_store):
+    daily = data.load_daily(portfolio_store, "main", PORTFOLIO_ID)
+    fig = charts.performance_panels(daily, charts.PORTFOLIO)
+    assert {t.name for t in fig.data} == {"Regime-aware portfolio", "Equal weight", "Risk parity"}
+    weights = data.load_portfolio_weights(portfolio_store, "main")
+    fig = charts.portfolio_weights_chart(weights)
+    assert isinstance(fig, go.Figure) and {t.name for t in fig.data} == {"S&P 500", "Gold"}
+    # Stacked weights never exceed 100%: the rest is cash.
+    assert (weights.sum(axis=1) <= 1 + 1e-9).all()
 
 
 def test_app_explains_a_missing_store_instead_of_crashing(monkeypatch, tmp_path):
@@ -236,3 +309,32 @@ def test_readme_blocks_are_generated_from_the_store(store, tmp_path):
     assert "old text" not in out and "nan" not in out.lower()
     assert "S&P 500" in out and "| **HMM regime strategy** |" in out
     assert mod.render(out, st) == out  # rendering is idempotent: --check passes right after a write
+
+
+def _readme_module():
+    import importlib.util
+    path = os.path.join(HERE, "..", "scripts", "update_readme.py")
+    spec = importlib.util.spec_from_file_location("update_readme", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_readme_portfolio_block_has_no_numbers_before_the_portfolio_is_built(store, tmp_path):
+    """AGENTS.md rule 5: no result in the README that code has not produced."""
+    mod = _readme_module()
+    block = mod.block_portfolio(mod.Store(db=store, variants=str(tmp_path / "missing.json")))
+    assert "Not run yet" in block and "[TODO]" in block
+    assert "Historical verdict" not in block and "%" not in block and "|" not in block
+
+
+def test_readme_portfolio_block_quotes_the_rule_and_the_stored_verdict(portfolio_store, tmp_path):
+    from src.analysis.verdict import PASS_RULE
+    mod = _readme_module()
+    st = mod.Store(db=portfolio_store, variants=str(tmp_path / "missing.json"))
+    block = mod.block_portfolio(st)
+    verdict = portfolio_results(portfolio_store, st.run_id, st.portfolio_settings)["verdict"]
+    assert f"> {PASS_RULE}" in block
+    assert f"): {verdict.outcome}.**" in block
+    assert "| **Regime-aware portfolio** |" in block and "| Equal weight |" in block
+    assert "nan" not in block.lower() and "Not run yet" not in block

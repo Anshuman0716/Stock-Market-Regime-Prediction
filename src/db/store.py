@@ -22,7 +22,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 
 # Must match "PRAGMA user_version" in schema.sql. Bump both together whenever
 # a table's columns or keys change.
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 DEFAULT_DB_PATH = "data/regime_store.db"
 
@@ -34,8 +34,35 @@ def get_git_sha():
         return "unknown"
 
 
+# Config sections that sit on top of the per-asset models and do not change
+# them. They are left out of the per-asset fingerprint (see get_config_hash).
+PORTFOLIO_SECTION = "portfolio"
+
+
+def _md5(obj):
+    return hashlib.md5(json.dumps(obj, sort_keys=True).encode('utf-8')).hexdigest()
+
+
 def get_config_hash(cfg):
-    return hashlib.md5(json.dumps(cfg, sort_keys=True).encode('utf-8')).hexdigest()
+    """Fingerprint of everything that shapes the PER-ASSET results: data,
+    features, HMM, signal, costs (v1.0).
+
+    The `portfolio:` section is left out on purpose. The portfolio only
+    reads the per-asset signals, so changing how they are combined must not
+    force a retrain of every model, and must not invalidate v1.0's forward
+    test (config/freeze.json). For a config without a portfolio section this
+    is the same number as before the section existed.
+    """
+    return _md5({k: v for k, v in cfg.items() if k != PORTFOLIO_SECTION})
+
+
+def get_portfolio_hash(cfg):
+    """Fingerprint of the WHOLE config, portfolio section included (v2.0).
+
+    The portfolio is built on top of the per-asset signals, so a change to
+    either the portfolio rules or anything underneath them changes it.
+    """
+    return _md5(cfg)
 
 
 @contextmanager
@@ -237,11 +264,13 @@ def write_significance(conn, sig_df, run_id):
     """Store Sharpe-difference test results (output of run_significance_suite)."""
     if sig_df.empty:
         return
-    out = sig_df.rename(columns={"asset": "asset_id"})[
-        ["asset_id", "strategy", "baseline", "sharpe_diff", "ci_lower", "ci_upper",
-         "p_value", "p_value_hac", "p_value_holm"]].copy()
+    out = sig_df.rename(columns={"asset": "asset_id"})
+    if "family" not in out:
+        out = out.assign(family="asset")
+    out = out[["asset_id", "strategy", "baseline", "family", "sharpe_diff", "ci_lower", "ci_upper",
+               "p_value", "p_value_hac", "p_value_holm"]].copy()
     out.insert(0, "run_id", run_id)
-    write_frame(conn, "significance_tests", out, ["run_id", "asset_id", "strategy", "baseline"])
+    write_frame(conn, "significance_tests", out, ["run_id", "asset_id", "strategy", "baseline", "family"])
 
 
 def write_folds(conn, folds_info, asset_id, run_id):
@@ -285,3 +314,13 @@ def write_regime_analysis(conn, asset_id, run_id, profile, transitions, spells):
     write_frame(conn, "regime_transitions", tag(transitions), ["run_id", "asset_id", "from_label", "to_label"])
     sp = spells.rename(columns={"start": "start_date", "end": "end_date"})[["start_date", "end_date", "label", "days"]]
     write_frame(conn, "regime_spells", tag(sp), ["run_id", "asset_id", "start_date"])
+
+
+def write_portfolio_weights(conn, held_weights, run_id, strategy):
+    """Held weight per asset per day for one portfolio strategy (long format)."""
+    long = held_weights.copy()
+    long.index = [str(d.date()) for d in long.index]
+    long = long.rename_axis("date").reset_index().melt(id_vars="date", var_name="asset_id", value_name="weight")
+    long.insert(0, "strategy", strategy)
+    long.insert(0, "run_id", run_id)
+    write_frame(conn, "portfolio_weights", long, ["run_id", "strategy", "date", "asset_id"])

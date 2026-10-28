@@ -21,11 +21,16 @@ import streamlit as st
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from src.dashboard import charts, data  # noqa: E402
-from src.dashboard.summary import headline_findings, scoreboard_table  # noqa: E402
+from src.dashboard.summary import headline_findings, portfolio_results, scoreboard_table  # noqa: E402
 from src.dashboard.theme import (  # noqa: E402
-    REGIME_COLORS, REGIME_ICONS, REGIME_LABELS, STRATEGY_NAMES, STRATEGY_ORDER, asset_name, hex_to_rgba,
+    PORTFOLIO_STRATEGY_NAMES, PORTFOLIO_STRATEGY_ORDER, REGIME_COLORS, REGIME_ICONS, REGIME_LABELS,
+    STRATEGY_NAMES, STRATEGY_ORDER, asset_name, hex_to_rgba,
 )
-from src.analysis.forward import FORWARD_CYCLE, freeze_status, load_freeze  # noqa: E402
+from src.analysis.forward import (  # noqa: E402
+    FORWARD_CYCLE, SCOPE_PORTFOLIO, freeze_status_for, load_freeze, load_freezes,
+)
+from src.analysis.verdict import FAIL, INTERIM, PASS_RULE, SIGNIFICANT_PASS  # noqa: E402
+from src.backtest.portfolio import PORTFOLIO_ID, PortfolioSettings  # noqa: E402
 from src.data.loader import load_config  # noqa: E402
 from src.db.store import DEFAULT_DB_PATH, get_config_hash  # noqa: E402
 from src.stats.significance import block_bootstrap_sharpe_diff, run_significance_suite  # noqa: E402
@@ -48,6 +53,11 @@ def _load(name, db_path, version, *args):
 
 def load(name, *args):
     return _load(name, DB_PATH, data.store_version(DB_PATH), *args)
+
+
+@st.cache_data(show_spinner=False)
+def _portfolio(db_path, version, run_id, settings):
+    return portfolio_results(db_path, run_id, settings)
 
 
 def plot(fig):
@@ -119,12 +129,17 @@ with st.sidebar:
     st.markdown(f"**Pipeline run:** {str(run['created_at'])[:16].replace('T', ' ')}")
     st.markdown(f"**Models:** {'retrained this run' if run.get('models_trained') else 'reused saved folds'}")
     st.markdown(f"**Code version:** `{str(run['git_sha'])[:8]}`")
-    freeze = load_freeze()
-    freeze_state, freeze_msg = freeze_status(freeze, run["config_hash"])
-    if freeze_state == "valid":
-        st.markdown(f"**Frozen version:** {freeze['version']} (since {freeze['frozen_on']})")
-    elif freeze_state == "invalid":
-        st.warning(freeze_msg)
+    # Each frozen version is checked against the config of the run shown,
+    # using that version's own fingerprint (v1.0 per asset, v2.0 portfolio).
+    freezes = load_freezes()
+    freeze_states = {f["version"]: freeze_status_for(f, run_cfg) for f in freezes}
+    for f in freezes:
+        state, msg = freeze_states[f["version"]]
+        if state == "valid":
+            st.markdown(f"**Frozen:** {f['version']} ({'portfolio' if f['scope'] == SCOPE_PORTFOLIO else 'per asset'}"
+                        f", since {f['frozen_on']})")
+        else:
+            st.warning(msg)
     if config_changed:
         st.warning("`config.yaml` has changed since this run. Re-run the pipeline to update the results.")
     with st.expander("Refresh the results"):
@@ -140,11 +155,13 @@ st.caption("A 4-state Hidden Markov Model, refit every year on past data only, l
            "Every number here is out-of-sample and after trading costs.")
 
 tabs = st.tabs(["Overview", "Regimes", "Performance", "Risk", "Model insight",
-                "Statistical evidence", "Paper trading"])
+                "Statistical evidence", "Portfolio (v2.0)", "Paper trading"])
 
 metrics_full = load("load_metrics", RUN_ID, "full")
 significance = load("load_significance", RUN_ID)
 win = windows.loc[asset]
+portfolio_settings = PortfolioSettings.from_config(run_cfg) or PortfolioSettings()
+portfolio = _portfolio(DB_PATH, data.store_version(DB_PATH), RUN_ID, portfolio_settings)
 
 
 def window_caption():
@@ -207,27 +224,38 @@ with tabs[0]:
                "volatility target (holds less when volatility is above its own long-run level).")
 
 
-    st.subheader("Forward test")
-    if freeze_state == "valid":
-        fwd = load("load_metrics", RUN_ID, FORWARD_CYCLE)
-        st.caption(f"{freeze['version']} was frozen on {freeze['frozen_on']}. Everything above was used while "
-                   f"designing it; only days after {freeze['data_end_at_freeze']} count here, so this is the "
-                   "one result the design work cannot have influenced.")
-        if fwd.empty:
+    st.subheader("Forward tests")
+    if not freezes:
+        st.info("The design has not been frozen (no config/freeze.json).")
+    fwd = load("load_metrics", RUN_ID, FORWARD_CYCLE, True)
+    for f in freezes:
+        state, msg = freeze_states[f["version"]]
+        is_portfolio = f["scope"] == SCOPE_PORTFOLIO
+        st.markdown(f"**{f['version']}** · {'the regime-aware portfolio' if is_portfolio else 'each asset on its own'}")
+        if state != "valid":
+            st.info(msg)
+            continue
+        st.caption(f"Frozen on {f['frozen_on']}; only days after {f['data_end_at_freeze']} count, so this is "
+                   "the one result the design work cannot have influenced.")
+        ft = fwd.reset_index() if not fwd.empty else pd.DataFrame(columns=["asset_id", "strategy"])
+        ft = ft[(ft["asset_id"] == PORTFOLIO_ID) == is_portfolio]
+        order, names = ((PORTFOLIO_STRATEGY_ORDER, PORTFOLIO_STRATEGY_NAMES) if is_portfolio
+                        else (STRATEGY_ORDER, STRATEGY_NAMES))
+        ft = ft[ft["strategy"].isin(order)]
+        if ft.empty:
             st.info(f"No trading days since the freeze yet (data through {data_end}). Each "
                     "`python scripts/run_pipeline.py --reuse-models` adds new days.")
-        else:
-            ft = fwd.reset_index()
-            ft = ft[ft["strategy"].isin(STRATEGY_ORDER)].assign(
-                Asset=lambda d: d["asset_id"].map(asset_name), Strategy=lambda d: d["strategy"].map(STRATEGY_NAMES))
-            st.dataframe(as_pct(ft[["Asset", "Strategy", "Days", "Total Return", "Sharpe", "Max DD"]],
-                                ["Total Return", "Max DD"]),
-                         hide_index=True, use_container_width=True,
-                         column_config={"Days": num_col(digits=0), "Total Return": pct_col("Total return", 2),
-                                        "Sharpe": num_col("Sharpe (above cash)"), "Max DD": pct_col("Max DD")})
-            st.caption("A few weeks of data say almost nothing; judge the forward test after months.")
-    else:
-        st.info(freeze_msg)
+            continue
+        ft = ft.assign(Asset=ft["asset_id"].map(asset_name), Strategy=ft["strategy"].map(names))
+        st.dataframe(as_pct(ft[["Asset", "Strategy", "Days", "Total Return", "Sharpe", "Max DD"]],
+                            ["Total Return", "Max DD"]),
+                     hide_index=True, use_container_width=True,
+                     column_config={"Days": num_col(digits=0), "Total Return": pct_col("Total return", 2),
+                                    "Sharpe": num_col("Sharpe (above cash)"), "Max DD": pct_col("Max DD")})
+        if is_portfolio and int(ft["Days"].iloc[0]) < portfolio_settings.forward_min_days:
+            st.caption(f"Interim: {int(ft['Days'].iloc[0])} of {portfolio_settings.forward_min_days} trading days. "
+                       "No verdict until the window is full (pre-registration, Section 10).")
+    st.caption("A few weeks of data say almost nothing; judge a forward test after months.")
 
 
 # ── 2. Regimes ───────────────────────────────────────────────────────────
@@ -447,9 +475,76 @@ with tabs[5]:
                                 "p_value_hac": num_col("p (HAC)", 3), "p_value_holm": num_col("p (Holm)", 3)})
 
 
-# ── 7. Paper trading ─────────────────────────────────────────────────────
+# ── 7. Portfolio (v2.0) ──────────────────────────────────────────────────
+
+VERDICT_STYLE = {FAIL: st.error, SIGNIFICANT_PASS: st.success}
 
 with tabs[6]:
+    st.subheader("Portfolio (v2.0): does combining the signals help?")
+    st.markdown(
+        "The **regime-aware portfolio** holds plain risk-parity weights (1 / 63-day volatility) scaled by each "
+        "asset's own v1.0 regime exposure, with the rest in cash. It is compared with **equal weight** and "
+        "**plain risk parity** on the same days, assets, costs and cash. Every rule below was written down "
+        "and committed in `docs/v2_preregistration.md` before any portfolio result existed.")
+    st.markdown("**The pass/fail rule, word for word:**")
+    st.markdown(f"> {PASS_RULE}")
+
+    if portfolio is None:
+        st.info("**Not run yet.** This store has no portfolio results. They appear here once "
+                "`python scripts/run_pipeline.py` builds the portfolio.")
+    else:
+        v, pwin = portfolio["verdict"], portfolio["window"]
+        p_freeze = load_freeze(scope=SCOPE_PORTFOLIO)
+        hist_end = p_freeze["data_end_at_freeze"] if p_freeze else data_end
+        text = f"**Historical verdict ({pwin['oos_start']:%Y-%m-%d} to {hist_end}): {v.outcome}.**"
+        if v.outcome == FAIL:
+            text += " Not met: " + "; ".join(v.failed_conditions(PORTFOLIO_STRATEGY_NAMES)) + "."
+        VERDICT_STYLE.get(v.outcome, st.info)(text)
+
+        fv = portfolio["forward_verdict"]
+        if fv is None:
+            st.caption(f"Forward test: no trading days after {hist_end} yet.")
+        elif fv.outcome == INTERIM:
+            st.caption(f"Forward test: interim, {fv.days} of {fv.min_days} trading days. No verdict yet.")
+        else:
+            VERDICT_STYLE.get(fv.outcome, st.info)(f"**Forward verdict ({fv.days} trading days): {fv.outcome}.**")
+
+        hist = portfolio["historical"]
+        shown = [s for s in PORTFOLIO_STRATEGY_ORDER if s in hist.index]
+        table = pd.DataFrame({
+            "Strategy": [PORTFOLIO_STRATEGY_NAMES[s] for s in shown],
+            "CAGR": hist.loc[shown, "CAGR"].to_numpy(), "Ann. Vol": hist.loc[shown, "Ann. Vol"].to_numpy(),
+            "Sharpe": hist.loc[shown, "Sharpe"].to_numpy(), "Max DD": hist.loc[shown, "Max DD"].to_numpy(),
+            "Avg. Exposure": hist.loc[shown, "Avg. Exposure"].to_numpy(),
+            "Ann. Turnover": hist.loc[shown, "Ann. Turnover"].to_numpy(),
+        })
+        st.dataframe(as_pct(table, ["CAGR", "Ann. Vol", "Max DD", "Avg. Exposure"]), hide_index=True,
+                     use_container_width=True,
+                     column_config={"CAGR": pct_col(), "Ann. Vol": pct_col(), "Sharpe": num_col("Sharpe (above cash)"),
+                                    "Max DD": pct_col(), "Avg. Exposure": pct_col("Avg. invested", 0),
+                                    "Ann. Turnover": num_col("Ann. turnover (x)", 1)})
+        st.caption("Historical window: every day up to the v2.0 freeze. The per-asset signals were developed "
+                   "on these same years, so this verdict is only half blind; the forward test is the clean one.")
+
+        psig = portfolio["significance"]
+        if not psig.empty:
+            st.dataframe(psig.assign(Baseline=psig["baseline"].map(PORTFOLIO_STRATEGY_NAMES))[
+                ["Baseline", "sharpe_diff", "ci_lower", "ci_upper", "p_value", "p_value_hac", "p_value_holm"]],
+                hide_index=True, use_container_width=True,
+                column_config={"sharpe_diff": num_col("Sharpe diff. (regime-aware minus baseline)"),
+                               "ci_lower": num_col("95% low"), "ci_upper": num_col("95% high"),
+                               "p_value": num_col("p (bootstrap)", 3), "p_value_hac": num_col("p (HAC)", 3),
+                               "p_value_holm": num_col("p (Holm, 2 tests)", 3)})
+
+        st.markdown("**Value over time** (all stored days, including any after the freeze)")
+        plot(charts.performance_panels(load("load_daily", RUN_ID, PORTFOLIO_ID), charts.PORTFOLIO))
+        st.markdown("**What each portfolio held** (the empty space above the stack is cash)")
+        plot(charts.portfolio_weights_chart(load("load_portfolio_weights", RUN_ID)))
+
+
+# ── 8. Paper trading ─────────────────────────────────────────────────────
+
+with tabs[7]:
     st.subheader(f"{asset_name(asset)}: paper trading")
     s = load("load_latest_signals", RUN_ID).loc[asset]
     folds = load("load_folds", RUN_ID, asset)

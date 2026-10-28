@@ -23,7 +23,13 @@ from plotly.subplots import make_subplots
 from src.dashboard.theme import (
     REGIME_LABELS, REGIME_COLORS, STRATEGY_ORDER, STRATEGY_NAMES, STRATEGY_COLORS,
     SEQUENTIAL_BLUE, GRID_COLOR, AXIS_COLOR, MUTED_TEXT, FONT_FAMILY, asset_name, hex_to_rgba,
+    ASSET_COLORS, PORTFOLIO_STRATEGY_ORDER, PORTFOLIO_STRATEGY_NAMES, PORTFOLIO_STRATEGY_COLORS,
 )
+
+# The strategy set a chart draws: per-asset strategies by default, or the
+# v2.0 portfolio's three.
+PER_ASSET = (STRATEGY_ORDER, STRATEGY_NAMES, STRATEGY_COLORS)
+PORTFOLIO = (PORTFOLIO_STRATEGY_ORDER, PORTFOLIO_STRATEGY_NAMES, PORTFOLIO_STRATEGY_COLORS)
 
 LINE_WIDTH = 2
 PRICE_COLOR = MUTED_TEXT  # neutral: the regime colours carry the meaning on the price chart
@@ -124,16 +130,20 @@ def regime_timeline(timeline, spells, asset_id, smoothed=True):
 
 # ── Performance ──────────────────────────────────────────────────────────
 
-def performance_panels(daily):
-    """Growth of $1 (log), drawdown and rolling 1-year Sharpe, one panel each, shared dates."""
+def performance_panels(daily, strategies=PER_ASSET):
+    """Growth of $1 (log), drawdown and rolling 1-year Sharpe, one panel each, shared dates.
+
+    `strategies` = (order, names, colors): PER_ASSET or PORTFOLIO.
+    """
+    order, names, colors = strategies
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.46, 0.27, 0.27],
                         vertical_spacing=0.05)
-    for strat in STRATEGY_ORDER:
+    for strat in order:
         d = daily[daily["strategy"] == strat]
         if d.empty:
             continue
-        common = dict(x=d["date"], mode="lines", legendgroup=strat, name=STRATEGY_NAMES[strat],
-                      line=dict(color=STRATEGY_COLORS[strat], width=LINE_WIDTH))
+        common = dict(x=d["date"], mode="lines", legendgroup=strat, name=names[strat],
+                      line=dict(color=colors[strat], width=LINE_WIDTH))
         fig.add_trace(go.Scatter(y=d["equity"], hovertemplate="$%{y:.2f}", **common), row=1, col=1)
         fig.add_trace(go.Scatter(y=d["drawdown"], showlegend=False, hovertemplate="%{y:.1%}", **common),
                       row=2, col=1)
@@ -382,4 +392,32 @@ def significance_forest(sig):
     fig.update_xaxes(title_text="Sharpe ratio difference (HMM − baseline)", showgrid=True, gridcolor=GRID_COLOR,
                      zeroline=False)
     fig.update_yaxes(showgrid=False)
+    return fig
+
+
+def portfolio_weights_chart(weights):
+    """What each portfolio held through time: one panel per strategy, assets stacked.
+
+    weights: index (strategy, date), one column per asset (held weights, so
+    after the two-day delay). The empty space above the stack is cash, which
+    is the regime-aware portfolio's whole point, so it is left visible rather
+    than filled in.
+    """
+    shown = [s for s in PORTFOLIO_STRATEGY_ORDER if s in weights.index.get_level_values(0)]
+    fig = make_subplots(rows=len(shown), cols=1, shared_xaxes=True, vertical_spacing=0.08,
+                        subplot_titles=[PORTFOLIO_STRATEGY_NAMES[s] for s in shown])
+    assets = list(weights.columns)
+    for i, strat in enumerate(shown, start=1):
+        w = weights.loc[strat]
+        for a in assets:
+            color = ASSET_COLORS.get(a, MUTED_TEXT)
+            fig.add_trace(go.Scatter(
+                x=w.index, y=w[a], name=asset_name(a), legendgroup=a, showlegend=(i == 1),
+                mode="lines", stackgroup=f"s{i}", line=dict(color=color, width=0.5),
+                fillcolor=hex_to_rgba(color, 0.55), hovertemplate=f"{asset_name(a)}: %{{y:.0%}}<extra></extra>"),
+                row=i, col=1)
+        fig.update_yaxes(range=[0, 1.02], tickvals=[0, 0.5, 1], tickformat=".0%", row=i, col=1)
+    _style(fig, height=130 + 170 * len(shown))
+    fig.update_annotations(font=dict(size=12), x=0, xanchor="left")
+    fig.update_layout(hovermode="x unified", margin=dict(t=48))
     return fig

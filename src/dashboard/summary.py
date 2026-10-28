@@ -9,6 +9,10 @@ can never show a claim that the current results don't support
 """
 import pandas as pd
 
+from src.analysis.forward import FORWARD_CYCLE, HISTORICAL_CYCLE
+from src.analysis.verdict import judge, judge_forward
+from src.backtest.portfolio import PORTFOLIO_ID
+from src.dashboard import data
 from src.dashboard.theme import asset_name
 
 ALPHA = 0.05
@@ -95,3 +99,41 @@ def headline_findings(metrics, significance, assets):
             if not worse.empty:
                 findings.append(f"HMM Sharpe significantly **lower** than the baseline: {pairs(worse)}.")
     return findings
+
+
+# ── v2.0 portfolio ────────────────────────────────────────────────────────
+
+def portfolio_results(db_path, run_id, settings):
+    """Everything the README and the dashboard show about the v2.0 portfolio,
+    read from the store and judged with the pre-registered rule.
+
+    Returns None if this run did not build the portfolio. Otherwise a dict:
+        window      : its evaluation window row (oos_start, oos_end, ...)
+        historical  : metrics per strategy for the historical window (up to the v2.0 freeze)
+        full        : metrics per strategy for every stored day
+        forward     : forward-window metrics per strategy (empty before any forward day)
+        significance, forward_significance : the two Holm families (may be empty)
+        verdict, forward_verdict : src.analysis.verdict.Verdict (forward_verdict None without forward days)
+    """
+    windows = data.load_windows(db_path, run_id, include_portfolio=True)
+    if PORTFOLIO_ID not in windows.index:
+        return None
+
+    def cycle(name):
+        m = data.load_metrics(db_path, run_id, cycle=name, include_portfolio=True)
+        return m.loc[PORTFOLIO_ID] if PORTFOLIO_ID in m.index.get_level_values(0) else pd.DataFrame()
+
+    historical, forward = cycle(HISTORICAL_CYCLE), cycle(FORWARD_CYCLE)
+    sig = data.load_significance(db_path, run_id, family="portfolio")
+    fwd_sig = data.load_significance(db_path, run_id, family="portfolio_forward")
+    return {
+        "window": windows.loc[PORTFOLIO_ID],
+        "historical": historical,
+        "full": cycle("full"),
+        "forward": forward,
+        "significance": sig,
+        "forward_significance": fwd_sig,
+        "verdict": judge(historical, sig, alpha=settings.alpha),
+        "forward_verdict": (judge_forward(forward, fwd_sig, settings.forward_min_days, alpha=settings.alpha)
+                            if not forward.empty else None),
+    }
