@@ -2,7 +2,8 @@
 Measure what each Step 6 change did, by re-running the full pipeline under
 each setup on the same data.
 
-    python scripts/compare_variants.py          # ~15 min: trains every variant
+    python scripts/compare_variants.py                    # ~25 min: trains every setup
+    python scripts/compare_variants.py --only volscale    # (re)run one setup, merge into the file
 
 Variants (each adds one change to the one before):
   1. step5     - labeling "absolute", index returns, cash earns 0, NASDAQ spread 1 bp
@@ -23,6 +24,7 @@ including the old setup, keeps the comparison honest. Note that several
 setups have now been evaluated on the same out-of-sample period, so
 differences between them are exploratory, not independent evidence.
 """
+import argparse
 import copy
 from contextlib import closing
 import json
@@ -104,24 +106,52 @@ def summarise(db_path):
     return out, data_end
 
 
+def run_variant(key, description, vcfg):
+    """Train one setup in a temporary folder and summarise its store."""
+    t0 = time.perf_counter()
+    with tempfile.TemporaryDirectory() as tmp:
+        cfg_path = os.path.join(tmp, "config.yaml")
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            yaml.safe_dump(vcfg, f)
+        db_path = os.path.join(tmp, "store.db")
+        run_pipeline(config_path=cfg_path, db_path=db_path, model_root=os.path.join(tmp, "models"), train=True)
+        assets, data_end = summarise(db_path)
+    print(f"{key:9s} done in {time.perf_counter() - t0:.0f}s")
+    return {"key": key, "description": description, "assets": assets}, data_end
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--only", help="comma-separated setup keys to (re)run, merged into the existing "
+                                       f"{OUT}; runs one setup per call to keep memory low")
+    args = parser.parse_args()
     logging.basicConfig(level=logging.WARNING)
     cfg = load_config()
-    results = {"generated_at": datetime.now().isoformat(timespec="seconds"), "variants": []}
-    for key, description, vcfg in variant_configs(cfg):
-        t0 = time.perf_counter()
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg_path = os.path.join(tmp, "config.yaml")
-            with open(cfg_path, "w", encoding="utf-8") as f:
-                yaml.safe_dump(vcfg, f)
-            db_path = os.path.join(tmp, "store.db")
-            run_pipeline(config_path=cfg_path, db_path=db_path, model_root=os.path.join(tmp, "models"),
-                         train=True)
-            assets, data_end = summarise(db_path)
-        results["data_end"] = data_end
-        results["variants"].append({"key": key, "description": description, "assets": assets})
-        print(f"{key:9s} done in {time.perf_counter() - t0:.0f}s")
+    setups = variant_configs(cfg)
+    order = [key for key, _, _ in setups]
 
+    if args.only:
+        wanted = args.only.split(",")
+        unknown = set(wanted) - set(order)
+        if unknown:
+            sys.exit(f"Unknown setup(s) {sorted(unknown)}; choose from {order}.")
+        results = json.load(open(OUT)) if os.path.exists(OUT) else {"variants": []}
+    else:
+        wanted, results = order, {"variants": []}
+
+    by_key = {v["key"]: v for v in results["variants"]}
+    for key, description, vcfg in setups:
+        if key in wanted:
+            by_key[key], data_end = run_variant(key, description, vcfg)
+            if results.get("data_end") not in (None, data_end):
+                # Rows trained on different data would not be comparable.
+                sys.exit(f"Data now ends {data_end}, but {OUT} was built to {results['data_end']}; "
+                         "re-run every setup (no --only).")
+            results["data_end"] = data_end
+
+    results["variants"] = [by_key[k] for k in order if k in by_key]
+    results["not_measured"] = [k for k in order if k not in by_key]
+    results["generated_at"] = datetime.now().isoformat(timespec="seconds")
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print(f"Wrote {OUT}")

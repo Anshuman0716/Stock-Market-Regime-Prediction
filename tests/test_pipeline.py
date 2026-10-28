@@ -138,6 +138,22 @@ def test_regime_sizing_is_stored_and_traded(env):
     assert len(m) == len(reg) and np.allclose(m.target_weight, expected)
 
 
+def test_forward_test_scores_only_days_after_the_freeze(env):
+    """A freeze record in the middle of the sample data: days after it are
+    stored as cycle "forward", matching the daily rows exactly."""
+    freeze_path = env["tmp"] / "freeze.json"
+    freeze_path.write_text(json.dumps({"version": "vT", "frozen_on": "2020-07-01",
+                                       "data_end_at_freeze": "2020-06-30", "config_hash": "x"}))
+    pipeline.run_pipeline(config_path=env["config_path"], db_path=env["db_path"], model_root=env["model_root"],
+                          train=True, freeze_path=str(freeze_path))
+    fwd = _read(env, "SELECT asset_id, strategy, metric_value FROM backtest_metrics "
+                     "WHERE cycle = 'forward' AND metric_name = 'Days'")
+    daily = _read(env, "SELECT asset_id, strategy, COUNT(*) n FROM backtest_daily WHERE date > '2020-06-30' "
+                       "GROUP BY 1, 2")
+    m = fwd.merge(daily, on=["asset_id", "strategy"])
+    assert len(m) == len(daily) > 0 and (m["metric_value"] == m["n"]).all()
+
+
 def test_reuse_models_reproduces_training_exactly(env):
     _run(env, train=True)
     trained_regimes = _read(env, "SELECT * FROM regimes ORDER BY asset_id, date")

@@ -31,6 +31,7 @@ def scoreboard_table(metrics, significance, windows):
             "Sharpe · HMM": m.loc["hmm", "Sharpe"],
             "Sharpe · B&H": m.loc["buy_hold", "Sharpe"],
             "Sharpe · 200-DMA": m.loc["dma200", "Sharpe"],
+            "Sharpe · Vol tgt": m.loc["vol_target", "Sharpe"] if "vol_target" in m.index else float("nan"),
             "CAGR · HMM": m.loc["hmm", "CAGR"],
             "CAGR · B&H": m.loc["buy_hold", "CAGR"],
             "Max DD · HMM": m.loc["hmm", "Max DD"],

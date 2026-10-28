@@ -33,6 +33,7 @@ from src.features.engineering import build_features, FEATURE_COLUMNS
 from src.models.hmm import walk_forward_predict, predict_from_artifacts, regime_weight_frame, RetrainRequired
 from src.backtest.evaluation import BASELINES, evaluate_asset, trading_returns
 from src.backtest.metrics import performance_series
+from src.analysis.forward import FREEZE_PATH, forward_start, freeze_status, load_freeze
 from src.analysis.regimes import regime_profile, transition_matrix, regime_spells, period_breakdown
 from src.stats.significance import run_significance_suite
 from src.db.store import (
@@ -73,7 +74,7 @@ def _replace_file(src, dst):
 
 
 def run_pipeline(config_path="config/config.yaml", db_path=DEFAULT_DB_PATH, model_root="models",
-                 train=True, run_id=DEFAULT_RUN_ID, force_refresh=False):
+                 train=True, run_id=DEFAULT_RUN_ID, force_refresh=False, freeze_path=FREEZE_PATH):
     """
     Run everything and write the store (and, when training, the models).
 
@@ -93,6 +94,10 @@ def run_pipeline(config_path="config/config.yaml", db_path=DEFAULT_DB_PATH, mode
     """
     cfg = load_config(config_path)
     config_hash = get_config_hash(cfg)
+    freeze = load_freeze(freeze_path)
+    status, message = freeze_status(freeze, config_hash)
+    if status == "invalid":
+        logger.warning(message)
 
     manifest = None
     if not train:
@@ -117,7 +122,7 @@ def run_pipeline(config_path="config/config.yaml", db_path=DEFAULT_DB_PATH, mode
     init_db(tmp_db)
 
     run = _RunState(cfg=cfg, run_id=run_id, train=train, manifest=manifest, model_root=model_root,
-                    staging_models=staging_models,
+                    staging_models=staging_models, forward_start=forward_start(freeze),
                     new_manifest={"created_at": None, "config_hash": config_hash,
                                   "git_sha": get_git_sha(), "assets": {}})
     summary = {}
@@ -153,6 +158,7 @@ class _RunState:
     model_root: str
     staging_models: str
     new_manifest: dict
+    forward_start: Optional[object] = None  # first day of the forward test, if the design is frozen
     excess_returns: dict = field(default_factory=dict)  # asset -> strategy -> daily returns above cash
     ann_factors: dict = field(default_factory=dict)
 
@@ -201,9 +207,9 @@ def _run_asset(conn, run, asset, asset_df):
         m = {k: v for k, v in ev["metrics"][strategy].items() if k != "Asset"}
         write_backtest_metrics(conn, m, asset, run_id, cycle="full", strategy=strategy)
 
-    # Per-year and per-stress-episode breakdown for every strategy.
+    # Per-year, per-stress-episode and forward-test breakdown for every strategy.
     episodes = cfg.get("evaluation", {}).get("stress_episodes", {})
-    for strategy, cycle, metrics in period_breakdown(ev["backtests"], ann, episodes):
+    for strategy, cycle, metrics in period_breakdown(ev["backtests"], ann, episodes, run.forward_start):
         write_backtest_metrics(conn, metrics, asset, run_id, cycle=cycle, strategy=strategy)
 
     # What the regimes looked like out-of-sample.

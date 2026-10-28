@@ -94,7 +94,7 @@ def regime_profile(labels, features, feature_cols, ann_factor):
     return pd.DataFrame(rows)
 
 
-def period_breakdown(backtests, ann_factor, episodes=None):
+def period_breakdown(backtests, ann_factor, episodes=None, forward_start=None):
     """
     Metrics for every strategy, per calendar year and per stress episode.
 
@@ -107,6 +107,9 @@ def period_breakdown(backtests, ann_factor, episodes=None):
         Named date windows (config: evaluation.stress_episodes). Episodes
         that don't overlap the out-of-sample window are skipped; partly
         overlapping ones are clipped to it and flagged with "Days".
+    forward_start : Timestamp or None
+        First day of the forward test (src/analysis/forward.py). Days from
+        then on are scored as cycle "forward" once there are any.
 
     Returns
     -------
@@ -126,4 +129,8 @@ def period_breakdown(backtests, ann_factor, episodes=None):
             if chunk.empty:
                 continue
             out.append((strategy, f"episode:{name}", metrics(chunk)))
+        if forward_start is not None:
+            chunk = bt.loc[forward_start:]
+            if not chunk.empty:
+                out.append((strategy, "forward", metrics(chunk)))
     return out

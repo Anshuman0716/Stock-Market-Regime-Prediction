@@ -203,21 +203,27 @@ def episode_chart(period_metrics, episodes):
 # ── Risk ─────────────────────────────────────────────────────────────────
 
 def exposure_chart(daily):
-    """Share of capital invested each day. Buy & Hold is always 100%, so it is left out."""
-    fig = go.Figure()
-    hmm = daily[daily["strategy"] == "hmm"]
-    dma = daily[daily["strategy"] == "dma200"]
-    fig.add_trace(go.Scatter(
-        x=hmm["date"], y=hmm["weight"], name=STRATEGY_NAMES["hmm"], mode="lines", fill="tozeroy",
-        line=dict(color=STRATEGY_COLORS["hmm"], width=1.5),
-        fillcolor=hex_to_rgba(STRATEGY_COLORS["hmm"], 0.25), hovertemplate="%{y:.0%}"))
-    fig.add_trace(go.Scatter(
-        x=dma["date"], y=dma["weight"], name=STRATEGY_NAMES["dma200"], mode="lines",
-        line=dict(color=STRATEGY_COLORS["dma200"], width=1, shape="hv"), hovertemplate="%{y:.0%}"))
-    _style(fig, height=320)
-    fig.update_yaxes(range=[0, 1.05], tickformat=".0%", title_text="Invested")
-    fig.update_layout(hovermode="x unified")
-    _range_selector(fig)
+    """Share of capital invested each day, one small panel per strategy.
+
+    Buy & Hold is always 100%, so it is left out. Separate panels on a shared
+    date axis keep each strategy readable; overlaid, the three series hid
+    each other over 16 years of daily data.
+    """
+    shown = [s for s in STRATEGY_ORDER if s != "buy_hold" and (daily["strategy"] == s).any()]
+    fig = make_subplots(rows=len(shown), cols=1, shared_xaxes=True, vertical_spacing=0.09,
+                        subplot_titles=[STRATEGY_NAMES[s] for s in shown])
+    for i, strat in enumerate(shown, start=1):
+        d = daily[daily["strategy"] == strat]
+        fig.add_trace(go.Scatter(
+            x=d["date"], y=d["weight"], name=STRATEGY_NAMES[strat], mode="lines", fill="tozeroy",
+            line=dict(color=STRATEGY_COLORS[strat], width=1, shape="hv" if strat == "dma200" else "linear"),
+            fillcolor=hex_to_rgba(STRATEGY_COLORS[strat], 0.3), hovertemplate="%{y:.0%}"), row=i, col=1)
+        fig.update_yaxes(range=[0, 1.05], tickvals=[0, 0.5, 1], tickformat=".0%", row=i, col=1)
+    _style(fig, height=110 + 120 * len(shown), legend=False)
+    fig.update_annotations(font=dict(size=12), x=0, xanchor="left")
+    # No range buttons here: they would sit on top of the first panel's
+    # title. Drag to zoom; double-click to reset.
+    fig.update_layout(hovermode="x unified", margin=dict(t=36))
     return fig
 
 
@@ -296,8 +302,9 @@ def spell_duration_chart(spells):
 def fold_states_chart(fold_states):
     """Each yearly fold's HMM states: training volatility vs year, coloured by the label they got.
 
-    Shows the labeling rule at work: in every fold the lowest-volatility state
-    becomes Bull and the highest becomes Crisis.
+    Shows how volatility and label relate. Labels come from what each state
+    earned in training (src/models/labeling.py), so for stocks the calm
+    states are usually Bull, while for gold a calm drift can be Transition.
     """
     fig = go.Figure()
     for lab in REGIME_LABELS:

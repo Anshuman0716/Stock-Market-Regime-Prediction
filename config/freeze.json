@@ -1,0 +1,7 @@
+{
+  "version": "v1.0",
+  "frozen_on": "2026-10-28",
+  "data_end_at_freeze": "2026-10-27",
+  "config_hash": "5855083a7597a86e46a96e91f7680222",
+  "note": "Model and strategy design frozen. Every result from 2010 to data_end_at_freeze was used while designing (Steps 1-8). Only days after data_end_at_freeze count as the forward test. Changing config/config.yaml invalidates it; start a new version instead."
+}

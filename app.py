@@ -25,6 +25,7 @@ from src.dashboard.summary import headline_findings, scoreboard_table  # noqa: E
 from src.dashboard.theme import (  # noqa: E402
     REGIME_COLORS, REGIME_ICONS, REGIME_LABELS, STRATEGY_NAMES, STRATEGY_ORDER, asset_name, hex_to_rgba,
 )
+from src.analysis.forward import FORWARD_CYCLE, freeze_status, load_freeze  # noqa: E402
 from src.data.loader import load_config  # noqa: E402
 from src.db.store import DEFAULT_DB_PATH, get_config_hash  # noqa: E402
 from src.stats.significance import block_bootstrap_sharpe_diff, run_significance_suite  # noqa: E402
@@ -118,6 +119,12 @@ with st.sidebar:
     st.markdown(f"**Pipeline run:** {str(run['created_at'])[:16].replace('T', ' ')}")
     st.markdown(f"**Models:** {'retrained this run' if run.get('models_trained') else 'reused saved folds'}")
     st.markdown(f"**Code version:** `{str(run['git_sha'])[:8]}`")
+    freeze = load_freeze()
+    freeze_state, freeze_msg = freeze_status(freeze, run["config_hash"])
+    if freeze_state == "valid":
+        st.markdown(f"**Frozen version:** {freeze['version']} (since {freeze['frozen_on']})")
+    elif freeze_state == "invalid":
+        st.warning(freeze_msg)
     if config_changed:
         st.warning("`config.yaml` has changed since this run. Re-run the pipeline to update the results.")
     with st.expander("Refresh the results"):
@@ -179,18 +186,48 @@ with tabs[0]:
         st.markdown("**Maximum drawdown** (closer to 0 is better)")
         plot(charts.asset_dot_plot(metrics_full, "Max DD", ".0%"))
 
-    board = scoreboard_table(metrics_full, significance, windows.loc[ASSETS])
-    pct = ["CAGR · HMM", "CAGR · B&H", "Max DD · HMM", "Max DD · B&H", "Avg. exposure · HMM"]
-    # Short column labels so every column fits without sideways scrolling.
-    st.dataframe(
-        as_pct(board, pct), hide_index=True, use_container_width=True,
-        column_config={**{c: pct_col(c.replace("Avg. exposure", "Exposure"), 1) for c in pct},
-                       **{c: num_col(c.replace("200-DMA", "MA")) for c in board.columns if c.startswith("Sharpe")},
-                       "p vs B&H (Holm)": num_col("p (Holm)", 3)})
+    board = scoreboard_table(metrics_full, significance, windows.loc[ASSETS]).set_index("Asset")
+    # Metrics as rows and assets as columns: four columns always fit, however
+    # many baselines the rows compare.
+    pct_rows = {"CAGR · HMM", "CAGR · B&H", "Max DD · HMM", "Max DD · B&H", "Avg. exposure · HMM"}
+
+    def fmt(row, v):
+        if pd.isna(v):
+            return "–"
+        return f"{v:.1%}" if row in pct_rows else f"{v:.3f}" if row.startswith("p ") else f"{v:.2f}"
+
+    shown = board.T
+    shown = shown.apply(lambda col: [fmt(r, v) for r, v in zip(shown.index, col)])
+    shown.index = [r.replace("200-DMA", "MA") for r in shown.index]
+    st.dataframe(shown, use_container_width=True, height=36 * (len(shown) + 1) + 3)
     starts = ", ".join(f"{asset_name(a)} from {windows.loc[a, 'oos_start']:%Y-%m-%d}" for a in ASSETS)
-    st.caption(f"Out-of-sample windows: {starts}, all to {data_end}. Within each asset, all three strategies "
+    st.caption(f"Out-of-sample windows: {starts}, all to {data_end}. Within each asset, all four strategies "
                "run on the same dates, start flat and pay the same costs. B&H = buy and hold; MA = 200-day "
-               "moving-average filter (invested only when the price is above its 200-day average).")
+               "moving-average filter (invested only when the price is above its 200-day average); Vol tgt = "
+               "volatility target (holds less when volatility is above its own long-run level).")
+
+
+    st.subheader("Forward test")
+    if freeze_state == "valid":
+        fwd = load("load_metrics", RUN_ID, FORWARD_CYCLE)
+        st.caption(f"{freeze['version']} was frozen on {freeze['frozen_on']}. Everything above was used while "
+                   f"designing it; only days after {freeze['data_end_at_freeze']} count here, so this is the "
+                   "one result the design work cannot have influenced.")
+        if fwd.empty:
+            st.info(f"No trading days since the freeze yet (data through {data_end}). Each "
+                    "`python scripts/run_pipeline.py --reuse-models` adds new days.")
+        else:
+            ft = fwd.reset_index()
+            ft = ft[ft["strategy"].isin(STRATEGY_ORDER)].assign(
+                Asset=lambda d: d["asset_id"].map(asset_name), Strategy=lambda d: d["strategy"].map(STRATEGY_NAMES))
+            st.dataframe(as_pct(ft[["Asset", "Strategy", "Days", "Total Return", "Sharpe", "Max DD"]],
+                                ["Total Return", "Max DD"]),
+                         hide_index=True, use_container_width=True,
+                         column_config={"Days": num_col(digits=0), "Total Return": pct_col("Total return", 2),
+                                        "Sharpe": num_col("Sharpe (above cash)"), "Max DD": pct_col("Max DD")})
+            st.caption("A few weeks of data say almost nothing; judge the forward test after months.")
+    else:
+        st.info(freeze_msg)
 
 
 # ── 2. Regimes ───────────────────────────────────────────────────────────
@@ -297,8 +334,8 @@ with tabs[3]:
     st.markdown("#### How much was invested")
     plot(charts.exposure_chart(daily))
     st.caption("Buy & Hold is always fully invested, so it is not drawn. The HMM scales its position "
-               "smoothly with the probability of the regimes worth holding; the 200-day MA filter is either all in or "
-               "all out.")
+               "smoothly with the probability of the regimes worth holding; the 200-day MA filter is either "
+               "all in or all out; the volatility target holds less whenever volatility is above its own norm.")
 
     st.markdown("#### Trading costs")
     costs = load("load_cost_totals", RUN_ID, asset).reindex(STRATEGY_ORDER)
@@ -348,11 +385,26 @@ with tabs[4]:
     st.markdown("#### Walk-forward training: how each year's states were labeled")
     fstates = load("load_fold_states", RUN_ID, asset)
     plot(charts.fold_states_chart(fstates))
-    st.caption("Every year the HMM is refit on all data before that year and finds 4 hidden states. Each "
-               "state is labeled from its *training* behaviour: lowest volatility → Bull, highest → Crisis, "
-               "the rest by their Sharpe ratio. Dot size = share of training days in that state.")
+    st.caption("Every year the HMM is refit on all data before that year and finds its hidden states. Each "
+               "state is labeled from its *training* behaviour: the best-earning state (highest Sharpe) → Bull, "
+               "the worst → Crisis; the others are Bull only if they beat simply holding the asset, Crisis if "
+               "they lost money, otherwise Transition. Height = the state's training volatility; dot size = "
+               "share of training days in that state.")
+    st.markdown("#### Which regimes the strategy held, year by year")
+    folds = load("load_folds", RUN_ID, asset)
+    if {"w_bull", "w_transition", "w_crisis"} <= set(folds.columns) and folds["w_bull"].notna().any():
+        held = pd.DataFrame({"Trades in": folds["test_start"].dt.year,
+                             "Bull": folds["w_bull"] > 0, "Transition": folds["w_transition"] > 0,
+                             "Crisis": folds["w_crisis"] > 0})
+        n = len(held)
+        st.caption(f"Each year a regime is held (✓) only if the asset's average return on that regime's "
+                   f"*training* days was positive. {asset_name(asset)}: Bull held in {int(held['Bull'].sum())} "
+                   f"of {n} years, Transition in {int(held['Transition'].sum())}, Crisis in "
+                   f"{int(held['Crisis'].sum())}.")
+        st.dataframe(held, hide_index=True, use_container_width=True, height=36 * (n + 1) + 3,
+                     column_config={"Trades in": st.column_config.NumberColumn(format="%d"),
+                                    **{lab: st.column_config.CheckboxColumn(lab) for lab in REGIME_LABELS}})
     with st.expander("Fold details"):
-        folds = load("load_folds", RUN_ID, asset)
         ft = pd.DataFrame({
             "Trades in": folds["test_start"].dt.year,
             "Trained on": (folds["train_start"].dt.strftime("%Y-%m-%d") + " → "
