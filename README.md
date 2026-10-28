@@ -400,7 +400,7 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 
 | Limitation | Explanation |
 |---|---|
-| **Volatility-based labeling** | The calmest state is always called Bull. When a training window is very volatile overall (Bitcoin since 2014), the calmest state can still include crashes. |
+| **Labels come from training returns** | Each fold's best-earning state is called Bull and its worst-earning state Crisis, judged on that fold's training data only. A state that earned well in training can behave differently out-of-sample (see the Gold row). |
 | **Gaussian emissions** | `hmmlearn`'s Gaussian HMM assumes normal returns within each state. Real returns have fat tails. |
 | **Detection lag** | The 21-day trailing smoothing delays reactions to regime changes. In the S&P 500 stress episodes the smoothed regime left Bull 13–36 trading days after the peak (it was already Transition at the 2011 peak), when buy-and-hold (SPY) had already lost between 0.8% and 18.9%. Since Step 8 the strategy also holds Transition where it earned money in training, so its exposure only drops below 50% once Crisis dominates: 13–97 trading days after the peak in five episodes, and not during the 2015–16 sell-off at all (notebook 03). That is the cost side of the Step 8 sizing. |
 | **Labeling thresholds are judgement calls** | The Sharpe bars (0.2, −0.1, and the asset's own training Sharpe) are reasonable but not estimated. Section 1 shows how much the switch from the fixed to the relative rule moved the results. |
@@ -408,6 +408,7 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 | **Gold's regimes don't carry over well** | Gold's Crisis regime lost money in training but earned about as much as Bull out-of-sample, so stepping out of it cost return. No training-based rule can anticipate that. |
 | **Stress-episode dates are equity-based** | The episodes are S&P 500 peak-to-trough windows applied to every asset, which shows how Gold and Bitcoin behaved during *equity* stress, not during their own crashes. |
 | **Fund proxies and the cash rate** | The signal comes from the index but P&L from a fund, so a gap between the two (tracking error) is part of the result. ONEQ is thinly traded, so its 3 bps spread is an estimate. `^IRX` is a discount yield, used as a close approximation of what idle cash earns. Bitcoin is traded spot, with no ETF fees but exchange fees folded into its 5 bps spread. |
+| **Yahoo revises adjusted prices** | Yahoo recalculates dividend-adjusted fund prices from time to time. Two downloads a day apart differed by at most 1.8e-6 in a daily SPY or ONEQ return, which moved Sharpe ratios and other metrics by at most 4e-5 (4th–5th decimal). Regimes, positions and trades were identical, because the signal comes from the index, not the fund. A rerun on a later download can therefore differ from the stored numbers in the last decimals; this is expected and harmless. |
 | **Private `hmmlearn` API** | Filtered probabilities use `hmmlearn._hmmc.forward_log`, so `hmmlearn` is pinned to `>=0.3,<0.4`. |
 | **Number of states** | BIC on the first training window keeps falling up to 6 states (notebook 02). Four states are used because each can be mapped to an economic regime; this is a judgement call, not a statistical optimum. |
 
