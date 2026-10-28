@@ -8,7 +8,10 @@ import sqlite3
 import numpy as np
 import pandas as pd
 
-from src.db.store import SCHEMA_VERSION, _to_sql_value, get_db_connection, init_db, write_frame
+from src.db.store import (
+    SCHEMA_VERSION, _to_sql_value, get_db_connection, init_db, write_frame, write_portfolio_weights,
+    write_significance,
+)
 
 
 def test_values_are_converted_to_plain_sqlite_types():
@@ -69,3 +72,33 @@ def test_nan_metric_is_stored_as_null(tmp_path):
                     ["run_id", "asset_id", "strategy", "cycle", "metric_name"])
         value = conn.execute("SELECT metric_value FROM backtest_metrics").fetchone()[0]
     assert value is None
+
+
+def test_portfolio_weights_round_trip_and_rewrite_without_duplicates(tmp_path):
+    db = str(tmp_path / "store.db")
+    init_db(db)
+    dates = pd.bdate_range("2021-01-04", periods=3)
+    held = pd.DataFrame({"spx": [0.0, 0.6, 0.5], "gold": [0.0, 0.4, 0.25]}, index=dates)
+    with get_db_connection(db) as conn:
+        conn.execute("PRAGMA foreign_keys = OFF")
+        write_portfolio_weights(conn, held, "r", "regime_aware")
+        write_portfolio_weights(conn, held, "r", "regime_aware")   # same run again: update, not duplicate
+        rows = pd.read_sql("SELECT date, asset_id, weight FROM portfolio_weights ORDER BY date, asset_id", conn)
+    assert len(rows) == 6
+    back = rows.pivot(index="date", columns="asset_id", values="weight")
+    np.testing.assert_allclose(back[["spx", "gold"]].to_numpy(), held.to_numpy())
+
+
+def test_significance_family_defaults_to_asset(tmp_path):
+    """Results from code that predates the portfolio (no 'family' column)
+    are stored as the per-asset family."""
+    db = str(tmp_path / "store.db")
+    init_db(db)
+    sig = pd.DataFrame([{"asset": "spx", "strategy": "hmm", "baseline": "buy_hold", "sharpe_diff": 0.1,
+                         "ci_lower": -0.1, "ci_upper": 0.3, "p_value": 0.4, "p_value_hac": 0.5,
+                         "p_value_holm": 0.8}])
+    with get_db_connection(db) as conn:
+        conn.execute("PRAGMA foreign_keys = OFF")
+        write_significance(conn, sig, "r")
+        family = conn.execute("SELECT family FROM significance_tests").fetchone()[0]
+    assert family == "asset"

@@ -186,7 +186,8 @@ def adjust_pvalues(p_values):
 
 
 def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
-                           baselines=("buy_hold", "dma200", "vol_target"), n_bootstraps=2000):
+                           baselines=("buy_hold", "dma200", "vol_target"), n_bootstraps=2000,
+                           family="asset"):
     """
     Test the strategy against every baseline on every asset, then correct for
     multiple testing.
@@ -199,6 +200,10 @@ def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
 
     Pass EXCESS returns (above the cash rate) so the Sharpe ratios tested are
     the ones reported. Baselines missing from an asset are skipped.
+
+    One call = one Holm family. `family` names it in the output, so tests
+    corrected together can be told apart from tests corrected separately
+    ("asset" for v1.0, "portfolio" for the v2.0 portfolio).
 
     Parameters
     ----------
@@ -228,6 +233,7 @@ def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
             hac = ledoit_wolf_sharpe_diff(ra, rb, ann_factors[asset])
             rows.append({
                 "asset": asset,
+                "family": family,
                 "strategy": strategy,
                 "baseline": baseline,
                 "sharpe_diff": boot["diff"],

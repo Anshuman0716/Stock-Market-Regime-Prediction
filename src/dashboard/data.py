@@ -20,6 +20,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.backtest.portfolio import PORTFOLIO_ID
 from src.db.store import DEFAULT_DB_PATH, SCHEMA_VERSION
 from src.models.signal import REGIME_LABELS
 
@@ -74,10 +75,17 @@ def load_run(db_path=DEFAULT_DB_PATH, run_id=None):
     return df.iloc[0].to_dict()
 
 
-def load_windows(db_path, run_id):
-    """Out-of-sample window, annualization and cost per asset (index: asset_id)."""
+def load_windows(db_path, run_id, include_portfolio=False):
+    """Out-of-sample window, annualization and cost per asset (index: asset_id).
+
+    The v2.0 portfolio has a window row too, but it is not an asset with a
+    model, so it is left out unless asked for: code that loops over the
+    windows to list assets keeps seeing only real assets.
+    """
     df = _read(db_path, "SELECT * FROM evaluation_windows WHERE run_id = ? ORDER BY rowid",
                (run_id,), dates=("oos_start", "oos_end"))
+    if not include_portfolio:
+        df = df[df["asset_id"] != PORTFOLIO_ID]
     return df.set_index("asset_id")
 
 
@@ -209,8 +217,27 @@ def load_fold_states(db_path, run_id, asset_id):
     return df
 
 
-def load_significance(db_path, run_id):
-    return _read(db_path, "SELECT * FROM significance_tests WHERE run_id = ?", (run_id,))
+def load_significance(db_path, run_id, family="asset"):
+    """Sharpe-difference tests of one Holm family: "asset" (each asset's HMM
+    vs its baselines, v1.0) or "portfolio" (v2.0). Families are never mixed:
+    their adjusted p-values were corrected separately."""
+    return _read(db_path, "SELECT * FROM significance_tests WHERE run_id = ? AND family = ?",
+                 (run_id, family))
+
+
+def load_portfolio_weights(db_path, run_id, strategy=None):
+    """Held weight per asset per day for the portfolio strategies.
+
+    Wide: index (strategy, date), one column per asset. With `strategy`,
+    just that strategy's frame indexed by date.
+    """
+    df = _read(db_path, """SELECT strategy, date, asset_id, weight FROM portfolio_weights
+                           WHERE run_id = ? ORDER BY strategy, date""", (run_id,), dates=("date",))
+    wide = df.pivot_table(index=["strategy", "date"], columns="asset_id", values="weight", aggfunc="first")
+    wide.columns.name = None
+    if strategy is not None:
+        return wide.loc[strategy] if strategy in wide.index.get_level_values(0) else wide.iloc[0:0]
+    return wide
 
 
 def load_paper_trades(path="data/paper_trades.csv"):

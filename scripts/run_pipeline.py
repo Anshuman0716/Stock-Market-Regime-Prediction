@@ -25,6 +25,7 @@ warnings.filterwarnings("ignore", message="Could not find the number of physical
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from src.backtest.portfolio import PORTFOLIO_ID  # noqa: E402
 from src.pipeline import run_pipeline, DEFAULT_RUN_ID  # noqa: E402
 from src.models.hmm import RetrainRequired  # noqa: E402
 
@@ -51,12 +52,19 @@ def main():
 
     print(f"\nDone in {time.perf_counter() - t0:.0f}s "
           f"({'reused saved models' if args.reuse_models else 'retrained all folds'}).")
-    strategies = [k[len("sharpe_"):] for k in next(iter(summary.values())) if k.startswith("sharpe_")]
+    # Per-asset rows and the portfolio have different strategies, so each
+    # group gets its own header.
+    groups = {"assets": {a: r for a, r in summary.items() if a != PORTFOLIO_ID},
+              "portfolio (v2.0)": {a: r for a, r in summary.items() if a == PORTFOLIO_ID}}
     print("Sharpe ratio above cash, out-of-sample:")
-    print(f"{'asset':8s} {'window':25s}" + "".join(f"{name:>12s}" for name in strategies))
-    for asset, row in summary.items():
-        print(f"{asset:8s} {row['oos_start']} -> {row['oos_end']} "
-              + "".join(f"{row['sharpe_' + name]:12.2f}" for name in strategies))
+    for title, rows in groups.items():
+        if not rows:
+            continue
+        strategies = [k[len("sharpe_"):] for k in next(iter(rows.values())) if k.startswith("sharpe_")]
+        print(f"\n{title:9s} {'window':25s}" + "".join(f"{name:>14s}" for name in strategies))
+        for asset, row in rows.items():
+            print(f"{asset:9s} {row['oos_start']} -> {row['oos_end']} "
+                  + "".join(f"{row['sharpe_' + name]:14.2f}" for name in strategies))
 
 
 if __name__ == "__main__":

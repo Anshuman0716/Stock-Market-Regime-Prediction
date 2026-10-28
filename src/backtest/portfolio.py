@@ -16,17 +16,45 @@ a PORTFOLIO beat simple portfolio rules. This module has four parts:
 Every weight on day t uses only data up to and including day t. The engine
 then applies the same two-day delay as v1.0 (decide at t, trade at t+1,
 earn from t+2), so the weight rules never need to worry about timing.
+
+evaluate_portfolio() puts the four parts together for the pipeline.
 """
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 
+from src.backtest.metrics import get_all_metrics
+
 # Pre-registered values (docs/v2_preregistration.md, Section 13). Phase 3
 # moves them into config.yaml; they stay here as the defaults the tests use.
 RISK_PARITY_LOOKBACK = 63   # ~one quarter of stock trading days
 MAX_SIGNAL_STALENESS = 5    # stock trading days before a signal counts as 0
 EXECUTION_DELAY = 2         # decide at t, trade at t+1 close, earn from t+2
+PORTFOLIO_ANN_FACTOR = 252  # the portfolio lives on the stock calendar
+
+# How the portfolio is stored: as one extra "asset" next to the real ones,
+# with its own three strategies. The strategy under test comes first.
+PORTFOLIO_ID = "portfolio"
+PORTFOLIO_STRATEGY = "regime_aware"
+PORTFOLIO_BASELINES = ("equal_weight", "risk_parity")
+PORTFOLIO_STRATEGIES = (PORTFOLIO_STRATEGY,) + PORTFOLIO_BASELINES
+
+
+@dataclass(frozen=True)
+class PortfolioSettings:
+    """The pre-registered portfolio settings in one place.
+
+    The defaults ARE the pre-registration (Section 13). Phase 3 reads them
+    from a separate `portfolio:` section of config.yaml; keeping them out of
+    the existing sections means v1.0's config fingerprint does not change.
+    """
+    assets: tuple = ("spx", "gold", "bitcoin")
+    calendar_asset: str = "spx"   # whose traded instrument (SPY) sets the trading days and cash
+    risk_parity_lookback: int = RISK_PARITY_LOOKBACK
+    max_signal_staleness: int = MAX_SIGNAL_STALENESS
+    execution_delay: int = EXECUTION_DELAY
+    ann_factor: int = PORTFOLIO_ANN_FACTOR
 
 # Floating-point slack when checking that weights add up to at most 100%.
 _SUM_TOLERANCE = 1e-9
@@ -284,3 +312,91 @@ def run_portfolio_backtest(returns, target_weights, cost_bps, cash_returns=None,
         "invested": invested,
     }, index=returns.index)
     return PortfolioBacktest(daily=daily, held_weights=held, turnover=turnover)
+
+
+# ── 5. Putting it together ────────────────────────────────────────────────
+
+def portfolio_metrics(bt, ann_factor=PORTFOLIO_ANN_FACTOR):
+    """The usual metrics dictionary for one portfolio backtest.
+
+    Uses the same functions as the per-asset results, with one change:
+    "Ann. Turnover" comes from the engine's real per-asset trades. The
+    generic version measures changes in ONE weight, which for a portfolio
+    would only see the invested total and miss every switch between assets.
+    """
+    m = get_all_metrics(bt.daily["net_return"], bt.daily["invested"], ann_factor, PORTFOLIO_ID,
+                        cash_returns=bt.daily["cash_return"])
+    years = len(bt.daily) / ann_factor
+    m["Ann. Turnover"] = float(bt.daily["turnover"].sum() / years) if years > 0 else 0.0
+    return m
+
+
+def as_backtest_frame(bt):
+    """The daily frame in the single-asset layout (executed_weight = invested
+    share), so per-asset helpers such as period_breakdown and the store's
+    daily writer can be reused unchanged."""
+    return bt.daily.rename(columns={"invested": "executed_weight"})
+
+
+def evaluate_portfolio(prices, signals, entry_dates, calendar, cash_returns, cost_bps,
+                       settings=PortfolioSettings()):
+    """
+    Build and backtest the three pre-registered portfolios.
+
+    Parameters
+    ----------
+    prices : dict[str, pd.Series]
+        asset -> traded instrument's close on the asset's own dates.
+    signals : dict[str, pd.Series]
+        asset -> v1.0 HMM target_weight, out-of-sample days only (exactly
+        what the per-asset HMM strategy trades).
+    entry_dates : dict[str, Timestamp]
+        asset -> first out-of-sample day; the asset joins on the first
+        calendar day on or after it.
+    calendar : pd.DatetimeIndex
+        Stock trading days (SPY dates), including history before the window
+        so the risk-parity volatility has data from day one.
+    cash_returns : pd.Series
+        Daily cash return on the calendar.
+    cost_bps : dict[str, float]
+        asset -> cost per unit of turnover.
+
+    Returns
+    -------
+    dict with oos_start, oos_end, backtests (strategy -> PortfolioBacktest),
+    metrics (strategy -> metrics dict), exposures (aligned regime exposures).
+
+    The window starts on the first calendar day any asset is in. Weights
+    are cut to the window before the engine runs, so (as in v1.0) every
+    portfolio starts flat and pays to get in.
+    """
+    assets = list(settings.assets)
+    calendar = pd.DatetimeIndex(calendar).sort_values()
+    returns = stock_calendar_returns({a: prices[a] for a in assets}, calendar)
+    exposures = align_signals({a: signals[a] for a in assets}, calendar, settings.max_signal_staleness)
+    members = membership(calendar, {a: entry_dates[a] for a in assets})
+
+    rp = inverse_vol_weights(returns, members, settings.risk_parity_lookback)
+    targets = {
+        PORTFOLIO_STRATEGY: regime_aware_weights(rp, exposures),
+        "equal_weight": equal_weights(members),
+        "risk_parity": rp,
+    }
+
+    in_window = members.any(axis=1)
+    if not in_window.any():
+        raise ValueError("No asset enters the portfolio within the calendar.")
+    start = in_window.idxmax()
+    window_returns = returns.loc[start:]
+    cash = pd.Series(cash_returns).reindex(calendar).loc[start:]
+
+    backtests = {name: run_portfolio_backtest(window_returns, w.loc[start:], cost_bps, cash_returns=cash,
+                                              delay=settings.execution_delay)
+                 for name, w in targets.items()}
+    return {
+        "oos_start": start,
+        "oos_end": calendar[-1],
+        "backtests": backtests,
+        "metrics": {name: portfolio_metrics(bt, settings.ann_factor) for name, bt in backtests.items()},
+        "exposures": exposures.loc[start:],
+    }

@@ -8,13 +8,16 @@
 -- 2. Idempotent upserts are handled via ON CONFLICT DO UPDATE on PRIMARY KEYs.
 -- 3. Backtest tables carry a `strategy` column (hmm / buy_hold / dma200) so the
 --    HMM and its baselines live side by side for the same run and dates.
+--    The v2.0 portfolio is stored as one more asset, asset_id 'portfolio',
+--    with strategies regime_aware / equal_weight / risk_parity, so every
+--    per-asset table and chart helper works for it unchanged.
 -- 4. PRAGMA user_version is the schema version. store.init_db() rebuilds the
 --    database when it does not match, because CREATE TABLE IF NOT EXISTS
 --    would silently keep an old table layout.
 -- 5. Everything the dashboard shows is precomputed here by the pipeline, so
 --    the app only reads; it never re-derives results.
 
-PRAGMA user_version = 6;
+PRAGMA user_version = 7;
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id TEXT PRIMARY KEY,
@@ -135,11 +138,16 @@ CREATE TABLE IF NOT EXISTS evaluation_windows (
 );
 
 -- Sharpe-difference tests of a strategy against each baseline.
+-- family: which tests were Holm-corrected together. 'asset' = each asset's
+-- HMM vs its baselines (v1.0); 'portfolio' = the regime-aware portfolio vs
+-- the two portfolio baselines (v2.0). Kept apart because they answer
+-- different questions (docs/v2_preregistration.md, Section 9).
 CREATE TABLE IF NOT EXISTS significance_tests (
     run_id TEXT,
     asset_id TEXT,
     strategy TEXT,
     baseline TEXT,
+    family TEXT NOT NULL DEFAULT 'asset',
     sharpe_diff REAL,
     ci_lower REAL,
     ci_upper REAL,
@@ -147,6 +155,20 @@ CREATE TABLE IF NOT EXISTS significance_tests (
     p_value_hac REAL,
     p_value_holm REAL,
     PRIMARY KEY (run_id, asset_id, strategy, baseline),
+    FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
+    FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
+);
+
+-- Weight held in each asset by each portfolio strategy on each day of the
+-- portfolio window (the weight that earned that day's return, i.e. after
+-- the two-day delay). The rest of the portfolio was in cash.
+CREATE TABLE IF NOT EXISTS portfolio_weights (
+    run_id TEXT,
+    strategy TEXT NOT NULL,
+    date TEXT,
+    asset_id TEXT,
+    weight REAL,
+    PRIMARY KEY (run_id, strategy, date, asset_id),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );
