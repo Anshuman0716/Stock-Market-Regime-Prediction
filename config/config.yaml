@@ -100,3 +100,35 @@ evaluation:
     covid_crash_2020: ["2020-02-19", "2020-03-23"]
     bear_market_2022: ["2022-01-03", "2022-10-12"]
     tariff_selloff_2025: ["2025-02-19", "2025-04-08"]
+
+# ── v2.0 portfolio (docs/v2_preregistration.md) ─────────────────────────
+# Combines the per-asset HMM signals above into one portfolio and compares
+# it with equal weight and plain risk parity. Every value here was fixed in
+# the pre-registration (Section 13) BEFORE any portfolio result existed;
+# tests/test_config.py checks they still match it. Do not tune them on
+# results: a new idea is a new version with its own pre-registration.
+#
+# This section is its own fingerprint (src/db/store.py): it is left out of
+# the per-asset config hash, so editing it never retrains a model or
+# invalidates v1.0's forward test, but it does invalidate v2.0's.
+portfolio:
+  # NASDAQ is left out: it moves almost exactly with the S&P 500.
+  assets: ["spx", "gold", "bitcoin"]
+  # Whose traded instrument (SPY) sets the trading days and the cash rate.
+  calendar_asset: "spx"
+  # Plain risk parity: 1 / volatility over this many trading days (~1 quarter).
+  risk_parity_lookback: 63
+  # A signal older than this many trading days counts as 0 exposure (cash).
+  max_signal_staleness: 5
+  # Decide at t, trade at t+1's close, earn from t+2 (as in v1.0).
+  execution_delay: 2
+  # Rows per year: the portfolio lives on the stock calendar.
+  ann_factor: 252
+  # Sharpe-difference test (same method as v1.0), one Holm family of two.
+  significance:
+    block_size: 60
+    n_bootstraps: 2000
+    seed: 42
+    alpha: 0.05
+  # No forward verdict before this many forward trading days (~1 year).
+  forward_min_days: 252

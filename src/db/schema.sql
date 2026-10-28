@@ -140,8 +140,11 @@ CREATE TABLE IF NOT EXISTS evaluation_windows (
 -- Sharpe-difference tests of a strategy against each baseline.
 -- family: which tests were Holm-corrected together. 'asset' = each asset's
 -- HMM vs its baselines (v1.0); 'portfolio' = the regime-aware portfolio vs
--- the two portfolio baselines (v2.0). Kept apart because they answer
--- different questions (docs/v2_preregistration.md, Section 9).
+-- the two portfolio baselines on its historical window (v2.0);
+-- 'portfolio_forward' = the same two tests on the forward window, once it
+-- is long enough. Kept apart because they answer different questions
+-- (docs/v2_preregistration.md, Sections 9-10). Part of the key, because
+-- the same pair is tested once per window.
 CREATE TABLE IF NOT EXISTS significance_tests (
     run_id TEXT,
     asset_id TEXT,
@@ -154,7 +157,7 @@ CREATE TABLE IF NOT EXISTS significance_tests (
     p_value REAL,
     p_value_hac REAL,
     p_value_holm REAL,
-    PRIMARY KEY (run_id, asset_id, strategy, baseline),
+    PRIMARY KEY (run_id, asset_id, strategy, baseline, family),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
 );

@@ -187,7 +187,7 @@ def adjust_pvalues(p_values):
 
 def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
                            baselines=("buy_hold", "dma200", "vol_target"), n_bootstraps=2000,
-                           family="asset"):
+                           family="asset", block_size=60, seed=42):
     """
     Test the strategy against every baseline on every asset, then correct for
     multiple testing.
@@ -229,7 +229,8 @@ def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
             rb = by_strategy[baseline]
             if not ra.index.equals(rb.index):
                 raise ValueError(f"{asset}: {strategy} and {baseline} cover different dates.")
-            boot = block_bootstrap_sharpe_diff(ra, rb, ann_factors[asset], n_bootstraps=n_bootstraps)
+            boot = block_bootstrap_sharpe_diff(ra, rb, ann_factors[asset], block_size=block_size,
+                                               n_bootstraps=n_bootstraps, seed=seed)
             hac = ledoit_wolf_sharpe_diff(ra, rb, ann_factors[asset])
             rows.append({
                 "asset": asset,

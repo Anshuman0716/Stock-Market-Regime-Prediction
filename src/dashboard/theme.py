@@ -47,6 +47,16 @@ ASSET_NAMES = {
     "nasdaq": "NASDAQ Composite",
     "gold": "Gold",
     "bitcoin": "Bitcoin",
+    "portfolio": "Portfolio (v2.0)",
+}
+
+# The v2.0 portfolio's three strategies (src/backtest/portfolio.py), the
+# one under test first.
+PORTFOLIO_STRATEGY_ORDER = ["regime_aware", "equal_weight", "risk_parity"]
+PORTFOLIO_STRATEGY_NAMES = {
+    "regime_aware": "Regime-aware portfolio",
+    "equal_weight": "Equal weight",
+    "risk_parity": "Risk parity",
 }
 
 # Single-hue ramp (light -> dark blue) for magnitude, e.g. the transition

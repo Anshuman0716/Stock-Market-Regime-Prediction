@@ -1,7 +1,23 @@
 {
-  "version": "v1.0",
-  "frozen_on": "2026-10-28",
-  "data_end_at_freeze": "2026-10-27",
-  "config_hash": "5855083a7597a86e46a96e91f7680222",
-  "note": "Model and strategy design frozen. Every result from 2010 to data_end_at_freeze was used while designing (Steps 1-8). Only days after data_end_at_freeze count as the forward test. Changing config/config.yaml invalidates it; start a new version instead."
+  "note": "Frozen versions, oldest first. Each is judged only on days after its data_end_at_freeze. scope 'assets' is checked against the per-asset config hash (which ignores the portfolio: section), scope 'portfolio' against the whole-config hash (src/analysis/forward.py). Changing config.yaml invalidates the matching versions; add a new version instead of editing one.",
+  "versions": [
+    {
+      "version": "v1.0",
+      "scope": "assets",
+      "frozen_on": "2026-10-28",
+      "data_end_at_freeze": "2026-10-27",
+      "config_hash": "5855083a7597a86e46a96e91f7680222",
+      "note": "Model and strategy design frozen. Every result from 2010 to data_end_at_freeze was used while designing (Steps 1-8). Only days after data_end_at_freeze count as the forward test. Changing config/config.yaml invalidates it; start a new version instead."
+    },
+    {
+      "version": "v2.0",
+      "scope": "portfolio",
+      "frozen_on": "2026-10-28",
+      "data_end_at_freeze": "2026-10-27",
+      "config_hash": "d773faeccf776204f14282ed61409565",
+      "preregistration": "docs/v2_preregistration.md",
+      "preregistration_commit": "f7a17d2",
+      "note": "Regime-aware portfolio vs equal weight and plain risk parity. Every rule was written down and committed (preregistration_commit) before any portfolio result existed, with data through data_end_at_freeze. The historical verdict is read on days up to data_end_at_freeze, the forward verdict on days after it, once there are at least portfolio.forward_min_days of them."
+    }
+  ]
 }

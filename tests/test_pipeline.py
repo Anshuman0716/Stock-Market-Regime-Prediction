@@ -18,7 +18,7 @@ from src.analysis.regimes import regime_spells, transition_matrix, period_breakd
 from src.models.hmm import RetrainRequired, predict_from_artifacts
 from src.backtest.portfolio import PORTFOLIO_ID, PORTFOLIO_STRATEGIES, PortfolioSettings
 from src.dashboard import data
-from src.stats.significance import adjust_pvalues
+from src.stats.significance import adjust_pvalues, block_bootstrap_sharpe_diff
 
 CFG = {
     "tickers": {"spx": "^GSPC", "gold": "GC=F", "vix": "^VIX"},
@@ -333,7 +333,81 @@ def test_portfolio_is_skipped_when_an_asset_is_missing(env, caplog):
     none, so the step is skipped with a warning instead of building a
     different portfolio than the one that was registered."""
     with caplog.at_level("WARNING"):
-        summary = _run(env, train=True)
+        summary = _run(env, train=True, portfolio=PortfolioSettings())
     assert PORTFOLIO_ID not in summary
     assert "Portfolio skipped" in caplog.text and "bitcoin" in caplog.text
     assert _read(env, "SELECT COUNT(*) n FROM portfolio_weights")["n"][0] == 0
+
+
+def _write_cfg(env, cfg):
+    with open(env["config_path"], "w") as f:
+        yaml.safe_dump(cfg, f)
+
+
+PORTFOLIO_SECTION = {"assets": ["spx", "gold"], "calendar_asset": "spx", "risk_parity_lookback": 63,
+                     "max_signal_staleness": 5, "execution_delay": 2, "ann_factor": 252,
+                     "significance": {"block_size": 60, "n_bootstraps": 200, "seed": 42, "alpha": 0.05},
+                     "forward_min_days": 252}
+
+
+def test_portfolio_section_in_config_is_used_and_needs_no_retrain(env):
+    """Train without a portfolio section, then add one: the saved models are
+    reused (the per-asset fingerprint ignores the section) and the portfolio
+    is built from the config by default."""
+    _run(env, train=True)
+    assert _read(env, "SELECT COUNT(*) n FROM portfolio_weights")["n"][0] == 0
+    _write_cfg(env, dict(CFG, portfolio=PORTFOLIO_SECTION))
+    summary = _run(env, train=False)            # would raise RetrainRequired if the hash had changed
+    assert PORTFOLIO_ID in summary
+    assert _read(env, "SELECT COUNT(*) n FROM portfolio_weights")["n"][0] > 0
+
+
+def _freeze_both(env, data_end, portfolio_hash="x"):
+    path = env["tmp"] / "freeze.json"
+    record = {"frozen_on": "2020-07-01", "data_end_at_freeze": data_end}
+    path.write_text(json.dumps({"versions": [
+        {"version": "v1", "scope": "assets", "config_hash": "x", **record},
+        {"version": "v2", "scope": "portfolio", "config_hash": portfolio_hash, **record}]}))
+    return str(path)
+
+
+@pytest.mark.parametrize("min_days, has_forward_tests", [(130, True), (10_000, False)])
+def test_portfolio_historical_and_forward_windows(env, min_days, has_forward_tests):
+    """With a v2.0 freeze in the middle of the data: "historical" covers the
+    days up to it, "forward" the days after it, the historical Sharpe tests
+    use only historical days, and forward tests exist only once the forward
+    window has forward_min_days."""
+    settings = PortfolioSettings(assets=("spx", "gold"), n_bootstraps=200, forward_min_days=min_days)
+    freeze_path = _freeze_both(env, "2019-12-31")
+    pipeline.run_pipeline(config_path=env["config_path"], db_path=env["db_path"], model_root=env["model_root"],
+                          train=True, freeze_path=freeze_path, portfolio=settings)
+
+    daily = _read(env, f"SELECT strategy, date, net_return, cash_return FROM backtest_daily "
+                       f"WHERE asset_id = '{PORTFOLIO_ID}' ORDER BY date")
+    metrics = _read(env, f"SELECT strategy, cycle, metric_name, metric_value FROM backtest_metrics "
+                         f"WHERE asset_id = '{PORTFOLIO_ID}'")
+
+    def metric(strategy, cycle, name):
+        row = metrics.query("strategy == @strategy and cycle == @cycle and metric_name == @name")
+        return row["metric_value"].item()
+
+    one = daily[daily.strategy == "regime_aware"]
+    n_hist = int((one.date <= "2019-12-31").sum())
+    n_fwd = int((one.date > "2019-12-31").sum())
+    assert n_hist > 0 and n_fwd > 0
+    assert metric("regime_aware", "historical", "Years") == pytest.approx(n_hist / 252)
+    assert metric("regime_aware", "forward", "Days") == n_fwd
+    assert metric("regime_aware", "full", "Years") == pytest.approx((n_hist + n_fwd) / 252)
+
+    # The stored historical test is exactly the bootstrap on historical days.
+    excess = {s: g.set_index("date").eval("net_return - cash_return")
+              for s, g in daily[daily.date <= "2019-12-31"].groupby("strategy")}
+    expected = block_bootstrap_sharpe_diff(excess["regime_aware"], excess["risk_parity"], 252, n_bootstraps=200)
+    sig = _read(env, "SELECT family, baseline, sharpe_diff, p_value FROM significance_tests "
+                     f"WHERE asset_id = '{PORTFOLIO_ID}'")
+    hist = sig[(sig.family == "portfolio") & (sig.baseline == "risk_parity")].iloc[0]
+    assert hist["sharpe_diff"] == pytest.approx(expected["diff"])
+    assert hist["p_value"] == pytest.approx(expected["p_value"])
+    assert set(sig.family) == ({"portfolio", "portfolio_forward"} if has_forward_tests else {"portfolio"})
+    if has_forward_tests:
+        assert len(sig[sig.family == "portfolio_forward"]) == 2

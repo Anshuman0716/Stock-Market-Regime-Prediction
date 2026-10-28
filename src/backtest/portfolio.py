@@ -45,9 +45,10 @@ PORTFOLIO_STRATEGIES = (PORTFOLIO_STRATEGY,) + PORTFOLIO_BASELINES
 class PortfolioSettings:
     """The pre-registered portfolio settings in one place.
 
-    The defaults ARE the pre-registration (Section 13). Phase 3 reads them
-    from a separate `portfolio:` section of config.yaml; keeping them out of
-    the existing sections means v1.0's config fingerprint does not change.
+    The defaults ARE the pre-registration (Section 13); config.yaml's
+    `portfolio:` section repeats them and tests/test_config.py checks the
+    two agree. They live in their own section so v1.0's config fingerprint
+    does not change (src/db/store.py::get_config_hash).
     """
     assets: tuple = ("spx", "gold", "bitcoin")
     calendar_asset: str = "spx"   # whose traded instrument (SPY) sets the trading days and cash
@@ -55,6 +56,35 @@ class PortfolioSettings:
     max_signal_staleness: int = MAX_SIGNAL_STALENESS
     execution_delay: int = EXECUTION_DELAY
     ann_factor: int = PORTFOLIO_ANN_FACTOR
+    # Sharpe-difference test, the same method and settings as v1.0.
+    block_size: int = 60
+    n_bootstraps: int = 2000
+    seed: int = 42
+    alpha: float = 0.05
+    # No forward verdict before this many forward trading days (~1 year).
+    forward_min_days: int = 252
+
+    @classmethod
+    def from_config(cls, cfg):
+        """Settings from config.yaml's `portfolio:` section, or None if it has none.
+
+        Unknown keys are an error rather than ignored: a misspelt key would
+        otherwise silently fall back to the default and the run would use a
+        setting nobody wrote down.
+        """
+        section = (cfg or {}).get("portfolio")
+        if section is None:
+            return None
+        section = dict(section)
+        sig = dict(section.pop("significance", {}) or {})
+        known = {f for f in cls.__dataclass_fields__}
+        flat = {**section, **sig}
+        unknown = sorted(set(flat) - known)
+        if unknown:
+            raise KeyError(f"Unknown setting(s) in config portfolio section: {unknown}")
+        if "assets" in flat:
+            flat["assets"] = tuple(flat["assets"])
+        return cls(**flat)
 
 # Floating-point slack when checking that weights add up to at most 100%.
 _SUM_TOLERANCE = 1e-9
@@ -329,6 +359,18 @@ def portfolio_metrics(bt, ann_factor=PORTFOLIO_ANN_FACTOR):
     years = len(bt.daily) / ann_factor
     m["Ann. Turnover"] = float(bt.daily["turnover"].sum() / years) if years > 0 else 0.0
     return m
+
+
+def slice_backtest(bt, start=None, end=None):
+    """The same backtest restricted to [start, end] (both inclusive).
+
+    Used for the historical window (up to the v2.0 freeze) and the forward
+    window (after it). The days themselves are unchanged: the portfolio is
+    NOT restarted at `start`, so the forward window continues the positions
+    built before it, as a live portfolio would.
+    """
+    return PortfolioBacktest(daily=bt.daily.loc[start:end], held_weights=bt.held_weights.loc[start:end],
+                             turnover=bt.turnover.loc[start:end])
 
 
 def as_backtest_frame(bt):
