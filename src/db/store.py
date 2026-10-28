@@ -22,7 +22,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 
 # Must match "PRAGMA user_version" in schema.sql. Bump both together whenever
 # a table's columns or keys change.
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 DEFAULT_DB_PATH = "data/regime_store.db"
 
@@ -199,6 +199,7 @@ def write_backtest_daily(conn, btest_df, asset_id, run_id, strategy="hmm", perf_
         "net_return": btest_df["net_return"],
         "turnover": btest_df["turnover"],
         "cost": btest_df["cost"],
+        "cash_return": btest_df["cash_return"] if "cash_return" in btest_df else 0.0,
     }, index=btest_df.index)
     if perf_df is not None:
         df = df.join(perf_df[["equity", "drawdown", "rolling_sharpe"]])
@@ -220,12 +221,15 @@ def write_backtest_metrics(conn, metrics_dict, asset_id, run_id, cycle="full", s
                 ["run_id", "asset_id", "strategy", "cycle", "metric_name"])
 
 
-def write_evaluation_window(conn, run_id, asset_id, oos_start, oos_end, ann_factor, cost_bps=None):
-    """Record the out-of-sample window every strategy for this asset was scored on."""
+def write_evaluation_window(conn, run_id, asset_id, oos_start, oos_end, ann_factor, cost_bps=None,
+                            instrument=None, cash_ticker=None):
+    """Record the out-of-sample window every strategy for this asset was scored on,
+    and what was traded on it."""
     write_frame(conn, "evaluation_windows", pd.DataFrame([{
         "run_id": run_id, "asset_id": asset_id,
         "oos_start": pd.Timestamp(oos_start), "oos_end": pd.Timestamp(oos_end),
         "ann_factor": int(ann_factor), "cost_bps": cost_bps,
+        "instrument": instrument, "cash_ticker": cash_ticker,
     }]), ["run_id", "asset_id"])
 
 

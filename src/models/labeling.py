@@ -50,73 +50,100 @@ def state_statistics(train_df, train_hidden_states, n_states, ann_factor=252):
     return stats
 
 
-def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=252):
+LABELING_RULES = ("relative", "absolute")
+
+
+def asset_sharpe(train_df, ann_factor):
+    """Annualized Sharpe of the asset over the whole training window."""
+    r = train_df["returns"].dropna()
+    if len(r) < 2 or r.std() == 0:
+        return 0.0
+    return float(r.mean() / r.std() * np.sqrt(ann_factor))
+
+
+def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=252,
+                        rule="absolute", bull_sharpe=0.2, crisis_sharpe=-0.1):
     """
-    Rank states by volatility and annualized Sharpe, merging them into Bull,
-    Transition, and Crisis labels.
+    Map each raw HMM state to Bull, Transition or Crisis from its behaviour
+    on the TRAINING window only.
 
-    Subtlety handled: THE RANKING MUST USE TRAINING DATA ONLY.
-    We compute empirical stats directly from the training data's returns, masked
-    by the training hidden states.
+    Both rules share the volatility anchors:
+    - lowest-volatility state  -> Bull   (calm, steadily rising markets)
+    - highest-volatility state -> Crisis (stress, steep drawdowns)
+    and judge the states in between by annualized Sharpe:
 
-    Merge rule (4 states):
-    - Lowest-volatility state -> Bull (calm, steadily rising markets)
-    - Highest-volatility state -> Crisis (stress, steep drawdowns)
-    - The two middle states are judged by annualized Sharpe:
-        Sharpe > 0.2  -> Bull       (volatile rallies)
-        Sharpe < -0.1 -> Crisis     (secondary sell-offs)
-        otherwise     -> Transition (choppy / sideways)
+    rule="absolute" (used up to Step 5):
+        Sharpe > bull_sharpe (0.2)   -> Bull
+        Sharpe < crisis_sharpe (-0.1)-> Crisis
+        otherwise                    -> Transition
+
+    rule="relative" (default from Step 6):
+        Sharpe < crisis_sharpe            -> Crisis
+        Sharpe > max(bull_sharpe, S_asset)-> Bull
+        otherwise                         -> Transition
+      where S_asset is the asset's own Sharpe over the training window.
+
+    Why "relative": a fixed 0.2 bar means very different things for
+    different assets. For an asset with a strong long-run trend, a middle
+    state that is positive but clearly worse than simply holding the asset
+    is not a "Bull" market for that asset. The relative rule asks "is this
+    state better than holding the asset over the training years?"; a state
+    that is positive but worse is Transition. For an asset whose training
+    Sharpe is below bull_sharpe (the S&P 500 in 2000-09) the rules agree.
+    The rule was fixed before its out-of-sample results were seen and uses
+    training data only.
+
+    What it does NOT do: give Gold and Bitcoin a Transition regime. For
+    those assets the HMM's two middle states turned out to be a strong
+    rally state and a sell-off state (training Sharpe far above any bar and
+    far below zero) in every fold, so no threshold on Sharpe makes either
+    of them "sideways". A Transition regime there would need the model to
+    find a sideways state, not a different label for the states it finds.
 
     Parameters
     ----------
-    train_df : pd.DataFrame
-        Training data containing the "returns" column.
-    train_hidden_states : np.ndarray
-        Array of state predictions on the training set.
+    train_df : pd.DataFrame with a "returns" column (training window).
+    train_hidden_states : np.ndarray of each training day's state.
     n_states : int
-        Number of states.
     ann_factor : int
-        Rows per year for this asset (252 equities, 365 crypto). The Sharpe
-        thresholds above are annualized, so the wrong factor would move
-        states across the Bull/Transition/Crisis boundaries.
+        Rows per year (252 equities, 365 crypto); the thresholds are annualized.
+    rule : "relative" or "absolute"
+    bull_sharpe, crisis_sharpe : float
+        Annualized Sharpe thresholds (config: model.labeling).
 
     Returns
     -------
-    dict
-        Mapping from state integer (0..n_states-1) to string label.
+    dict mapping state integer -> label.
     """
+    if rule not in LABELING_RULES:
+        raise ValueError(f"Unknown labeling rule '{rule}'; choose from {LABELING_RULES}.")
     stats = state_statistics(train_df, train_hidden_states, n_states, ann_factor)
+    stats.sort(key=lambda x: x["vol"])  # calmest first
 
-    # Sort states by volatility ascending
-    stats.sort(key=lambda x: x["vol"])
+    state_map = {stats[0]["state"]: "Bull", stats[-1]["state"]: "Crisis"}
+    middle = stats[1:-1]
 
-    # Merge rule:
-    # 1. Lowest volatility state -> Bull
-    # 2. Highest volatility state -> Crisis
-    # 3. Middle states:
-    #    - If Sharpe > 0.2 -> Bull (captures volatile rallies like 2024)
-    #    - If Sharpe < -0.1 -> Crisis (captures secondary selloffs)
-    #    - Else -> Transition (choppy/sideways)
-
-    state_map = {}
-    if n_states == 4:
-        state_map[stats[0]["state"]] = "Bull"
-        state_map[stats[3]["state"]] = "Crisis"
-
-        for i in [1, 2]:
-            if stats[i]["sharpe"] > 0.2:
-                state_map[stats[i]["state"]] = "Bull"
-            elif stats[i]["sharpe"] < -0.1:
-                state_map[stats[i]["state"]] = "Crisis"
+    if rule == "absolute":
+        # Exactly the pre-Step-6 behaviour, kept for comparison: only the
+        # 4-state model judged middle states by Sharpe; other sizes called
+        # every middle state Transition.
+        for st in middle:
+            if n_states == 4 and st["sharpe"] > bull_sharpe:
+                state_map[st["state"]] = "Bull"
+            elif n_states == 4 and st["sharpe"] < crisis_sharpe:
+                state_map[st["state"]] = "Crisis"
             else:
-                state_map[stats[i]["state"]] = "Transition"
-    else:
-        # Fallback if n_states varies
-        state_map[stats[0]["state"]] = "Bull"
-        state_map[stats[-1]["state"]] = "Crisis"
-        for i in range(1, len(stats) - 1):
-            state_map[stats[i]["state"]] = "Transition"
+                state_map[st["state"]] = "Transition"
+        return state_map
 
+    bull_bar = max(bull_sharpe, asset_sharpe(train_df, ann_factor))
+    for st in middle:
+        if st["sharpe"] < crisis_sharpe:
+            state_map[st["state"]] = "Crisis"
+        elif st["sharpe"] > bull_bar:
+            state_map[st["state"]] = "Bull"
+        else:
+            state_map[st["state"]] = "Transition"
     return state_map
 
 

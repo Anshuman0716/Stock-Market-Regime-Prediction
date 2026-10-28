@@ -14,7 +14,7 @@
 -- 5. Everything the dashboard shows is precomputed here by the pipeline, so
 --    the app only reads; it never re-derives results.
 
-PRAGMA user_version = 4;
+PRAGMA user_version = 5;
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id TEXT PRIMARY KEY,
@@ -82,7 +82,9 @@ CREATE TABLE IF NOT EXISTS regimes (
 );
 
 -- Daily backtest per strategy, plus chart-ready series:
--- equity ($1 start), drawdown, trailing one-year Sharpe.
+-- equity ($1 start), drawdown, trailing one-year Sharpe (above cash).
+-- cash_return is what uninvested capital earned that day (T-bill rate), so
+-- excess returns (net_return - cash_return) can be recomputed from the table.
 CREATE TABLE IF NOT EXISTS backtest_daily (
     run_id TEXT,
     asset_id TEXT,
@@ -96,6 +98,7 @@ CREATE TABLE IF NOT EXISTS backtest_daily (
     equity REAL,
     drawdown REAL,
     rolling_sharpe REAL,
+    cash_return REAL,
     PRIMARY KEY (run_id, asset_id, strategy, date),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)
@@ -115,7 +118,8 @@ CREATE TABLE IF NOT EXISTS backtest_metrics (
 );
 
 -- The out-of-sample window each asset was evaluated on. Every strategy for
--- a (run, asset) is scored over exactly this window.
+-- a (run, asset) is scored over exactly this window, trading `instrument`
+-- (e.g. SPY for the S&P 500) with idle cash earning `cash_ticker`.
 CREATE TABLE IF NOT EXISTS evaluation_windows (
     run_id TEXT,
     asset_id TEXT,
@@ -123,6 +127,8 @@ CREATE TABLE IF NOT EXISTS evaluation_windows (
     oos_end TEXT NOT NULL,
     ann_factor INTEGER NOT NULL,
     cost_bps REAL,
+    instrument TEXT,
+    cash_ticker TEXT,
     PRIMARY KEY (run_id, asset_id),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)

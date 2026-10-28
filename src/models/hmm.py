@@ -170,6 +170,9 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=N
     n_iter = model_cfg.get("n_iter", 2000)
     n_init = model_cfg.get("n_init", 1)
     min_train_days = model_cfg.get("min_train_days", 1008)
+    # Labeling rule and thresholds (src/models/labeling.py). Configs without a
+    # labeling block get the original "absolute" rule.
+    labeling = {"rule": "absolute", **model_cfg.get("labeling", {})}
     ann_factor = get_ann_factor(config, asset_name)
     model_dir = model_dir or f"models/{asset_name}"
 
@@ -214,7 +217,7 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=N
         # 4. Rank and map states using TRAINING data only. Viterbi on the
         # training set is fine here: it only describes past behaviour.
         train_states = model.predict(X_train)
-        state_map = rank_and_map_states(train_df, train_states, n_states, ann_factor=ann_factor)
+        state_map = rank_and_map_states(train_df, train_states, n_states, ann_factor=ann_factor, **labeling)
         state_stats = state_statistics(train_df, train_states, n_states, ann_factor)
         for st in state_stats:
             st["label"] = state_map[st["state"]]

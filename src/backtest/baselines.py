@@ -31,6 +31,28 @@ def dma200_weights(close, window=200):
     return weights
 
 
+def vol_target_weights(volatility, max_weight=1.0):
+    """
+    Volatility targeting: hold less of the asset when it is unusually volatile.
+
+        weight_t = min(1, long-run average volatility up to t / volatility_t)
+
+    `volatility` is the trailing 20-day volatility (the model's
+    volatility_20 feature). The "normal" level is its expanding mean, so
+    both numbers use only data up to day t. At normal or calm volatility
+    the strategy is fully invested; when recent volatility is twice its
+    long-run norm it holds half. Capped at 100%: no borrowing.
+
+    Why this baseline: the HMM mostly steps aside in volatile periods. If a
+    one-line volatility rule does the same job, the HMM's extra machinery
+    has to beat it, not just buy-and-hold.
+    """
+    vol = pd.Series(volatility, dtype=float)
+    norm = vol.expanding().mean()
+    weights = (norm / vol.where(vol > 0)).clip(upper=max_weight)
+    return weights.fillna(0.0)  # flat until a volatility estimate exists
+
+
 # --- Convenience wrappers (kept for notebooks that call them directly) ------
 
 def get_buy_and_hold(df, cost_bps):

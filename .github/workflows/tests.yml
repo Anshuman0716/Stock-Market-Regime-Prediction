@@ -39,6 +39,11 @@ jobs:
     - name: Run tests
       run: python -m pytest -v
 
+    # README Section 1 is generated from the committed store; fail if someone
+    # re-ran the pipeline without regenerating it (or edited numbers by hand).
+    - name: README results match the store
+      run: python scripts/update_readme.py --check
+
     # The notebooks read only the committed store (data/regime_store.db), so
     # they run offline. Executing them catches notebooks that drift out of
     # sync with src/ or the store schema. Once is enough, not per version.

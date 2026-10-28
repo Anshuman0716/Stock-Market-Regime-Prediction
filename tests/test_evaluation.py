@@ -30,6 +30,7 @@ def _synthetic(n=600, oos_from=300, seed=0):
     rets = rng.normal(0.0004, 0.01, n)
     close = 100 * np.cumprod(1 + rets)
     features = pd.DataFrame({"returns": rets, "Close": close}, index=idx)
+    features["volatility_20"] = features["returns"].rolling(20).std()
     probs = pd.DataFrame(np.nan, index=idx, columns=["Bull", "Transition", "Crisis"])
     p_bull = rng.uniform(0, 1, n - oos_from)
     probs.iloc[oos_from:, 0] = p_bull
@@ -162,3 +163,44 @@ def test_significance_suite_holm_is_not_smaller_than_raw():
     out = run_significance_suite(rets, {"spx": 252, "gold": 252}, n_bootstraps=50)
     assert len(out) == 4
     assert (out["p_value_holm"] >= out["p_value"] - 1e-12).all()
+
+
+# ── Traded instrument and cash ───────────────────────────────────────────────
+
+def test_trading_returns_use_the_instrument_and_yesterdays_cash_rate():
+    from src.backtest.evaluation import trading_returns
+    idx = pd.bdate_range("2020-01-01", periods=4)
+    asset_df = pd.DataFrame({"Close": [100.0, 110.0, 121.0, 133.1],          # index (+10%/day)
+                             "Trade_Close": [50.0, 51.0, 52.02, 53.0604],      # fund (+2%/day)
+                             "Cash_Yield": [5.04, 2.52, 2.52, 2.52]}, index=idx)
+    r, cash = trading_returns(asset_df, idx, ann_factor=252)
+    np.testing.assert_allclose(r.iloc[1:], 0.02)            # P&L follows the fund, not the index
+    assert np.isnan(cash.iloc[0])                           # no rate known before the first day
+    assert cash.iloc[1] == pytest.approx(5.04 / 100 / 252)  # day 1 earns day 0's quoted rate
+    assert cash.iloc[2] == pytest.approx(2.52 / 100 / 252)
+
+
+def test_missing_instrument_prices_in_the_window_are_an_error():
+    features, probs = _synthetic(oos_from=300)
+    fund = features["returns"].copy()
+    fund.iloc[400] = np.nan  # e.g. the fund had not launched yet
+    with pytest.raises(ValueError, match="no price for the traded instrument"):
+        evaluate_asset(features, probs, CFG, "spx", asset_returns=fund)
+
+
+def test_sharpe_is_measured_above_cash():
+    features, probs = _synthetic(oos_from=300)
+    cash = pd.Series(0.0001, index=features.index)
+    ev = evaluate_asset(features, probs, CFG, "spx", cash_returns=cash)
+    bh = ev["backtests"]["buy_hold"]
+    expected = compute_sharpe(bh["net_return"] - bh["cash_return"], 252)
+    assert ev["metrics"]["buy_hold"]["Sharpe"] == pytest.approx(expected)
+    assert set(ev["backtests"]) == {"hmm", "buy_hold", "dma200", "vol_target"}
+
+    # A strategy that is always in cash earns the cash rate exactly, so its
+    # excess return - and its Sharpe - is zero, however high the rate.
+    always_cash = probs.copy()
+    always_cash.loc[always_cash["Bull"].notna(), ["Bull", "Transition"]] = [0.0, 1.0]
+    flat = evaluate_asset(features, always_cash, CFG, "spx", cash_returns=cash)
+    assert flat["metrics"]["hmm"]["Sharpe"] == 0.0
+    assert flat["metrics"]["hmm"]["CAGR"] > 0

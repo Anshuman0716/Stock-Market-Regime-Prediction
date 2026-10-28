@@ -353,7 +353,7 @@ def significance_forest(sig):
     fig = go.Figure()
     sig = sig.copy()
     sig["row"] = sig["asset_id"].map(asset_name)
-    for base in ["buy_hold", "dma200"]:
+    for base in [s for s in STRATEGY_ORDER if s != "hmm"]:
         d = sig[sig["baseline"] == base]
         if d.empty:
             continue

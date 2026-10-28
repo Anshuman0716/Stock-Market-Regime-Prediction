@@ -164,9 +164,8 @@ def ledoit_wolf_sharpe_diff(returns_a, returns_b, ann_factor):
 
 def adjust_pvalues(p_values, method='holm'):
     """
-    Adjust p-values for multiple testing.
-    We are testing 4 assets x 2 baselines = 8 comparisons.
-    Manually implemented Holm-Bonferroni to avoid statsmodels dependency.
+    Holm-Bonferroni adjustment for a family of tests (here: every asset x
+    every baseline). Implemented by hand to avoid a statsmodels dependency.
     """
     p_values = np.array(p_values)
     m = len(p_values)
@@ -187,16 +186,19 @@ def adjust_pvalues(p_values, method='holm'):
 
 
 def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
-                           baselines=("buy_hold", "dma200"), n_bootstraps=2000):
+                           baselines=("buy_hold", "dma200", "vol_target"), n_bootstraps=2000):
     """
     Test the strategy against every baseline on every asset, then correct for
     multiple testing.
 
-    Why Holm across ALL comparisons: with 4 assets x 2 baselines we run 8
-    tests. At alpha = 0.05, the chance of at least one false "significant"
-    result across 8 independent tests is ~34%. Holm-Bonferroni controls that
-    family-wise error rate while being less conservative than plain
-    Bonferroni.
+    Why Holm across ALL comparisons: with several assets and baselines we
+    run many tests at once (4 x 3 = 12 here). At alpha = 0.05, the chance of
+    at least one false "significant" result among 12 independent tests is
+    about 46%. Holm-Bonferroni controls that family-wise error rate while
+    being less conservative than plain Bonferroni.
+
+    Pass EXCESS returns (above the cash rate) so the Sharpe ratios tested are
+    the ones reported. Baselines missing from an asset are skipped.
 
     Parameters
     ----------
@@ -217,6 +219,8 @@ def run_significance_suite(strategy_returns, ann_factors, strategy="hmm",
     for asset, by_strategy in strategy_returns.items():
         ra = by_strategy[strategy]
         for baseline in baselines:
+            if baseline not in by_strategy:
+                continue
             rb = by_strategy[baseline]
             if not ra.index.equals(rb.index):
                 raise ValueError(f"{asset}: {strategy} and {baseline} cover different dates.")

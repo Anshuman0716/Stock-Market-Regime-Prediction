@@ -7,7 +7,8 @@ so colors follow the entity, never its position in a list.
 
 Both palettes were checked with a colour-vision-deficiency validator against
 light and dark backgrounds:
-- Strategies (violet / orange / green) pass every check in both themes.
+- Strategies (violet / orange / green / light violet) pass every check in
+  both themes, all pairs compared.
 - Regimes (blue / amber / red) pass, but amber vs red sits close for
   deuteranopes, so regime names are always shown as text (legends, labels,
   hover) and the probability chart keeps a fixed stacking order. Colour is
@@ -26,16 +27,18 @@ REGIME_COLORS = {
 # Short icons give regimes a second, non-colour cue in text (cards, tables).
 REGIME_ICONS = {"Bull": "▲", "Transition": "◆", "Crisis": "▼"}
 
-STRATEGY_ORDER = ["hmm", "buy_hold", "dma200"]
+STRATEGY_ORDER = ["hmm", "buy_hold", "dma200", "vol_target"]
 STRATEGY_NAMES = {
     "hmm": "HMM regime strategy",
     "buy_hold": "Buy & Hold",
     "dma200": "200-day MA filter",
+    "vol_target": "Volatility target",
 }
 STRATEGY_COLORS = {
     "hmm": "#6250d6",
     "buy_hold": "#d95926",
     "dma200": "#199e70",
+    "vol_target": "#9085e9",
 }
 
 # config.yaml only has tickers, so display names live here.

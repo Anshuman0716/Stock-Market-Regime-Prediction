@@ -115,13 +115,15 @@ def period_breakdown(backtests, ann_factor, episodes=None):
     """
     out = []
     for strategy, bt in backtests.items():
+        def metrics(chunk):
+            return get_period_metrics(chunk["net_return"], chunk["executed_weight"], ann_factor,
+                                      cash_returns=chunk.get("cash_return"))
+
         for year, chunk in bt.groupby(bt.index.year):
-            out.append((strategy, f"year:{year}",
-                        get_period_metrics(chunk["net_return"], chunk["executed_weight"], ann_factor)))
+            out.append((strategy, f"year:{year}", metrics(chunk)))
         for name, (start, end) in (episodes or {}).items():
             chunk = bt.loc[start:end]
             if chunk.empty:
                 continue
-            out.append((strategy, f"episode:{name}",
-                        get_period_metrics(chunk["net_return"], chunk["executed_weight"], ann_factor)))
+            out.append((strategy, f"episode:{name}", metrics(chunk)))
     return out

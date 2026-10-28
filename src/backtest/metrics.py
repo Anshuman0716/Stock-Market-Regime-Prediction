@@ -14,8 +14,10 @@ CAGR already contains a volatility drag), so the reported Sharpe and the
 Sharpe being tested for significance did not match. One definition, used
 everywhere, avoids that.
 
-Risk-free rate is taken as 0 throughout, for both the strategy and the
-baselines, so comparisons between them are unaffected.
+Sharpe and Sortino are measured on EXCESS returns, i.e. above the cash
+rate (the T-bill yield, see config backtest.cash_ticker), when cash returns
+are given. Growth, volatility and drawdowns use total returns. Without a
+cash series the cash rate is 0.
 """
 import numpy as np
 import pandas as pd
@@ -24,6 +26,14 @@ from src.backtest.risk import (
     compute_historical_var, compute_historical_cvar,
     compute_cornish_fisher_var,
 )
+
+
+def excess_returns(returns, cash_returns=None):
+    """Returns above the cash rate (unchanged when there is no cash series)."""
+    r = pd.Series(returns, dtype=float)
+    if cash_returns is None:
+        return r
+    return r - pd.Series(cash_returns, index=r.index, dtype=float).fillna(0.0)
 
 
 def _clean(returns):
@@ -153,15 +163,20 @@ def compute_turnover(weights, ann_factor):
     return w.diff().abs().sum() / years
 
 
-def get_all_metrics(returns, weights, ann_factor, asset_name):
-    """Full metrics dictionary for one strategy on one asset."""
+def get_all_metrics(returns, weights, ann_factor, asset_name, cash_returns=None):
+    """Full metrics dictionary for one strategy on one asset.
+
+    `cash_returns` (daily cash rate) makes Sharpe and Sortino excess-return
+    ratios; everything else uses the strategy's total returns.
+    """
     max_dd, max_duration = compute_drawdowns(returns)
+    excess = excess_returns(returns, cash_returns)
     return {
         "Asset": asset_name,
         "CAGR": compute_cagr(returns, ann_factor),
         "Ann. Vol": compute_volatility(returns, ann_factor),
-        "Sharpe": compute_sharpe(returns, ann_factor),
-        "Sortino": compute_sortino(returns, ann_factor),
+        "Sharpe": compute_sharpe(excess, ann_factor),
+        "Sortino": compute_sortino(excess, ann_factor),
         "Calmar": compute_calmar(returns, ann_factor),
         "Max DD": max_dd,
         "Max DD Duration (days)": max_duration,
@@ -179,7 +194,7 @@ def get_all_metrics(returns, weights, ann_factor, asset_name):
     }
 
 
-def get_period_metrics(returns, weights, ann_factor):
+def get_period_metrics(returns, weights, ann_factor, cash_returns=None):
     """
     Compact metrics for a sub-period (a calendar year or a stress episode).
 
@@ -193,14 +208,14 @@ def get_period_metrics(returns, weights, ann_factor):
     return {
         "Total Return": float(np.prod(1 + r) - 1) if len(r) else 0.0,
         "Ann. Vol": compute_volatility(r, ann_factor),
-        "Sharpe": compute_sharpe(r, ann_factor),
+        "Sharpe": compute_sharpe(excess_returns(returns, cash_returns), ann_factor),
         "Max DD": max_dd,
         "Avg. Exposure": compute_avg_exposure(weights),
         "Days": int(len(r)),
     }
 
 
-def performance_series(returns, ann_factor):
+def performance_series(returns, ann_factor, cash_returns=None):
     """
     Daily series for charts: equity curve ($1 start), drawdown, and the
     trailing one-year Sharpe ratio.
@@ -212,7 +227,7 @@ def performance_series(returns, ann_factor):
     r = pd.Series(returns).fillna(0.0)
     equity = (1 + r).cumprod()
     drawdown = equity / equity.cummax() - 1
-    roll = r.rolling(ann_factor)
+    roll = excess_returns(r, cash_returns).rolling(ann_factor)
     rolling_sharpe = roll.mean() / roll.std(ddof=1) * np.sqrt(ann_factor)
     return pd.DataFrame({
         "equity": equity,

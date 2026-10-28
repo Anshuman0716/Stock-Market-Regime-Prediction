@@ -51,9 +51,12 @@ def main():
 
     print(f"\nDone in {time.perf_counter() - t0:.0f}s "
           f"({'reused saved models' if args.reuse_models else 'retrained all folds'}).")
-    print(f"{'asset':8s} {'out-of-sample':25s} {'Sharpe HMM':>11s} {'Sharpe B&H':>11s}")
-    for asset, s in summary.items():
-        print(f"{asset:8s} {s['oos_start']} -> {s['oos_end']}  {s['sharpe_hmm']:11.2f} {s['sharpe_buy_hold']:11.2f}")
+    strategies = [k[len("sharpe_"):] for k in next(iter(summary.values())) if k.startswith("sharpe_")]
+    print("Sharpe ratio above cash, out-of-sample:")
+    print(f"{'asset':8s} {'window':25s}" + "".join(f"{name:>12s}" for name in strategies))
+    for asset, row in summary.items():
+        print(f"{asset:8s} {row['oos_start']} -> {row['oos_end']} "
+              + "".join(f"{row['sharpe_' + name]:12.2f}" for name in strategies))
 
 
 if __name__ == "__main__":

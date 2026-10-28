@@ -8,7 +8,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def run_backtest(df, target_weights, cost_bps):
+def run_backtest(df, target_weights, cost_bps, cash_returns=None):
     """
     Core backtest engine.
 
@@ -31,11 +31,16 @@ def run_backtest(df, target_weights, cost_bps):
         Cost in basis points per unit of turnover (spread + commission).
         Required, with no default, so a backtest can never silently run
         cost-free. Look it up with src.data.loader.get_cost_bps(config, asset).
+    cash_returns : pd.Series or None
+        Daily return on uninvested capital (e.g. the T-bill rate), aligned
+        to df.index. The share of the portfolio NOT in the asset earns it.
+        None means cash earns 0.
 
     Returns
     -------
     pd.DataFrame
-        Frame containing strategy returns, executed weights, and transaction costs.
+        Frame containing strategy returns, executed weights, transaction
+        costs and the cash return used.
     """
     weights = pd.Series(target_weights, index=df.index)
 
@@ -52,7 +57,11 @@ def run_backtest(df, target_weights, cost_bps):
         logger.warning("Backtest running with ZERO transaction costs.")
     t_costs = turnover * (cost_bps / 10000.0)
 
-    gross_returns = executed_weights * df['returns']
+    # The invested share earns the asset; the rest sits in cash. Weights are
+    # between 0 and 1 (no leverage, no shorting), so the cash share is >= 0.
+    cash = (pd.Series(0.0, index=df.index) if cash_returns is None
+            else pd.Series(cash_returns, index=df.index).fillna(0.0))
+    gross_returns = executed_weights * df['returns'] + (1.0 - executed_weights) * cash
     net_returns = gross_returns - t_costs
 
     return pd.DataFrame({
@@ -60,5 +69,6 @@ def run_backtest(df, target_weights, cost_bps):
         'net_return': net_returns,
         'executed_weight': executed_weights,
         'turnover': turnover,
-        'cost': t_costs
+        'cost': t_costs,
+        'cash_return': cash,
     }, index=df.index)

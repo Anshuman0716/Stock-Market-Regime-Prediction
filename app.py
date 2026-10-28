@@ -438,9 +438,10 @@ with tabs[6]:
         st.info("No paper trades logged yet. Each run of `scripts/paper_trade.py` appends a row to "
                 f"`{PAPER_LOG}`.")
     else:
-        st.dataframe(as_pct(log, ["target_weight", "current_weight", "p_bull"]), hide_index=True,
+        st.dataframe(as_pct(log, ["target_weight", "current_weight", "new_weight", "p_bull"]), hide_index=True,
                      use_container_width=True,
                      column_config={"timestamp": st.column_config.DatetimeColumn("Time", format="YYYY-MM-DD HH:mm"),
                                     "target_weight": pct_col("Target", 0), "current_weight": pct_col("Held before", 0),
+                                    "new_weight": pct_col("Held after", 0), "symbol": "Symbol",
                                     "p_bull": pct_col("Smoothed P(Bull)", 0), "qty_ordered": "Qty ordered",
                                     "asset": "Asset", "side": "Side", "dry_run": "Dry run"})

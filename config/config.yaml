@@ -22,9 +22,33 @@ model:
   smoothing_window: 21  # trailing, not centered
   refit_cadence: "annual"
   min_train_days: 2268  # approx 9 years of initial data to capture full macro cycle
+  # How each fold's hidden states become Bull / Transition / Crisis, using
+  # training data only (src/models/labeling.py). "relative": a middle-
+  # volatility state is Bull only if its Sharpe beats both bull_sharpe and
+  # the asset's own training-window Sharpe. "absolute": the fixed bars
+  # used up to Step 5.
+  labeling:
+    rule: "relative"
+    bull_sharpe: 0.2
+    crisis_sharpe: -0.1
 
 backtest:
   assets: ["spx", "nasdaq", "gold", "bitcoin"]
+  # What is actually bought and sold. The model reads the index (long
+  # history, no fund fees), but the P&L comes from a tradable instrument:
+  # adjusted prices, so dividends and the fund's own fees are included.
+  # SPY tracks the S&P 500, ONEQ the NASDAQ Composite itself (QQQ would be
+  # the NASDAQ-100), GLD gold bullion; Bitcoin is traded spot.
+  instruments:
+    spx: "SPY"
+    nasdaq: "ONEQ"
+    gold: "GLD"
+    bitcoin: "BTC-USD"
+  # Uninvested capital earns the 3-month US T-bill yield (^IRX, in percent
+  # a year), and Sharpe / Sortino are measured on returns above it.
+  # Without it, a strategy that is often in cash would be charged a 0%
+  # return on that cash.
+  cash_ticker: "^IRX"
   # Rows per year, used to annualize returns, volatility and Sharpe.
   # Equities and gold futures trade ~252 days a year; Bitcoin trades every
   # calendar day, so its daily series has ~365 rows per year. Using 252 for
@@ -42,7 +66,7 @@ backtest:
     spread_bps:
       default: 2.0
       spx: 1.0
-      nasdaq: 1.0
+      nasdaq: 3.0       # ONEQ trades far less than SPY, so its spread is wider
       gold: 2.0
       bitcoin: 5.0
 

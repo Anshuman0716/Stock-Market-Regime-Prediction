@@ -10,8 +10,9 @@ volatility are known exactly and the expected labels follow from the rule.
 """
 import numpy as np
 import pandas as pd
+import pytest
 
-from src.models.labeling import rank_and_map_states, state_statistics
+from src.models.labeling import asset_sharpe, rank_and_map_states, state_statistics
 
 
 def _states(spec, days=200):
@@ -77,3 +78,55 @@ def test_state_statistics_are_exact():
     assert np.isclose(stats[0]["mu"], 0.001 * 252)
     # Sample std of an alternating +/- s series with n=100 is s * sqrt(n / (n - 1)).
     assert np.isclose(stats[0]["vol"], 0.01 * np.sqrt(100 / 99) * np.sqrt(252))
+
+
+# ── The "relative" rule (default from Step 6) ──────────────────────────────
+
+def _strong_uptrend_states():
+    """A strongly rising asset: its own training Sharpe is high. Middle
+    states: Sharpe ~1.6 and ~0.6 (both above the fixed 0.2 bar)."""
+    return _states({
+        0: (0.001, 0.030),    # most volatile
+        1: (0.001, 0.010),    # middle, Sharpe ~ 1.6
+        2: (0.0012, 0.005),   # calmest
+        3: (0.0006, 0.016),   # middle, Sharpe ~ 0.6
+    })
+
+
+def test_absolute_rule_never_gives_transition_in_a_strong_uptrend():
+    df, hidden = _strong_uptrend_states()
+    labels = rank_and_map_states(df, hidden, n_states=4, rule="absolute")
+    assert "Transition" not in labels.values()  # a weak-but-positive state still counts as Bull
+
+
+def test_relative_rule_judges_middle_states_against_the_asset_itself():
+    df, hidden = _strong_uptrend_states()
+    s_asset = asset_sharpe(df, 252)
+    assert 0.6 < s_asset < 1.6  # the asset's own bar sits between the two middle states
+    labels = rank_and_map_states(df, hidden, n_states=4, rule="relative")
+    assert labels == {0: "Crisis", 1: "Bull", 2: "Bull", 3: "Transition"}
+
+
+def test_rules_agree_when_the_asset_itself_is_weak():
+    """With a training Sharpe below bull_sharpe (the S&P 500 in 2000-09) the
+    bar stays at 0.2, so both rules give the same labels."""
+    df, hidden = _states({
+        0: (-0.002, 0.030),
+        1: (0.001, 0.010),
+        2: (0.0005, 0.005),
+        3: (0.0, 0.015),
+    })
+    assert asset_sharpe(df, 252) < 0.2
+    assert (rank_and_map_states(df, hidden, n_states=4, rule="relative")
+            == rank_and_map_states(df, hidden, n_states=4, rule="absolute"))
+
+
+def test_relative_rule_still_sends_losing_middle_states_to_crisis():
+    df, hidden = _states({0: (0.001, 0.030), 1: (-0.002, 0.012), 2: (0.0012, 0.005), 3: (0.0006, 0.016)})
+    assert rank_and_map_states(df, hidden, n_states=4, rule="relative")[1] == "Crisis"
+
+
+def test_unknown_rule_is_rejected():
+    df, hidden = _strong_uptrend_states()
+    with pytest.raises(ValueError, match="labeling rule"):
+        rank_and_map_states(df, hidden, n_states=4, rule="mode")

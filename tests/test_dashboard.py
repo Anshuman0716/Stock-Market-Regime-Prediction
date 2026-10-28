@@ -15,6 +15,7 @@ import yaml
 import src.pipeline as pipeline
 from src.dashboard import charts, data
 from src.dashboard.summary import headline_findings, scoreboard_table
+from src.dashboard.theme import STRATEGY_ORDER
 
 HERE = os.path.dirname(__file__)
 APP = os.path.join(HERE, "..", "app.py")
@@ -97,7 +98,7 @@ def test_loaders_return_exactly_what_is_stored(store):
     assert set(periods["kind"]) <= {"year", "episode"}
 
     costs = data.load_cost_totals(store, "main", "spx")
-    assert set(costs.index) == {"hmm", "buy_hold", "dma200"}
+    assert set(costs.index) == set(STRATEGY_ORDER)
 
 
 def test_store_is_read_only(store):
@@ -134,7 +135,7 @@ def test_charts_build_from_stored_rows(store):
 
     daily = data.load_daily(store, "main", "spx")
     perf = charts.performance_panels(daily)
-    assert len(perf.data) == 9  # 3 strategies x (equity, drawdown, rolling Sharpe)
+    assert len(perf.data) == 3 * len(STRATEGY_ORDER)  # each strategy: equity, drawdown, rolling Sharpe
 
     m = data.load_metrics(store, "main")
     for fig in [charts.tail_risk_chart(m.loc["spx"]), charts.exposure_chart(daily),
@@ -211,3 +212,20 @@ def test_app_explains_a_missing_store_instead_of_crashing(monkeypatch, tmp_path)
     at = AppTest.from_file(APP, default_timeout=60).run()
     assert not at.exception
     assert any("can't be shown" in e.value for e in at.error)
+
+
+# ── README generator (scripts/update_readme.py) ──────────────────────────────
+
+def test_readme_blocks_are_generated_from_the_store(store, tmp_path):
+    import importlib.util
+    path = os.path.join(HERE, "..", "scripts", "update_readme.py")
+    spec = importlib.util.spec_from_file_location("update_readme", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    template = "\n\n".join(f"<!-- generated:{n} -->\nold text\n<!-- /generated:{n} -->" for n in mod.BLOCKS)
+    st = mod.Store(db=store, variants=str(tmp_path / "missing.json"))
+    out = mod.render(template, st)
+    assert "old text" not in out and "nan" not in out.lower()
+    assert "S&P 500" in out and "| **HMM regime strategy** |" in out
+    assert mod.render(out, st) == out  # rendering is idempotent: --check passes right after a write

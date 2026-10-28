@@ -91,6 +91,34 @@ def test_pipeline_fills_every_table_and_publishes_cleanly(env):
     assert (daily["drawdown"] <= 1e-12).all()
 
 
+def test_instrument_and_cash_reach_the_store(env, monkeypatch):
+    """With a traded fund and a cash rate configured, P&L follows the fund,
+    idle cash earns the rate, and the store records both."""
+    spx_index = pipeline.download_prices(None)["spx"]
+    fund = spx_index["Close"] * 0.1 * (1 + 0.0001) ** np.arange(len(spx_index))  # a fund that slowly drifts
+    fake = {"spx": spx_index.assign(Trade_Close=fund, Cash_Yield=4.0)}
+    monkeypatch.setattr(pipeline, "download_prices", lambda cfg, force_refresh=False: fake)
+    cfg = dict(CFG, backtest=dict(CFG["backtest"], assets=["spx"], instruments={"spx": "SPY"},
+                                  cash_ticker="^IRX"))
+    with open(env["config_path"], "w") as f:
+        yaml.safe_dump(cfg, f)
+    _run(env, train=True)
+
+    win = _read(env, "SELECT instrument, cash_ticker FROM evaluation_windows")
+    assert win.iloc[0].tolist() == ["SPY", "^IRX"]
+    daily = _read(env, "SELECT strategy, date, weight, net_return, cost, cash_return FROM backtest_daily "
+                       "WHERE strategy = 'buy_hold' ORDER BY date")
+    assert np.allclose(daily["cash_return"].iloc[1:], 4.0 / 100 / 252)
+    # Fully invested days earn the fund's return, not the index's.
+    fund_r = fund.pct_change().reindex(pd.to_datetime(daily["date"])).to_numpy()
+    full = (daily["weight"] == 1.0).to_numpy()
+    assert np.allclose((daily["net_return"] + daily["cost"]).to_numpy()[full], fund_r[full])
+
+    # Every baseline is tested against the HMM, Holm-adjusted together.
+    sig = _read(env, "SELECT baseline FROM significance_tests")
+    assert sorted(sig["baseline"]) == ["buy_hold", "dma200", "vol_target"]
+
+
 def test_reuse_models_reproduces_training_exactly(env):
     _run(env, train=True)
     trained_regimes = _read(env, "SELECT * FROM regimes ORDER BY asset_id, date")
