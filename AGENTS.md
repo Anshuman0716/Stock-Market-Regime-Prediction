@@ -86,5 +86,10 @@ recompute independently.
 ## 7. Stay in Scope
 
 This project targets **Data Scientist, quant/fintech flavor**. It does not
-stretch to ML Engineer, AI Engineer, or Data Engineer scope. See README
-Section 2 for the full keep/cut/fix/add table.
+stretch to ML Engineer, AI Engineer, or Data Engineer scope.
+
+In scope: statistical modeling (the HMM), honest out-of-sample evaluation
+and backtesting, risk metrics, significance testing, pre-registered and
+forward-tested versions, the SQLite store, notebooks and the Streamlit
+dashboard. The tools that mark the boundary are listed in rule 4's
+out-of-scope table; a task that needs one of them has drifted out of scope.
