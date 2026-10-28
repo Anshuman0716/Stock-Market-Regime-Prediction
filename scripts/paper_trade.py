@@ -33,6 +33,7 @@ from src.data.loader import download_prices, load_config  # noqa: E402
 from src.features.engineering import FEATURE_COLUMNS, build_features  # noqa: E402
 from src.models.hmm import predict_latest_probs  # noqa: E402
 from src.models.labeling import load_fold_artifact  # noqa: E402
+from src.backtest.baselines import vol_target_weights  # noqa: E402
 from src.models.signal import compute_signal  # noqa: E402
 from src.trading.orders import plan_rebalance  # noqa: E402
 
@@ -187,11 +188,13 @@ def main():
     # 3. Today's signal, exactly as in the backtest: continuous filtered
     # forward pass over the full history, then the shared signal definition.
     probs = predict_latest_probs(features, artifact, FEATURE_COLUMNS)
-    today = compute_signal(probs, cfg['model']['smoothing_window']).iloc[-1]
+    scale = vol_target_weights(features["volatility_20"]) if cfg["model"].get("vol_scaling") else None
+    today = compute_signal(probs, cfg['model']['smoothing_window'], artifact.get("regime_weights"), scale).iloc[-1]
     target = float(today['target_weight'])
     logger.info(f"Raw probabilities: Bull={today['p_bull']:.3f} Transition={today['p_transition']:.3f} "
                 f"Crisis={today['p_crisis']:.3f}")
-    logger.info(f"Smoothed regime: {today['label']} | target weight (smoothed P(Bull)): {target:.4f}")
+    logger.info(f"Smoothed regime: {today['label']} | target weight: {target:.4f} "
+                f"(regime weights {artifact.get('regime_weights')})")
 
     # 4. Account state: the broker's when live, otherwise a $100k empty
     # account priced at the latest close of the traded instrument.

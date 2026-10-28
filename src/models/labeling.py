@@ -14,6 +14,8 @@ import os
 import joblib
 import numpy as np
 
+from src.models.signal import P_BULL_WEIGHTS, REGIME_LABELS
+
 
 def state_statistics(train_df, train_hidden_states, n_states, ann_factor=252):
     """
@@ -155,11 +157,48 @@ def rank_and_map_states(train_df, train_hidden_states, n_states=4, ann_factor=25
     return state_map
 
 
-def save_fold_artifact(fold_idx, model, scaler, state_map, directory="models", train_end=None):
+SIZING_RULES = ("regime_returns", "p_bull")
+
+
+def regime_weights(train_df, train_hidden_states, state_map, sizing="p_bull"):
+    """
+    How much of the asset to hold in each regime, from the TRAINING window.
+
+    sizing="regime_returns" (default from Step 8): hold a regime at 100% if
+        the asset's mean daily return on the training days labeled with it
+        was positive, otherwise at 0%.
+    sizing="p_bull" (up to Step 7): Bull 100%, Transition and Crisis 0%.
+
+    Why: "p_bull" treats Transition exactly like Crisis, i.e. as cash. The
+    training data does not support that for every asset. Gold's Transition
+    regime, for example, is a quiet drift that earned a positive return in
+    training; sitting in cash through it gave up that return. Letting the
+    training window say which regimes are worth holding replaces an
+    assumption with evidence, and uses no data after the training window.
+
+    Returns {regime: weight}; a regime with no training days gets 0.
+    """
+    if sizing not in SIZING_RULES:
+        raise ValueError(f"Unknown sizing rule '{sizing}'; choose from {SIZING_RULES}.")
+    if sizing == "p_bull":
+        return dict(P_BULL_WEIGHTS)
+    labels = np.array([state_map[s] for s in np.asarray(train_hidden_states)])
+    returns = train_df["returns"].to_numpy(dtype=float)
+    weights = {}
+    for label in REGIME_LABELS:
+        r = returns[labels == label]
+        r = r[~np.isnan(r)]
+        weights[label] = 1.0 if len(r) and r.mean() > 0 else 0.0
+    return weights
+
+
+def save_fold_artifact(fold_idx, model, scaler, state_map, directory="models", train_end=None,
+                       regime_weights=None):
     """
     Save the fitted model, scaler, and state_map per fold.
     A model without its scaler and mapping is unusable. `train_end` (last
-    training date) lets live code warn when the latest model is stale.
+    training date) lets live code warn when the latest model is stale;
+    `regime_weights` lets live code size positions exactly like the backtest.
     """
     os.makedirs(directory, exist_ok=True)
     filepath = os.path.join(directory, f"hmm_fold_{fold_idx}.joblib")
@@ -170,6 +209,7 @@ def save_fold_artifact(fold_idx, model, scaler, state_map, directory="models", t
         "state_map": state_map,
         "fold_idx": fold_idx,
         "train_end": None if train_end is None else str(train_end),
+        "regime_weights": regime_weights,
     }
 
     joblib.dump(artifact, filepath)

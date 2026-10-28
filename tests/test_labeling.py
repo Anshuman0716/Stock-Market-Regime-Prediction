@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.models.labeling import asset_sharpe, rank_and_map_states, state_statistics
+from src.models.labeling import asset_sharpe, rank_and_map_states, regime_weights, state_statistics
 
 
 def _states(spec, days=200):
@@ -175,3 +175,29 @@ def test_sharpe_rule_always_has_a_bull_and_a_crisis_state():
         df, hidden = _states(spec)
         labels = set(rank_and_map_states(df, hidden, n_states=4, rule="sharpe").values())
         assert {"Bull", "Crisis"} <= labels
+
+
+# ── Regime weights: how much to hold in each regime (Step 8) ─────────────────
+
+def test_regime_weights_hold_regimes_that_earned_money_in_training():
+    df, hidden = _gold_like_states()
+    labels = rank_and_map_states(df, hidden, n_states=4, rule="sharpe")
+    w = regime_weights(df, hidden, labels, sizing="regime_returns")
+    # Bull (rally) earned money, Crisis (sell-off) lost it, Transition (quiet
+    # drift + directionless volatile state) earned a little: hold it.
+    assert w == {"Bull": 1.0, "Transition": 1.0, "Crisis": 0.0}
+
+
+def test_regime_weights_skip_a_losing_transition_regime():
+    df, hidden = _states({0: (0.0008, 0.006), 1: (-0.00005, 0.011), 2: (-0.0003, 0.016), 3: (-0.003, 0.035)})
+    labels = {0: "Bull", 1: "Transition", 2: "Crisis", 3: "Crisis"}
+    assert regime_weights(df, hidden, labels, sizing="regime_returns") == {"Bull": 1.0, "Transition": 0.0,
+                                                                            "Crisis": 0.0}
+
+
+def test_p_bull_sizing_and_unknown_rule():
+    df, hidden = _gold_like_states()
+    labels = rank_and_map_states(df, hidden, n_states=4, rule="sharpe")
+    assert regime_weights(df, hidden, labels, sizing="p_bull") == {"Bull": 1.0, "Transition": 0.0, "Crisis": 0.0}
+    with pytest.raises(ValueError, match="sizing rule"):
+        regime_weights(df, hidden, labels, sizing="kelly")

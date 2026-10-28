@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-28T11:34:08.296434",
-  "config_hash": "e10c9615f94ecdb2dd9ed4cda57b28b8",
-  "git_sha": "bc5586870d29e000359a8b342c291fe77753bc08",
+  "created_at": "2026-10-28T12:28:43.619519",
+  "config_hash": "5855083a7597a86e46a96e91f7680222",
+  "git_sha": "eee13777a920c909a7e090648ff4b628be0f787b",
   "assets": {
     "spx": {
       "training_start": "2000-02-08",
@@ -18,6 +18,11 @@
             "3": "Crisis",
             "0": "Crisis",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -58,7 +63,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -15809.667901647152,
+            "best_log_likelihood": -15809.667901647137,
             "starts": [
               {
                 "seed": 42,
@@ -74,13 +79,13 @@
               },
               {
                 "seed": 44,
-                "log_likelihood": -15809.667901647152,
+                "log_likelihood": -15809.667901647137,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 45,
-                "log_likelihood": -15825.26341490985,
+                "log_likelihood": -15825.263414910154,
                 "converged": true,
                 "iterations": 56
               },
@@ -104,6 +109,11 @@
             "3": "Crisis",
             "0": "Transition",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -144,29 +154,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -17776.665034889244,
+            "best_log_likelihood": -17776.665034889185,
             "starts": [
               {
                 "seed": 1042,
-                "log_likelihood": -17776.665076236488,
+                "log_likelihood": -17776.665076236284,
                 "converged": true,
                 "iterations": 60
               },
               {
                 "seed": 1043,
-                "log_likelihood": -17777.184222633052,
+                "log_likelihood": -17777.184222632397,
                 "converged": true,
                 "iterations": 44
               },
               {
                 "seed": 1044,
-                "log_likelihood": -17776.66504438177,
+                "log_likelihood": -17776.665044381385,
                 "converged": true,
                 "iterations": 56
               },
               {
                 "seed": 1045,
-                "log_likelihood": -17776.665034889244,
+                "log_likelihood": -17776.665034889185,
                 "converged": true,
                 "iterations": 41
               },
@@ -190,6 +200,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -230,23 +245,23 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -19685.074675998712,
+            "best_log_likelihood": -19685.07467599843,
             "starts": [
               {
                 "seed": 2042,
-                "log_likelihood": -19685.209644323062,
+                "log_likelihood": -19685.20964432341,
                 "converged": true,
                 "iterations": 38
               },
               {
                 "seed": 2043,
-                "log_likelihood": -19685.20962921151,
+                "log_likelihood": -19685.209629211346,
                 "converged": true,
                 "iterations": 33
               },
               {
                 "seed": 2044,
-                "log_likelihood": -19685.209622982697,
+                "log_likelihood": -19685.209622983064,
                 "converged": true,
                 "iterations": 34
               },
@@ -258,7 +273,7 @@
               },
               {
                 "seed": 2046,
-                "log_likelihood": -19685.074675998712,
+                "log_likelihood": -19685.07467599843,
                 "converged": true,
                 "iterations": 36
               }
@@ -276,6 +291,11 @@
             "3": "Crisis",
             "1": "Crisis",
             "2": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -316,17 +336,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -21340.4838280778,
+            "best_log_likelihood": -21340.483828077296,
             "starts": [
               {
                 "seed": 3042,
-                "log_likelihood": -21340.4838280778,
+                "log_likelihood": -21340.483828077296,
                 "converged": true,
                 "iterations": 31
               },
               {
                 "seed": 3043,
-                "log_likelihood": -21341.43170794058,
+                "log_likelihood": -21341.431707941603,
                 "converged": true,
                 "iterations": 26
               },
@@ -338,7 +358,7 @@
               },
               {
                 "seed": 3045,
-                "log_likelihood": -21341.431721287445,
+                "log_likelihood": -21341.431721287998,
                 "converged": true,
                 "iterations": 25
               },
@@ -362,6 +382,11 @@
             "1": "Crisis",
             "0": "Transition",
             "3": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -402,7 +427,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -22675.626135401577,
+            "best_log_likelihood": -22675.626135402283,
             "starts": [
               {
                 "seed": 4042,
@@ -412,25 +437,25 @@
               },
               {
                 "seed": 4043,
-                "log_likelihood": -22675.626357838613,
+                "log_likelihood": -22675.62635783793,
                 "converged": true,
                 "iterations": 45
               },
               {
                 "seed": 4044,
-                "log_likelihood": -22675.626135401577,
+                "log_likelihood": -22675.626135402283,
                 "converged": true,
                 "iterations": 25
               },
               {
                 "seed": 4045,
-                "log_likelihood": -22675.626136034884,
+                "log_likelihood": -22675.626136034403,
                 "converged": true,
                 "iterations": 49
               },
               {
                 "seed": 4046,
-                "log_likelihood": -22675.62633575792,
+                "log_likelihood": -22675.62633575718,
                 "converged": true,
                 "iterations": 35
               }
@@ -448,6 +473,11 @@
             "2": "Crisis",
             "3": "Transition",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -492,7 +522,7 @@
             "starts": [
               {
                 "seed": 5042,
-                "log_likelihood": -24263.93370245038,
+                "log_likelihood": -24263.933702449867,
                 "converged": true,
                 "iterations": 28
               },
@@ -504,13 +534,13 @@
               },
               {
                 "seed": 5044,
-                "log_likelihood": -24263.378267571745,
+                "log_likelihood": -24263.37826757022,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 5045,
-                "log_likelihood": -24263.933845170643,
+                "log_likelihood": -24263.933845170755,
                 "converged": true,
                 "iterations": 34
               },
@@ -534,6 +564,11 @@
             "3": "Crisis",
             "1": "Transition",
             "0": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -578,7 +613,7 @@
             "starts": [
               {
                 "seed": 6042,
-                "log_likelihood": -26107.82216549771,
+                "log_likelihood": -26107.822165497473,
                 "converged": true,
                 "iterations": 34
               },
@@ -590,19 +625,19 @@
               },
               {
                 "seed": 6044,
-                "log_likelihood": -26106.79573425822,
+                "log_likelihood": -26106.795734258973,
                 "converged": true,
                 "iterations": 120
               },
               {
                 "seed": 6045,
-                "log_likelihood": -26120.31222241983,
+                "log_likelihood": -26120.312222419267,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 6046,
-                "log_likelihood": -26120.312984213957,
+                "log_likelihood": -26120.312984212982,
                 "converged": true,
                 "iterations": 52
               }
@@ -620,6 +655,11 @@
             "3": "Crisis",
             "0": "Transition",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -660,7 +700,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27957.202445674004,
+            "best_log_likelihood": -27957.202445675008,
             "starts": [
               {
                 "seed": 7042,
@@ -670,25 +710,25 @@
               },
               {
                 "seed": 7043,
-                "log_likelihood": -27957.202522573287,
+                "log_likelihood": -27957.202522575608,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 7044,
-                "log_likelihood": -27963.3185136611,
+                "log_likelihood": -27963.318513663056,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 7045,
-                "log_likelihood": -27957.202445674004,
+                "log_likelihood": -27957.202445675008,
                 "converged": true,
                 "iterations": 91
               },
               {
                 "seed": 7046,
-                "log_likelihood": -27963.318723239332,
+                "log_likelihood": -27963.318723237087,
                 "converged": true,
                 "iterations": 52
               }
@@ -706,6 +746,11 @@
             "1": "Crisis",
             "3": "Crisis",
             "0": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -746,17 +791,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -29684.15490558591,
+            "best_log_likelihood": -29684.154905586412,
             "starts": [
               {
                 "seed": 8042,
-                "log_likelihood": -29684.15496381509,
+                "log_likelihood": -29684.154963814497,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 8043,
-                "log_likelihood": -29684.15490584584,
+                "log_likelihood": -29684.154905845688,
                 "converged": true,
                 "iterations": 28
               },
@@ -768,13 +813,13 @@
               },
               {
                 "seed": 8045,
-                "log_likelihood": -29684.154905962692,
+                "log_likelihood": -29684.154905962445,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 8046,
-                "log_likelihood": -29684.15490558591,
+                "log_likelihood": -29684.154905586412,
                 "converged": true,
                 "iterations": 25
               }
@@ -792,6 +837,11 @@
             "0": "Crisis",
             "3": "Crisis",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -832,11 +882,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -31432.00799056049,
+            "best_log_likelihood": -31432.007990562597,
             "starts": [
               {
                 "seed": 9042,
-                "log_likelihood": -31432.007996152417,
+                "log_likelihood": -31432.007996151504,
                 "converged": true,
                 "iterations": 39
               },
@@ -848,19 +898,19 @@
               },
               {
                 "seed": 9044,
-                "log_likelihood": -31432.007998388173,
+                "log_likelihood": -31432.00799838807,
                 "converged": true,
                 "iterations": 97
               },
               {
                 "seed": 9045,
-                "log_likelihood": -31432.00799056049,
+                "log_likelihood": -31432.007990562597,
                 "converged": true,
                 "iterations": 139
               },
               {
                 "seed": 9046,
-                "log_likelihood": -31432.007991648505,
+                "log_likelihood": -31432.007991647744,
                 "converged": true,
                 "iterations": 27
               }
@@ -878,6 +928,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -918,35 +973,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -33080.73694931077,
+            "best_log_likelihood": -33080.736949312144,
             "starts": [
               {
                 "seed": 10042,
-                "log_likelihood": -33083.26413759755,
+                "log_likelihood": -33083.264137603415,
                 "converged": true,
                 "iterations": 53
               },
               {
                 "seed": 10043,
-                "log_likelihood": -33080.73694931077,
+                "log_likelihood": -33080.736949312144,
                 "converged": true,
                 "iterations": 164
               },
               {
                 "seed": 10044,
-                "log_likelihood": -33126.730494718,
+                "log_likelihood": -33126.730494719115,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 10045,
-                "log_likelihood": -33083.2641930359,
+                "log_likelihood": -33083.26419303498,
                 "converged": true,
                 "iterations": 55
               },
               {
                 "seed": 10046,
-                "log_likelihood": -33080.73700371354,
+                "log_likelihood": -33080.73700371163,
                 "converged": true,
                 "iterations": 45
               }
@@ -964,6 +1019,11 @@
             "2": "Crisis",
             "3": "Transition",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1004,11 +1064,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -34018.73189269799,
+            "best_log_likelihood": -34018.73189269726,
             "starts": [
               {
                 "seed": 11042,
-                "log_likelihood": -34018.73189269799,
+                "log_likelihood": -34018.73189269726,
                 "converged": true,
                 "iterations": 40
               },
@@ -1026,13 +1086,13 @@
               },
               {
                 "seed": 11045,
-                "log_likelihood": -34018.73191507139,
+                "log_likelihood": -34018.731915072145,
                 "converged": true,
                 "iterations": 63
               },
               {
                 "seed": 11046,
-                "log_likelihood": -34018.73193817096,
+                "log_likelihood": -34018.731938169054,
                 "converged": true,
                 "iterations": 41
               }
@@ -1050,6 +1110,11 @@
             "1": "Crisis",
             "3": "Transition",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1090,29 +1155,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -36030.05671701948,
+            "best_log_likelihood": -36030.056717018444,
             "starts": [
               {
                 "seed": 12042,
-                "log_likelihood": -36030.05678172549,
+                "log_likelihood": -36030.056781724,
                 "converged": true,
                 "iterations": 50
               },
               {
                 "seed": 12043,
-                "log_likelihood": -36030.056719453714,
+                "log_likelihood": -36030.05671945322,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 12044,
-                "log_likelihood": -36030.056753879304,
+                "log_likelihood": -36030.05675388017,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 12045,
-                "log_likelihood": -36030.05671701948,
+                "log_likelihood": -36030.056717018444,
                 "converged": true,
                 "iterations": 37
               },
@@ -1136,6 +1201,11 @@
             "3": "Crisis",
             "1": "Transition",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1176,17 +1246,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -38210.172839228835,
+            "best_log_likelihood": -38210.172839225306,
             "starts": [
               {
                 "seed": 13042,
-                "log_likelihood": -38210.1729430733,
+                "log_likelihood": -38210.17294307283,
                 "converged": true,
                 "iterations": 38
               },
               {
                 "seed": 13043,
-                "log_likelihood": -38210.17284860705,
+                "log_likelihood": -38210.17284860943,
                 "converged": true,
                 "iterations": 47
               },
@@ -1198,13 +1268,13 @@
               },
               {
                 "seed": 13045,
-                "log_likelihood": -38210.17284574734,
+                "log_likelihood": -38210.17284574586,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 13046,
-                "log_likelihood": -38210.172839228835,
+                "log_likelihood": -38210.172839225306,
                 "converged": true,
                 "iterations": 52
               }
@@ -1222,6 +1292,11 @@
             "2": "Crisis",
             "0": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1262,29 +1337,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -40019.01537095321,
+            "best_log_likelihood": -40019.015370956564,
             "starts": [
               {
                 "seed": 14042,
-                "log_likelihood": -40019.01539768055,
+                "log_likelihood": -40019.015397684154,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 14043,
-                "log_likelihood": -40020.39280177735,
+                "log_likelihood": -40020.39280177902,
                 "converged": true,
                 "iterations": 69
               },
               {
                 "seed": 14044,
-                "log_likelihood": -40020.39285261094,
+                "log_likelihood": -40020.392852611,
                 "converged": true,
                 "iterations": 53
               },
               {
                 "seed": 14045,
-                "log_likelihood": -40019.01537095321,
+                "log_likelihood": -40019.015370956564,
                 "converged": true,
                 "iterations": 43
               },
@@ -1308,6 +1383,11 @@
             "0": "Crisis",
             "1": "Transition",
             "3": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1348,11 +1428,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -41604.878756541744,
+            "best_log_likelihood": -41604.878756542115,
             "starts": [
               {
                 "seed": 15042,
-                "log_likelihood": -41604.87876037629,
+                "log_likelihood": -41604.87876037706,
                 "converged": true,
                 "iterations": 108
               },
@@ -1370,13 +1450,13 @@
               },
               {
                 "seed": 15045,
-                "log_likelihood": -41604.878756541744,
+                "log_likelihood": -41604.878756542115,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 15046,
-                "log_likelihood": -41604.87875823394,
+                "log_likelihood": -41604.878758239305,
                 "converged": true,
                 "iterations": 47
               }
@@ -1394,6 +1474,11 @@
             "3": "Crisis",
             "2": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1444,13 +1529,13 @@
               },
               {
                 "seed": 16043,
-                "log_likelihood": -43308.00429947352,
+                "log_likelihood": -43308.00429946754,
                 "converged": true,
                 "iterations": 77
               },
               {
                 "seed": 16044,
-                "log_likelihood": -43309.25160400162,
+                "log_likelihood": -43309.25160400072,
                 "converged": true,
                 "iterations": 51
               },
@@ -1462,7 +1547,7 @@
               },
               {
                 "seed": 16046,
-                "log_likelihood": -43309.2515742734,
+                "log_likelihood": -43309.25157427282,
                 "converged": true,
                 "iterations": 56
               }
@@ -1486,6 +1571,11 @@
             "2": "Crisis",
             "0": "Crisis",
             "3": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1526,17 +1616,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -16538.103817486135,
+            "best_log_likelihood": -16538.103817486834,
             "starts": [
               {
                 "seed": 42,
-                "log_likelihood": -16538.103964798393,
+                "log_likelihood": -16538.103964798313,
                 "converged": true,
                 "iterations": 111
               },
               {
                 "seed": 43,
-                "log_likelihood": -16538.103817486135,
+                "log_likelihood": -16538.103817486834,
                 "converged": true,
                 "iterations": 62
               },
@@ -1548,13 +1638,13 @@
               },
               {
                 "seed": 45,
-                "log_likelihood": -17399.817044768097,
+                "log_likelihood": -17399.817044767547,
                 "converged": true,
                 "iterations": 61
               },
               {
                 "seed": 46,
-                "log_likelihood": -16538.103969436524,
+                "log_likelihood": -16538.103969436586,
                 "converged": true,
                 "iterations": 138
               }
@@ -1572,6 +1662,11 @@
             "1": "Crisis",
             "0": "Crisis",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1616,13 +1711,13 @@
             "starts": [
               {
                 "seed": 1042,
-                "log_likelihood": -19084.942097858948,
+                "log_likelihood": -19084.942097859843,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 1043,
-                "log_likelihood": -19014.71141543206,
+                "log_likelihood": -19014.71141543129,
                 "converged": true,
                 "iterations": 45
               },
@@ -1640,7 +1735,7 @@
               },
               {
                 "seed": 1046,
-                "log_likelihood": -19148.24495808751,
+                "log_likelihood": -19148.244958086718,
                 "converged": true,
                 "iterations": 24
               }
@@ -1658,6 +1753,11 @@
             "2": "Crisis",
             "0": "Crisis",
             "3": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1698,35 +1798,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -20251.037698660653,
+            "best_log_likelihood": -20251.037698661316,
             "starts": [
               {
                 "seed": 2042,
-                "log_likelihood": -20931.718969633042,
+                "log_likelihood": -20931.718969633243,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 2043,
-                "log_likelihood": -20944.032136094487,
+                "log_likelihood": -20944.0321360951,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 2044,
-                "log_likelihood": -20922.027372298744,
+                "log_likelihood": -20922.02737229895,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 2045,
-                "log_likelihood": -20251.037698660653,
+                "log_likelihood": -20251.037698661316,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 2046,
-                "log_likelihood": -20922.696309115032,
+                "log_likelihood": -20922.69630911571,
                 "converged": true,
                 "iterations": 243
               }
@@ -1744,6 +1844,11 @@
             "3": "Crisis",
             "2": "Crisis",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1784,35 +1889,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -21745.05015041178,
+            "best_log_likelihood": -21745.050150411967,
             "starts": [
               {
                 "seed": 3042,
-                "log_likelihood": -21745.050202818158,
+                "log_likelihood": -21745.050202818846,
                 "converged": true,
                 "iterations": 27
               },
               {
                 "seed": 3043,
-                "log_likelihood": -21745.050201734324,
+                "log_likelihood": -21745.05020173487,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 3044,
-                "log_likelihood": -22547.302731224627,
+                "log_likelihood": -22547.302731224034,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 3045,
-                "log_likelihood": -21745.05020970156,
+                "log_likelihood": -21745.05020970306,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 3046,
-                "log_likelihood": -21745.05015041178,
+                "log_likelihood": -21745.050150411967,
                 "converged": true,
                 "iterations": 54
               }
@@ -1830,6 +1935,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1870,7 +1980,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -22937.126175060934,
+            "best_log_likelihood": -22937.126175061137,
             "starts": [
               {
                 "seed": 4042,
@@ -1880,25 +1990,25 @@
               },
               {
                 "seed": 4043,
-                "log_likelihood": -22937.126211390358,
+                "log_likelihood": -22937.12621138879,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 4044,
-                "log_likelihood": -22937.12625203413,
+                "log_likelihood": -22937.126252034544,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 4045,
-                "log_likelihood": -22937.126175060934,
+                "log_likelihood": -22937.126175061137,
                 "converged": true,
                 "iterations": 22
               },
               {
                 "seed": 4046,
-                "log_likelihood": -22937.126244404237,
+                "log_likelihood": -22937.12624440369,
                 "converged": true,
                 "iterations": 37
               }
@@ -1916,6 +2026,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -1956,11 +2071,11 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -24451.505703931944,
+            "best_log_likelihood": -24451.505703932195,
             "starts": [
               {
                 "seed": 5042,
-                "log_likelihood": -24451.505763820496,
+                "log_likelihood": -24451.50576382176,
                 "converged": true,
                 "iterations": 32
               },
@@ -1978,7 +2093,7 @@
               },
               {
                 "seed": 5045,
-                "log_likelihood": -24451.505703931944,
+                "log_likelihood": -24451.505703932195,
                 "converged": true,
                 "iterations": 43
               },
@@ -2002,6 +2117,11 @@
             "3": "Crisis",
             "0": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2042,7 +2162,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -26068.28221468497,
+            "best_log_likelihood": -26068.282214684823,
             "starts": [
               {
                 "seed": 6042,
@@ -2058,19 +2178,19 @@
               },
               {
                 "seed": 6044,
-                "log_likelihood": -26072.102325925345,
+                "log_likelihood": -26072.10232592644,
                 "converged": true,
                 "iterations": 49
               },
               {
                 "seed": 6045,
-                "log_likelihood": -26085.89662658779,
+                "log_likelihood": -26085.896626585945,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 6046,
-                "log_likelihood": -26068.28221468497,
+                "log_likelihood": -26068.282214684823,
                 "converged": true,
                 "iterations": 30
               }
@@ -2088,6 +2208,11 @@
             "3": "Crisis",
             "2": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2128,35 +2253,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27872.16811194283,
+            "best_log_likelihood": -27872.16811194126,
             "starts": [
               {
                 "seed": 7042,
-                "log_likelihood": -27872.16811194283,
+                "log_likelihood": -27872.16811194126,
                 "converged": true,
                 "iterations": 78
               },
               {
                 "seed": 7043,
-                "log_likelihood": -27891.327102952404,
+                "log_likelihood": -27891.327102951505,
                 "converged": true,
                 "iterations": 70
               },
               {
                 "seed": 7044,
-                "log_likelihood": -27872.168117026788,
+                "log_likelihood": -27872.168117025358,
                 "converged": true,
                 "iterations": 43
               },
               {
                 "seed": 7045,
-                "log_likelihood": -28173.494111850574,
+                "log_likelihood": -28173.494111847653,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 7046,
-                "log_likelihood": -28173.494117764832,
+                "log_likelihood": -28173.494117763566,
                 "converged": true,
                 "iterations": 36
               }
@@ -2174,6 +2299,11 @@
             "3": "Crisis",
             "1": "Crisis",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2218,7 +2348,7 @@
             "starts": [
               {
                 "seed": 8042,
-                "log_likelihood": -29412.158361942606,
+                "log_likelihood": -29412.158361947655,
                 "converged": true,
                 "iterations": 59
               },
@@ -2230,19 +2360,19 @@
               },
               {
                 "seed": 8044,
-                "log_likelihood": -29412.158296137786,
+                "log_likelihood": -29412.15829613781,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 8045,
-                "log_likelihood": -29412.604831167097,
+                "log_likelihood": -29412.60483116775,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 8046,
-                "log_likelihood": -29406.042345776048,
+                "log_likelihood": -29406.042345777158,
                 "converged": true,
                 "iterations": 41
               }
@@ -2260,6 +2390,11 @@
             "2": "Crisis",
             "0": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2300,29 +2435,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -31145.143488824004,
+            "best_log_likelihood": -31145.1434888274,
             "starts": [
               {
                 "seed": 9042,
-                "log_likelihood": -31157.39684037968,
+                "log_likelihood": -31157.39684037944,
                 "converged": true,
                 "iterations": 53
               },
               {
                 "seed": 9043,
-                "log_likelihood": -31145.143488824004,
+                "log_likelihood": -31145.1434888274,
                 "converged": true,
                 "iterations": 71
               },
               {
                 "seed": 9044,
-                "log_likelihood": -31145.143499838625,
+                "log_likelihood": -31145.143499839032,
                 "converged": true,
                 "iterations": 48
               },
               {
                 "seed": 9045,
-                "log_likelihood": -31209.431699753,
+                "log_likelihood": -31209.43169975757,
                 "converged": true,
                 "iterations": 38
               },
@@ -2346,6 +2481,11 @@
             "3": "Crisis",
             "1": "Crisis",
             "0": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2386,7 +2526,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -32643.52474107271,
+            "best_log_likelihood": -32643.524741071145,
             "starts": [
               {
                 "seed": 10042,
@@ -2396,25 +2536,25 @@
               },
               {
                 "seed": 10043,
-                "log_likelihood": -32650.419590338497,
+                "log_likelihood": -32650.41959034037,
                 "converged": true,
                 "iterations": 61
               },
               {
                 "seed": 10044,
-                "log_likelihood": -32650.41957346281,
+                "log_likelihood": -32650.419573464293,
                 "converged": true,
                 "iterations": 72
               },
               {
                 "seed": 10045,
-                "log_likelihood": -32643.52474107271,
+                "log_likelihood": -32643.524741071145,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 10046,
-                "log_likelihood": -32650.41960038671,
+                "log_likelihood": -32650.419600386143,
                 "converged": true,
                 "iterations": 43
               }
@@ -2432,6 +2572,11 @@
             "1": "Crisis",
             "0": "Transition",
             "3": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2472,17 +2617,17 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -34320.00242157059,
+            "best_log_likelihood": -34320.002421568504,
             "starts": [
               {
                 "seed": 11042,
-                "log_likelihood": -34328.78181334726,
+                "log_likelihood": -34328.78181334884,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 11043,
-                "log_likelihood": -34328.78175477067,
+                "log_likelihood": -34328.78175477349,
                 "converged": true,
                 "iterations": 95
               },
@@ -2494,13 +2639,13 @@
               },
               {
                 "seed": 11045,
-                "log_likelihood": -34320.00242157059,
+                "log_likelihood": -34320.002421568504,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 11046,
-                "log_likelihood": -34328.78176377691,
+                "log_likelihood": -34328.781763774365,
                 "converged": true,
                 "iterations": 95
               }
@@ -2518,6 +2663,11 @@
             "2": "Crisis",
             "1": "Transition",
             "3": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2558,7 +2708,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -36247.41445376537,
+            "best_log_likelihood": -36247.414453767844,
             "starts": [
               {
                 "seed": 12042,
@@ -2568,25 +2718,25 @@
               },
               {
                 "seed": 12043,
-                "log_likelihood": -36247.4145710426,
+                "log_likelihood": -36247.41457103949,
                 "converged": true,
                 "iterations": 68
               },
               {
                 "seed": 12044,
-                "log_likelihood": -36247.41456939794,
+                "log_likelihood": -36247.414569399116,
                 "converged": true,
                 "iterations": 103
               },
               {
                 "seed": 12045,
-                "log_likelihood": -36247.41445376537,
+                "log_likelihood": -36247.414453767844,
                 "converged": true,
                 "iterations": 65
               },
               {
                 "seed": 12046,
-                "log_likelihood": -36247.414534432995,
+                "log_likelihood": -36247.41453443387,
                 "converged": true,
                 "iterations": 82
               }
@@ -2604,6 +2754,11 @@
             "3": "Crisis",
             "1": "Transition",
             "0": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2644,35 +2799,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -38551.91229993532,
+            "best_log_likelihood": -38551.91229993753,
             "starts": [
               {
                 "seed": 13042,
-                "log_likelihood": -38578.04214127726,
+                "log_likelihood": -38578.04214127922,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 13043,
-                "log_likelihood": -38578.04214813733,
+                "log_likelihood": -38578.04214813472,
                 "converged": true,
                 "iterations": 48
               },
               {
                 "seed": 13044,
-                "log_likelihood": -39237.96389095227,
+                "log_likelihood": -39237.96389095143,
                 "converged": true,
                 "iterations": 186
               },
               {
                 "seed": 13045,
-                "log_likelihood": -38551.91232152689,
+                "log_likelihood": -38551.91232152796,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 13046,
-                "log_likelihood": -38551.91229993532,
+                "log_likelihood": -38551.91229993753,
                 "converged": true,
                 "iterations": 44
               }
@@ -2690,6 +2845,11 @@
             "3": "Crisis",
             "1": "Transition",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2730,23 +2890,23 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -40392.77705764453,
+            "best_log_likelihood": -40392.77705764747,
             "starts": [
               {
                 "seed": 14042,
-                "log_likelihood": -40436.451696452015,
+                "log_likelihood": -40436.451696451106,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 14043,
-                "log_likelihood": -40393.187400516814,
+                "log_likelihood": -40393.18740051514,
                 "converged": true,
                 "iterations": 82
               },
               {
                 "seed": 14044,
-                "log_likelihood": -40436.45169561805,
+                "log_likelihood": -40436.45169561934,
                 "converged": true,
                 "iterations": 73
               },
@@ -2758,7 +2918,7 @@
               },
               {
                 "seed": 14046,
-                "log_likelihood": -40392.77705764453,
+                "log_likelihood": -40392.77705764747,
                 "converged": true,
                 "iterations": 60
               }
@@ -2776,6 +2936,11 @@
             "1": "Crisis",
             "0": "Transition",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2816,35 +2981,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -42186.931044580866,
+            "best_log_likelihood": -42186.93104457631,
             "starts": [
               {
                 "seed": 15042,
-                "log_likelihood": -42186.931044580866,
+                "log_likelihood": -42186.93104457631,
                 "converged": true,
                 "iterations": 122
               },
               {
                 "seed": 15043,
-                "log_likelihood": -42186.93105989525,
+                "log_likelihood": -42186.93105989703,
                 "converged": true,
                 "iterations": 115
               },
               {
                 "seed": 15044,
-                "log_likelihood": -42186.93106493182,
+                "log_likelihood": -42186.93106493271,
                 "converged": true,
                 "iterations": 147
               },
               {
                 "seed": 15045,
-                "log_likelihood": -42186.93107619885,
+                "log_likelihood": -42186.93107619451,
                 "converged": true,
                 "iterations": 123
               },
               {
                 "seed": 15046,
-                "log_likelihood": -43511.36173958287,
+                "log_likelihood": -43511.361739580556,
                 "converged": true,
                 "iterations": 94
               }
@@ -2862,6 +3027,11 @@
             "3": "Crisis",
             "1": "Transition",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2906,7 +3076,7 @@
             "starts": [
               {
                 "seed": 16042,
-                "log_likelihood": -43937.61577314136,
+                "log_likelihood": -43937.615773134814,
                 "converged": true,
                 "iterations": 236
               },
@@ -2918,13 +3088,13 @@
               },
               {
                 "seed": 16044,
-                "log_likelihood": -43937.615777435254,
+                "log_likelihood": -43937.61577743863,
                 "converged": true,
                 "iterations": 174
               },
               {
                 "seed": 16045,
-                "log_likelihood": -43937.6157715453,
+                "log_likelihood": -43937.615771548866,
                 "converged": true,
                 "iterations": 241
               },
@@ -2954,6 +3124,11 @@
             "2": "Crisis",
             "3": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -2994,35 +3169,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -18635.635860566927,
+            "best_log_likelihood": -18635.635860566494,
             "starts": [
               {
                 "seed": 42,
-                "log_likelihood": -18687.021258475255,
+                "log_likelihood": -18687.021258475175,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 43,
-                "log_likelihood": -19042.07084319699,
+                "log_likelihood": -19042.07084319688,
                 "converged": true,
                 "iterations": 166
               },
               {
                 "seed": 44,
-                "log_likelihood": -18687.0212474213,
+                "log_likelihood": -18687.021247420966,
                 "converged": true,
                 "iterations": 51
               },
               {
                 "seed": 45,
-                "log_likelihood": -18635.635860566927,
+                "log_likelihood": -18635.635860566494,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 46,
-                "log_likelihood": -18687.02125013255,
+                "log_likelihood": -18687.021250132617,
                 "converged": true,
                 "iterations": 36
               }
@@ -3040,6 +3215,11 @@
             "0": "Crisis",
             "2": "Transition",
             "3": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3080,35 +3260,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -20996.178888643815,
+            "best_log_likelihood": -20996.17888864379,
             "starts": [
               {
                 "seed": 1042,
-                "log_likelihood": -21050.888053050083,
+                "log_likelihood": -21050.888053049777,
                 "converged": true,
                 "iterations": 29
               },
               {
                 "seed": 1043,
-                "log_likelihood": -20996.178888643815,
+                "log_likelihood": -20996.17888864379,
                 "converged": true,
                 "iterations": 62
               },
               {
                 "seed": 1044,
-                "log_likelihood": -21038.596328987223,
+                "log_likelihood": -21038.59632898716,
                 "converged": true,
                 "iterations": 19
               },
               {
                 "seed": 1045,
-                "log_likelihood": -21038.596323844205,
+                "log_likelihood": -21038.59632384367,
                 "converged": true,
                 "iterations": 24
               },
               {
                 "seed": 1046,
-                "log_likelihood": -21038.596320416502,
+                "log_likelihood": -21038.596320416596,
                 "converged": true,
                 "iterations": 29
               }
@@ -3126,6 +3306,11 @@
             "3": "Crisis",
             "2": "Transition",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3166,7 +3351,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -23062.527065891147,
+            "best_log_likelihood": -23062.527065890907,
             "starts": [
               {
                 "seed": 2042,
@@ -3176,13 +3361,13 @@
               },
               {
                 "seed": 2043,
-                "log_likelihood": -23062.527065891147,
+                "log_likelihood": -23062.527065890907,
                 "converged": true,
                 "iterations": 26
               },
               {
                 "seed": 2044,
-                "log_likelihood": -23062.52707345053,
+                "log_likelihood": -23062.527073450663,
                 "converged": true,
                 "iterations": 45
               },
@@ -3194,7 +3379,7 @@
               },
               {
                 "seed": 2046,
-                "log_likelihood": -23062.5270739031,
+                "log_likelihood": -23062.527073903737,
                 "converged": true,
                 "iterations": 78
               }
@@ -3212,6 +3397,11 @@
             "2": "Crisis",
             "3": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3256,7 +3446,7 @@
             "starts": [
               {
                 "seed": 3042,
-                "log_likelihood": -25209.530452023206,
+                "log_likelihood": -25209.53045202269,
                 "converged": true,
                 "iterations": 43
               },
@@ -3274,13 +3464,13 @@
               },
               {
                 "seed": 3045,
-                "log_likelihood": -25209.53044026494,
+                "log_likelihood": -25209.530440264924,
                 "converged": true,
                 "iterations": 71
               },
               {
                 "seed": 3046,
-                "log_likelihood": -25209.530456062726,
+                "log_likelihood": -25209.530456062355,
                 "converged": true,
                 "iterations": 33
               }
@@ -3298,6 +3488,11 @@
             "3": "Crisis",
             "0": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3338,7 +3533,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27504.36909703404,
+            "best_log_likelihood": -27504.36909703519,
             "starts": [
               {
                 "seed": 4042,
@@ -3348,25 +3543,25 @@
               },
               {
                 "seed": 4043,
-                "log_likelihood": -27514.357838817545,
+                "log_likelihood": -27514.357838816206,
                 "converged": true,
                 "iterations": 133
               },
               {
                 "seed": 4044,
-                "log_likelihood": -27504.36910400298,
+                "log_likelihood": -27504.369104001937,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 4045,
-                "log_likelihood": -27504.36909703404,
+                "log_likelihood": -27504.36909703519,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 4046,
-                "log_likelihood": -27504.36910321101,
+                "log_likelihood": -27504.36910321202,
                 "converged": true,
                 "iterations": 38
               }
@@ -3384,6 +3579,11 @@
             "2": "Crisis",
             "3": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3424,29 +3624,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -29735.156129434396,
+            "best_log_likelihood": -29735.15612943217,
             "starts": [
               {
                 "seed": 5042,
-                "log_likelihood": -29738.01688814625,
+                "log_likelihood": -29738.016888146114,
                 "converged": true,
                 "iterations": 39
               },
               {
                 "seed": 5043,
-                "log_likelihood": -29735.156129434396,
+                "log_likelihood": -29735.15612943217,
                 "converged": true,
                 "iterations": 40
               },
               {
                 "seed": 5044,
-                "log_likelihood": -29738.01689974407,
+                "log_likelihood": -29738.01689974295,
                 "converged": true,
                 "iterations": 39
               },
               {
                 "seed": 5045,
-                "log_likelihood": -29738.01690917449,
+                "log_likelihood": -29738.016909174785,
                 "converged": true,
                 "iterations": 29
               },
@@ -3470,6 +3670,11 @@
             "0": "Crisis",
             "3": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3510,7 +3715,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -32228.152088141516,
+            "best_log_likelihood": -32228.152088139937,
             "starts": [
               {
                 "seed": 6042,
@@ -3532,13 +3737,13 @@
               },
               {
                 "seed": 6045,
-                "log_likelihood": -32228.152088141516,
+                "log_likelihood": -32228.152088139937,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 6046,
-                "log_likelihood": -32228.1521421676,
+                "log_likelihood": -32228.152142166597,
                 "converged": true,
                 "iterations": 51
               }
@@ -3556,6 +3761,11 @@
             "2": "Crisis",
             "3": "Transition",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3600,7 +3810,7 @@
             "starts": [
               {
                 "seed": 7042,
-                "log_likelihood": -34657.95044147751,
+                "log_likelihood": -34657.95044147609,
                 "converged": true,
                 "iterations": 51
               },
@@ -3612,19 +3822,19 @@
               },
               {
                 "seed": 7044,
-                "log_likelihood": -34657.95165171362,
+                "log_likelihood": -34657.95165171421,
                 "converged": true,
                 "iterations": 38
               },
               {
                 "seed": 7045,
-                "log_likelihood": -34698.55652992763,
+                "log_likelihood": -34698.556529926056,
                 "converged": true,
                 "iterations": 59
               },
               {
                 "seed": 7046,
-                "log_likelihood": -34658.69157208971,
+                "log_likelihood": -34658.69157208979,
                 "converged": true,
                 "iterations": 86
               }
@@ -3642,6 +3852,11 @@
             "2": "Crisis",
             "1": "Crisis",
             "3": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3682,23 +3897,23 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -36759.988178971296,
+            "best_log_likelihood": -36759.988178972286,
             "starts": [
               {
                 "seed": 8042,
-                "log_likelihood": -36759.988178971296,
+                "log_likelihood": -36759.988178972286,
                 "converged": true,
                 "iterations": 91
               },
               {
                 "seed": 8043,
-                "log_likelihood": -36766.6928411588,
+                "log_likelihood": -36766.69284115781,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 8044,
-                "log_likelihood": -36766.692851558975,
+                "log_likelihood": -36766.69285155897,
                 "converged": true,
                 "iterations": 42
               },
@@ -3710,7 +3925,7 @@
               },
               {
                 "seed": 8046,
-                "log_likelihood": -36766.69280958357,
+                "log_likelihood": -36766.6928095829,
                 "converged": true,
                 "iterations": 46
               }
@@ -3728,6 +3943,11 @@
             "1": "Crisis",
             "3": "Crisis",
             "2": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3768,29 +3988,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -39036.057265802825,
+            "best_log_likelihood": -39036.05726580417,
             "starts": [
               {
                 "seed": 9042,
-                "log_likelihood": -39065.92120218512,
+                "log_likelihood": -39065.92120218389,
                 "converged": true,
                 "iterations": 33
               },
               {
                 "seed": 9043,
-                "log_likelihood": -39036.057265802825,
+                "log_likelihood": -39036.05726580417,
                 "converged": true,
                 "iterations": 39
               },
               {
                 "seed": 9044,
-                "log_likelihood": -39065.921178074925,
+                "log_likelihood": -39065.921178074896,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 9045,
-                "log_likelihood": -39055.863904548976,
+                "log_likelihood": -39055.86390455192,
                 "converged": true,
                 "iterations": 32
               },
@@ -3814,6 +4034,11 @@
             "0": "Crisis",
             "3": "Crisis",
             "2": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3854,35 +4079,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -40904.445793602245,
+            "best_log_likelihood": -40904.44579360601,
             "starts": [
               {
                 "seed": 10042,
-                "log_likelihood": -40946.87732837599,
+                "log_likelihood": -40946.877328378425,
                 "converged": true,
                 "iterations": 95
               },
               {
                 "seed": 10043,
-                "log_likelihood": -40946.877339805666,
+                "log_likelihood": -40946.87733980438,
                 "converged": true,
                 "iterations": 82
               },
               {
                 "seed": 10044,
-                "log_likelihood": -40904.445793602245,
+                "log_likelihood": -40904.44579360601,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 10045,
-                "log_likelihood": -40922.939676515256,
+                "log_likelihood": -40922.93967651783,
                 "converged": true,
                 "iterations": 69
               },
               {
                 "seed": 10046,
-                "log_likelihood": -41803.66196387257,
+                "log_likelihood": -41803.661963870065,
                 "converged": true,
                 "iterations": 86
               }
@@ -3900,6 +4125,11 @@
             "0": "Crisis",
             "3": "Crisis",
             "2": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -3940,35 +4170,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -42894.25778125909,
+            "best_log_likelihood": -42894.25778126322,
             "starts": [
               {
                 "seed": 11042,
-                "log_likelihood": -43041.95142053386,
+                "log_likelihood": -43041.95142053646,
                 "converged": true,
                 "iterations": 34
               },
               {
                 "seed": 11043,
-                "log_likelihood": -43041.95140866462,
+                "log_likelihood": -43041.95140866274,
                 "converged": true,
                 "iterations": 35
               },
               {
                 "seed": 11044,
-                "log_likelihood": -42894.25778125909,
+                "log_likelihood": -42894.25778126322,
                 "converged": true,
                 "iterations": 126
               },
               {
                 "seed": 11045,
-                "log_likelihood": -43041.95140278413,
+                "log_likelihood": -43041.95140278282,
                 "converged": true,
                 "iterations": 47
               },
               {
                 "seed": 11046,
-                "log_likelihood": -43041.951395680604,
+                "log_likelihood": -43041.95139567983,
                 "converged": true,
                 "iterations": 33
               }
@@ -3986,6 +4216,11 @@
             "0": "Crisis",
             "2": "Crisis",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4026,35 +4261,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -45294.94418364897,
+            "best_log_likelihood": -45294.94418364893,
             "starts": [
               {
                 "seed": 12042,
-                "log_likelihood": -45294.94418364897,
+                "log_likelihood": -45294.94418364893,
                 "converged": true,
                 "iterations": 74
               },
               {
                 "seed": 12043,
-                "log_likelihood": -45387.79919893338,
+                "log_likelihood": -45387.79919893282,
                 "converged": true,
                 "iterations": 38
               },
               {
                 "seed": 12044,
-                "log_likelihood": -45387.79918780741,
+                "log_likelihood": -45387.79918781349,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 12045,
-                "log_likelihood": -45387.799382429796,
+                "log_likelihood": -45387.79938243005,
                 "converged": true,
                 "iterations": 42
               },
               {
                 "seed": 12046,
-                "log_likelihood": -45387.79946966549,
+                "log_likelihood": -45387.79946966428,
                 "converged": true,
                 "iterations": 62
               }
@@ -4072,6 +4307,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4112,35 +4352,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -47836.36154362402,
+            "best_log_likelihood": -47836.36154362909,
             "starts": [
               {
                 "seed": 13042,
-                "log_likelihood": -47879.71243182266,
+                "log_likelihood": -47879.712431820415,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 13043,
-                "log_likelihood": -47879.67318664569,
+                "log_likelihood": -47879.67318664135,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 13044,
-                "log_likelihood": -47879.67315488388,
+                "log_likelihood": -47879.67315488675,
                 "converged": true,
                 "iterations": 37
               },
               {
                 "seed": 13045,
-                "log_likelihood": -47836.36154362402,
+                "log_likelihood": -47836.36154362909,
                 "converged": true,
                 "iterations": 100
               },
               {
                 "seed": 13046,
-                "log_likelihood": -48307.08870969576,
+                "log_likelihood": -48307.08870970202,
                 "converged": true,
                 "iterations": 31
               }
@@ -4158,6 +4398,11 @@
             "0": "Crisis",
             "2": "Transition",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4198,7 +4443,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -50213.950543525316,
+            "best_log_likelihood": -50213.95054352863,
             "starts": [
               {
                 "seed": 14042,
@@ -4214,7 +4459,7 @@
               },
               {
                 "seed": 14044,
-                "log_likelihood": -50213.95055063024,
+                "log_likelihood": -50213.95055063215,
                 "converged": true,
                 "iterations": 32
               },
@@ -4226,7 +4471,7 @@
               },
               {
                 "seed": 14046,
-                "log_likelihood": -50213.950543525316,
+                "log_likelihood": -50213.95054352863,
                 "converged": true,
                 "iterations": 37
               }
@@ -4244,6 +4489,11 @@
             "3": "Crisis",
             "2": "Crisis",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4284,7 +4534,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -52490.79814521085,
+            "best_log_likelihood": -52490.79814521217,
             "starts": [
               {
                 "seed": 15042,
@@ -4300,19 +4550,19 @@
               },
               {
                 "seed": 15044,
-                "log_likelihood": -52490.79814521085,
+                "log_likelihood": -52490.79814521217,
                 "converged": true,
                 "iterations": 57
               },
               {
                 "seed": 15045,
-                "log_likelihood": -52552.64453933826,
+                "log_likelihood": -52552.6445393291,
                 "converged": true,
                 "iterations": 24
               },
               {
                 "seed": 15046,
-                "log_likelihood": -52552.30227075705,
+                "log_likelihood": -52552.30227075633,
                 "converged": true,
                 "iterations": 27
               }
@@ -4330,6 +4580,11 @@
             "3": "Crisis",
             "0": "Crisis",
             "1": "Transition"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 1.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4370,29 +4625,29 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -54678.51428271076,
+            "best_log_likelihood": -54678.51428270888,
             "starts": [
               {
                 "seed": 16042,
-                "log_likelihood": -54678.51428271076,
+                "log_likelihood": -54678.51428270888,
                 "converged": true,
                 "iterations": 135
               },
               {
                 "seed": 16043,
-                "log_likelihood": -54998.13206268047,
+                "log_likelihood": -54998.132062683406,
                 "converged": true,
                 "iterations": 147
               },
               {
                 "seed": 16044,
-                "log_likelihood": -54751.40079798947,
+                "log_likelihood": -54751.40079798989,
                 "converged": true,
                 "iterations": 71
               },
               {
                 "seed": 16045,
-                "log_likelihood": -54679.049782178496,
+                "log_likelihood": -54679.04978217504,
                 "converged": true,
                 "iterations": 84
               },
@@ -4422,6 +4677,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4462,7 +4722,7 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -18217.406191053316,
+            "best_log_likelihood": -18217.406191052978,
             "starts": [
               {
                 "seed": 42,
@@ -4478,19 +4738,19 @@
               },
               {
                 "seed": 44,
-                "log_likelihood": -18217.406191053316,
+                "log_likelihood": -18217.406191052978,
                 "converged": true,
                 "iterations": 43
               },
               {
                 "seed": 45,
-                "log_likelihood": -18740.079015154923,
+                "log_likelihood": -18740.079015154974,
                 "converged": true,
                 "iterations": 61
               },
               {
                 "seed": 46,
-                "log_likelihood": -18800.02673454088,
+                "log_likelihood": -18800.02673454108,
                 "converged": true,
                 "iterations": 58
               }
@@ -4508,6 +4768,11 @@
             "3": "Crisis",
             "2": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4548,35 +4813,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -21517.385225044658,
+            "best_log_likelihood": -21517.3852250441,
             "starts": [
               {
                 "seed": 1042,
-                "log_likelihood": -21519.63206975723,
+                "log_likelihood": -21519.63206975731,
                 "converged": true,
                 "iterations": 24
               },
               {
                 "seed": 1043,
-                "log_likelihood": -21517.385225044658,
+                "log_likelihood": -21517.3852250441,
                 "converged": true,
                 "iterations": 41
               },
               {
                 "seed": 1044,
-                "log_likelihood": -21522.638380814547,
+                "log_likelihood": -21522.638380815053,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 1045,
-                "log_likelihood": -21518.39998341214,
+                "log_likelihood": -21518.39998341226,
                 "converged": true,
                 "iterations": 46
               },
               {
                 "seed": 1046,
-                "log_likelihood": -21519.632082799482,
+                "log_likelihood": -21519.63208279936,
                 "converged": true,
                 "iterations": 22
               }
@@ -4594,6 +4859,11 @@
             "3": "Crisis",
             "1": "Crisis",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4634,35 +4904,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -24647.660001405424,
+            "best_log_likelihood": -24647.660001404965,
             "starts": [
               {
                 "seed": 2042,
-                "log_likelihood": -24648.088956219126,
+                "log_likelihood": -24648.088956220192,
                 "converged": true,
                 "iterations": 27
               },
               {
                 "seed": 2043,
-                "log_likelihood": -24647.660004908917,
+                "log_likelihood": -24647.660004908095,
                 "converged": true,
                 "iterations": 32
               },
               {
                 "seed": 2044,
-                "log_likelihood": -24647.660001405424,
+                "log_likelihood": -24647.660001404965,
                 "converged": true,
                 "iterations": 31
               },
               {
                 "seed": 2045,
-                "log_likelihood": -24647.660014647383,
+                "log_likelihood": -24647.660014647827,
                 "converged": true,
                 "iterations": 17
               },
               {
                 "seed": 2046,
-                "log_likelihood": -24647.66000206757,
+                "log_likelihood": -24647.66000206809,
                 "converged": true,
                 "iterations": 29
               }
@@ -4680,6 +4950,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "1": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4720,35 +4995,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -27480.000072557097,
+            "best_log_likelihood": -27480.000072555667,
             "starts": [
               {
                 "seed": 3042,
-                "log_likelihood": -27482.558009957567,
+                "log_likelihood": -27482.55800995848,
                 "converged": true,
                 "iterations": 130
               },
               {
                 "seed": 3043,
-                "log_likelihood": -27480.000072557097,
+                "log_likelihood": -27480.000072555667,
                 "converged": true,
                 "iterations": 36
               },
               {
                 "seed": 3044,
-                "log_likelihood": -27480.72734567898,
+                "log_likelihood": -27480.727345677333,
                 "converged": true,
                 "iterations": 59
               },
               {
                 "seed": 3045,
-                "log_likelihood": -27480.00007525519,
+                "log_likelihood": -27480.000075256205,
                 "converged": true,
                 "iterations": 28
               },
               {
                 "seed": 3046,
-                "log_likelihood": -28498.053160385483,
+                "log_likelihood": -28498.05316038601,
                 "converged": true,
                 "iterations": 30
               }
@@ -4766,6 +5041,11 @@
             "3": "Crisis",
             "1": "Crisis",
             "2": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4810,25 +5090,25 @@
             "starts": [
               {
                 "seed": 4042,
-                "log_likelihood": -30516.762691482345,
+                "log_likelihood": -30516.76269148343,
                 "converged": true,
                 "iterations": 52
               },
               {
                 "seed": 4043,
-                "log_likelihood": -30516.762694424633,
+                "log_likelihood": -30516.762694427052,
                 "converged": true,
                 "iterations": 80
               },
               {
                 "seed": 4044,
-                "log_likelihood": -30516.762689051335,
+                "log_likelihood": -30516.762689053277,
                 "converged": true,
                 "iterations": 44
               },
               {
                 "seed": 4045,
-                "log_likelihood": -30516.762702818043,
+                "log_likelihood": -30516.762702817086,
                 "converged": true,
                 "iterations": 56
               },
@@ -4852,6 +5132,11 @@
             "2": "Crisis",
             "3": "Crisis",
             "0": "Bull"
+          },
+          "regime_weights": {
+            "Bull": 1.0,
+            "Transition": 0.0,
+            "Crisis": 0.0
           },
           "states": [
             {
@@ -4892,35 +5177,35 @@
             }
           ],
           "fit": {
-            "best_log_likelihood": -33412.730374787825,
+            "best_log_likelihood": -33412.730374789455,
             "starts": [
               {
                 "seed": 5042,
-                "log_likelihood": -33412.730374787825,
+                "log_likelihood": -33412.730374789455,
                 "converged": true,
                 "iterations": 137
               },
               {
                 "seed": 5043,
-                "log_likelihood": -33412.73037979989,
+                "log_likelihood": -33412.73037979977,
                 "converged": true,
                 "iterations": 130
               },
               {
                 "seed": 5044,
-                "log_likelihood": -33412.73039554127,
+                "log_likelihood": -33412.73039553877,
                 "converged": true,
                 "iterations": 118
               },
               {
                 "seed": 5045,
-                "log_likelihood": -33412.730385165356,
+                "log_likelihood": -33412.73038516497,
                 "converged": true,
                 "iterations": 73
               },
               {
                 "seed": 5046,
-                "log_likelihood": -33412.73038285277,
+                "log_likelihood": -33412.73038285453,
                 "converged": true,
                 "iterations": 75
               }

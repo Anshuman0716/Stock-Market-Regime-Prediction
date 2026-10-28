@@ -31,6 +31,21 @@ model:
     rule: "sharpe"
     bull_sharpe: 0.2
     crisis_sharpe: -0.1
+  # How much of the asset to hold in each regime (src/models/labeling.py).
+  # "regime_returns": 100% in a regime whose training-window mean return was
+  # positive, 0% otherwise (recomputed every fold). "p_bull": only Bull is
+  # held, the sizing used up to Step 7.
+  sizing: "regime_returns"
+  # Regime-aware volatility targeting: multiply the regime exposure by
+  # min(1, long-run vol / 20-day vol), the volatility baseline's rule.
+  # Off by default: it is evaluated in scripts/compare_variants.py, and was
+  # left off on purpose so the default is not chosen on test-period results.
+  vol_scaling: false
+  # Per-asset number of states, overriding n_states. Empty by default: one
+  # model size for every asset. A training-window-only probe found Bitcoin
+  # needs 6 states before a sideways state shows up in most years; that
+  # option is measured in scripts/compare_variants.py, not used by default.
+  n_states_by_asset: {}
 
 backtest:
   assets: ["spx", "nasdaq", "gold", "bitcoin"]

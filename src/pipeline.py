@@ -30,7 +30,7 @@ from typing import Optional
 
 from src.data.loader import load_config, download_prices, get_ann_factor, get_cost_bps
 from src.features.engineering import build_features, FEATURE_COLUMNS
-from src.models.hmm import walk_forward_predict, predict_from_artifacts, RetrainRequired
+from src.models.hmm import walk_forward_predict, predict_from_artifacts, regime_weight_frame, RetrainRequired
 from src.backtest.evaluation import BASELINES, evaluate_asset, trading_returns
 from src.backtest.metrics import performance_series
 from src.analysis.regimes import regime_profile, transition_matrix, regime_spells, period_breakdown
@@ -187,7 +187,8 @@ def _run_asset(conn, run, asset, asset_df):
     # traded instrument's returns and the cash rate.
     ann = get_ann_factor(cfg, asset)
     asset_returns, cash_returns = trading_returns(asset_df, features.index, ann)
-    ev = evaluate_asset(features, probs, cfg, asset, asset_returns=asset_returns, cash_returns=cash_returns)
+    ev = evaluate_asset(features, probs, cfg, asset, asset_returns=asset_returns, cash_returns=cash_returns,
+                        regime_weights=regime_weight_frame(features.index, folds))
     bt_cfg = cfg.get("backtest", {})
     write_regimes(conn, ev["signal"], asset, run_id)
     write_evaluation_window(conn, run_id, asset, ev["oos_start"], ev["oos_end"], ann,

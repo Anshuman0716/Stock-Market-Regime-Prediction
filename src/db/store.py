@@ -22,7 +22,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 
 # Must match "PRAGMA user_version" in schema.sql. Bump both together whenever
 # a table's columns or keys change.
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 DEFAULT_DB_PATH = "data/regime_store.db"
 
@@ -260,6 +260,8 @@ def write_folds(conn, folds_info, asset_id, run_id):
             "n_bull_states": labels.count("Bull"),
             "n_transition_states": labels.count("Transition"),
             "n_crisis_states": labels.count("Crisis"),
+            **{f"w_{lab.lower()}": (f.get("regime_weights") or {}).get(lab)
+               for lab in ["Bull", "Transition", "Crisis"]},
         })
         for st in f.get("states", []):
             state_rows.append({

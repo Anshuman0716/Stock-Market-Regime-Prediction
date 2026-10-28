@@ -93,7 +93,8 @@ def build_target_weights(features, signal):
     }
 
 
-def evaluate_asset(features, probs, config, asset_name, asset_returns=None, cash_returns=None):
+def evaluate_asset(features, probs, config, asset_name, asset_returns=None, cash_returns=None,
+                   regime_weights=None):
     """
     Backtest the HMM and every baseline over the identical out-of-sample window.
 
@@ -111,6 +112,8 @@ def evaluate_asset(features, probs, config, asset_name, asset_returns=None, cash
     asset_returns, cash_returns : pd.Series or None
         What an invested and an uninvested dollar earn each day (see
         trading_returns). Default: the index's own returns and 0% cash.
+    regime_weights : DataFrame or None
+        Per-day regime weights (hmm.regime_weight_frame); None = hold P(Bull).
 
     Returns
     -------
@@ -130,7 +133,10 @@ def evaluate_asset(features, probs, config, asset_name, asset_returns=None, cash
     ann_factor = get_ann_factor(config, asset_name)
     cost_bps = get_cost_bps(config, asset_name)
     oos_start = out_of_sample_start(probs)
-    signal = compute_signal(probs, config["model"]["smoothing_window"])
+    # Optional regime-aware volatility targeting (config model.vol_scaling):
+    # the same causal rule as the volatility baseline, applied on top.
+    scale = vol_target_weights(features["volatility_20"]) if config["model"].get("vol_scaling") else None
+    signal = compute_signal(probs, config["model"]["smoothing_window"], regime_weights, scale)
 
     if asset_returns is None:
         asset_returns = features["returns"]

@@ -119,6 +119,25 @@ def test_instrument_and_cash_reach_the_store(env, monkeypatch):
     assert sorted(sig["baseline"]) == ["buy_hold", "dma200", "vol_target"]
 
 
+def test_regime_sizing_is_stored_and_traded(env):
+    """With regime-return sizing, every stored target weight equals the
+    probability-weighted exposure using that year's stored regime weights."""
+    cfg = dict(CFG, model=dict(CFG["model"], sizing="regime_returns", labeling={"rule": "sharpe"}))
+    with open(env["config_path"], "w") as f:
+        yaml.safe_dump(cfg, f)
+    _run(env, train=True)
+
+    folds = _read(env, "SELECT asset_id, test_start, w_bull, w_transition, w_crisis FROM model_folds")
+    assert folds[["w_bull", "w_transition", "w_crisis"]].isin([0.0, 1.0]).all().all()
+    reg = _read(env, "SELECT asset_id, date, sp_bull, sp_transition, sp_crisis, target_weight FROM regimes")
+    reg["year"] = reg["date"].str[:4]
+    folds["year"] = folds["test_start"].str[:4]
+    m = reg.merge(folds, on=["asset_id", "year"])
+    expected = (m.sp_bull * m.w_bull + m.sp_transition * m.w_transition + m.sp_crisis * m.w_crisis).clip(0, 1)
+    expected = expected.where(expected >= 1e-3, 0.0)
+    assert len(m) == len(reg) and np.allclose(m.target_weight, expected)
+
+
 def test_reuse_models_reproduces_training_exactly(env):
     _run(env, train=True)
     trained_regimes = _read(env, "SELECT * FROM regimes ORDER BY asset_id, date")

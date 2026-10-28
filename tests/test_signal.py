@@ -119,3 +119,41 @@ def test_tiny_weights_snap_to_zero():
     from src.models.signal import target_weight, MIN_WEIGHT
     sp = pd.DataFrame({"Bull": [1e-9, MIN_WEIGHT / 2, MIN_WEIGHT, 0.5, 1.2, np.nan]})
     np.testing.assert_allclose(target_weight(sp).values, [0, 0, MIN_WEIGHT, 0.5, 1.0, 0])
+
+
+# ── Sizing with regime weights (Step 8) ──────────────────────────────────────
+
+def test_target_weight_is_probability_weighted_regime_exposure():
+    from src.models.signal import target_weight
+    sp = pd.DataFrame({"Bull": [0.6, 0.1, 0.0], "Transition": [0.3, 0.2, 0.0005], "Crisis": [0.1, 0.7, 0.9995]})
+    w = target_weight(sp, {"Bull": 1.0, "Transition": 1.0, "Crisis": 0.0})
+    np.testing.assert_allclose(w.values, [0.9, 0.3, 0.0])   # last row 0.05% < MIN_WEIGHT -> 0
+    np.testing.assert_allclose(target_weight(sp).values, [0.6, 0.1, 0.0])  # default: P(Bull)
+
+
+def test_regime_weights_can_change_per_row():
+    from src.models.signal import target_weight
+    sp = pd.DataFrame({"Bull": [0.5, 0.5], "Transition": [0.5, 0.5], "Crisis": [0.0, 0.0]})
+    weights = pd.DataFrame({"Bull": [1.0, 1.0], "Transition": [0.0, 1.0], "Crisis": [0.0, 0.0]})
+    np.testing.assert_allclose(target_weight(sp, weights).values, [0.5, 1.0])
+
+
+def test_regime_weight_frame_follows_each_folds_year():
+    from src.models.hmm import regime_weight_frame
+    idx = pd.to_datetime(["2009-12-31", "2010-06-01", "2011-03-01"])
+    folds = [{"test_start": "2010-01-04", "regime_weights": {"Bull": 1.0, "Transition": 1.0, "Crisis": 0.0}},
+             {"test_start": "2011-01-03", "regime_weights": {"Bull": 1.0, "Transition": 0.0, "Crisis": 0.0}}]
+    frame = regime_weight_frame(idx, folds)
+    assert frame["Transition"].tolist() == [0.0, 1.0, 0.0]  # before any fold: P(Bull) default
+
+
+def test_volatility_scaling_only_shrinks_and_stays_causal():
+    probs = _probs()
+    scale = pd.Series(np.linspace(1.0, 0.2, len(probs)), index=probs.index)
+    plain = compute_signal(probs, 5)["target_weight"]
+    scaled = compute_signal(probs, 5, scale=scale)["target_weight"]
+    assert (scaled <= plain + 1e-12).all()
+    changed = scale.copy()
+    changed.iloc[40:] = 0.0
+    pd.testing.assert_series_equal(compute_signal(probs, 5, scale=changed)["target_weight"].iloc[:40],
+                                   scaled.iloc[:40])

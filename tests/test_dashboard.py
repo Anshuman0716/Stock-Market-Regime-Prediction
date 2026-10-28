@@ -174,7 +174,7 @@ def test_headline_counts_and_significance():
         "gold": {"hmm": {**base, "Sharpe": 0.4, "Max DD": -0.4}, "buy_hold": base, "dma200": base},
     })
     sig = pd.DataFrame({"asset_id": ["spx", "gold"], "baseline": ["buy_hold", "buy_hold"],
-                        "p_value_holm": [0.30, 1.0]})
+                        "sharpe_diff": [0.2, -0.1], "p_value_holm": [0.30, 1.0]})
     lines = headline_findings(m, sig, ["spx", "gold"])
     assert "**1 of 2** assets (S&P 500)" in lines[0]   # Sharpe
     assert "**1 of 2** assets (S&P 500)" in lines[1]   # smaller drawdown
@@ -182,7 +182,14 @@ def test_headline_counts_and_significance():
     assert lines[3].startswith("**None**") and "0.30" in lines[3]
 
     sig.loc[0, "p_value_holm"] = 0.01
-    assert "**1 of 2** Sharpe differences are significant" in headline_findings(m, sig, ["spx", "gold"])[3]
+    lines = headline_findings(m, sig, ["spx", "gold"])
+    assert "significantly **higher**" in lines[3] and "S&P 500" in lines[3]
+
+    # A significant result AGAINST the HMM must never read as a win.
+    sig.loc[0, "sharpe_diff"] = -0.2
+    lines = headline_findings(m, sig, ["spx", "gold"])
+    assert lines[3].startswith("**No** difference in the HMM's favour")
+    assert "significantly **lower**" in lines[4]
 
     windows = pd.DataFrame({"oos_start": pd.to_datetime(["2010-01-04", "2010-01-04"])}, index=["spx", "gold"])
     board = scoreboard_table(m, sig, windows)

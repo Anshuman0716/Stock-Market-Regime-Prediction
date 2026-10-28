@@ -14,7 +14,7 @@
 -- 5. Everything the dashboard shows is precomputed here by the pipeline, so
 --    the app only reads; it never re-derives results.
 
-PRAGMA user_version = 5;
+PRAGMA user_version = 6;
 
 CREATE TABLE IF NOT EXISTS assets (
     asset_id TEXT PRIMARY KEY,
@@ -166,6 +166,10 @@ CREATE TABLE IF NOT EXISTS model_folds (
     n_bull_states INTEGER,
     n_transition_states INTEGER,
     n_crisis_states INTEGER,
+    -- share of the asset held in each regime (from the training window)
+    w_bull REAL,
+    w_transition REAL,
+    w_crisis REAL,
     PRIMARY KEY (run_id, asset_id, fold_idx),
     FOREIGN KEY (run_id) REFERENCES backtest_runs(run_id),
     FOREIGN KEY (asset_id) REFERENCES assets(asset_id)

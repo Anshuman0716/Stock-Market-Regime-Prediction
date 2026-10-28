@@ -56,3 +56,13 @@ def test_filtered_probability_at_t_ignores_later_rows():
     full = predict_proba_filtered(model, X)
     prefix = predict_proba_filtered(model, X[:50])
     np.testing.assert_allclose(full[:50], prefix)
+
+
+def test_number_of_states_can_be_set_per_asset(sample_spx, sample_vix, tmp_path):
+    features = build_features(sample_spx, sample_vix["Close"])
+    cfg = {"model": dict(CFG["model"], n_states_by_asset={"btc": 5})}
+    _, _, folds = walk_forward_predict(features, FEATURE_COLUMNS, cfg, asset_name="btc", model_dir=str(tmp_path))
+    assert all(len(f["state_map"]) == 5 for f in folds)
+    _, _, folds = walk_forward_predict(features, FEATURE_COLUMNS, cfg, asset_name="spx",
+                                       model_dir=str(tmp_path / "spx"))
+    assert all(len(f["state_map"]) == CFG["model"]["n_states"] for f in folds)

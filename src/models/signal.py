@@ -20,9 +20,13 @@ Definition
    mode of labels keeps the confidence information: three days at
    P(Bull)=0.51 and three at 0.99 are not the same thing.
 3. Smoothed regime = the label with the highest smoothed probability.
-4. Target weight = smoothed P(Bull), clipped to [0, 1], with positions
-   under 0.1% set to 0. This is the share of the portfolio held in the
-   asset, decided at the day's close.
+4. Target weight = sum over regimes of smoothed P(regime) x the regime's
+   weight, clipped to [0, 1], with positions under 0.1% set to 0. This is
+   the share of the portfolio held in the asset, decided at the day's close.
+   Regime weights come from each fold's TRAINING window (see
+   src/models/labeling.py::regime_weights): 1 for a regime that earned a
+   positive return in training, 0 otherwise. Without regime weights, Bull
+   counts 1 and the other regimes 0, i.e. weight = smoothed P(Bull).
 
 The averages of rows that each sum to 1 also sum to 1, so the smoothed
 probabilities stay a valid distribution.
@@ -39,6 +43,10 @@ REGIME_LABELS = ["Bull", "Transition", "Crisis"]
 # metrics such as time-in-market and hit rate unstable. Below this
 # threshold the weight is 0.
 MIN_WEIGHT = 1e-3
+
+# Regime weights when none are given: only Bull is held ("p_bull" sizing,
+# the rule used up to Step 7).
+P_BULL_WEIGHTS = {"Bull": 1.0, "Transition": 0.0, "Crisis": 0.0}
 
 
 def smooth_probabilities(probs, window):
@@ -59,16 +67,34 @@ def regime_labels(probs):
     return labels
 
 
-def target_weight(smoothed_probs, min_weight=MIN_WEIGHT):
-    """Portfolio weight = smoothed P(Bull), clipped to [0, 1].
+def target_weight(smoothed_probs, regime_weights=None, min_weight=MIN_WEIGHT):
+    """Portfolio weight = sum of smoothed P(regime) x regime weight, clipped to [0, 1].
+
+    `regime_weights` is a dict {regime: weight} applied to every row, or a
+    DataFrame with one weight per regime per row (weights change once a
+    year, with each fold). None means P_BULL_WEIGHTS.
+
+    Why expected exposure rather than "all in if Bull": the probabilities
+    say how sure the model is. Weighting each regime by its probability
+    scales the position smoothly with that confidence instead of flipping
+    between 0% and 100% on a coin toss.
 
     0 where there is no prediction, and 0 below `min_weight` (see MIN_WEIGHT).
     """
-    w = smoothed_probs["Bull"].fillna(0.0).clip(lower=0.0, upper=1.0)
+    if regime_weights is None:
+        regime_weights = P_BULL_WEIGHTS
+    if isinstance(regime_weights, dict):
+        weights = pd.DataFrame([regime_weights] * len(smoothed_probs), index=smoothed_probs.index)
+    else:
+        weights = regime_weights.reindex(smoothed_probs.index)
+    # A regime column that is absent has probability 0.
+    probs = smoothed_probs.reindex(columns=REGIME_LABELS).fillna(0.0)
+    exposure = (probs * weights.reindex(columns=REGIME_LABELS).fillna(0.0)).sum(axis=1)
+    w = exposure.clip(lower=0.0, upper=1.0)
     return w.where(w >= min_weight, 0.0)
 
 
-def compute_signal(probs, window):
+def compute_signal(probs, window, regime_weights=None, scale=None):
     """
     Turn filtered regime probabilities into the full signal frame.
 
@@ -79,6 +105,11 @@ def compute_signal(probs, window):
         (NaN before the first out-of-sample prediction).
     window : int
         Trailing smoothing window in rows (config: model.smoothing_window).
+    regime_weights : dict, DataFrame or None
+        How much of the asset to hold in each regime (see target_weight).
+    scale : pd.Series or None
+        Optional multiplier on the exposure, e.g. volatility scaling
+        (config model.vol_scaling). Must itself use only past data.
 
     Returns
     -------
@@ -88,6 +119,11 @@ def compute_signal(probs, window):
         target_weight
     """
     smoothed = smooth_probabilities(probs, window)
+    weight = target_weight(smoothed, regime_weights)
+    if scale is not None:
+        weight = target_weight(smoothed, regime_weights, min_weight=0.0) * scale.reindex(probs.index).fillna(0.0)
+        weight = weight.clip(0.0, 1.0)
+        weight = weight.where(weight >= MIN_WEIGHT, 0.0)
     return pd.DataFrame({
         "raw_label": regime_labels(probs),
         "p_bull": probs["Bull"],
@@ -97,5 +133,5 @@ def compute_signal(probs, window):
         "sp_bull": smoothed["Bull"],
         "sp_transition": smoothed["Transition"],
         "sp_crisis": smoothed["Crisis"],
-        "target_weight": target_weight(smoothed),
+        "target_weight": weight,
     }, index=probs.index)

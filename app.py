@@ -128,7 +128,8 @@ with st.sidebar:
 
 st.title("Market Regime Detector")
 st.caption("A 4-state Hidden Markov Model, refit every year on past data only, labels each day as "
-           "**Bull**, **Transition** or **Crisis** and sizes a position by the probability of Bull. "
+           "**Bull**, **Transition** or **Crisis** and sizes a position by the probability of the regimes "
+           "that earned money in training. "
            "Every number here is out-of-sample and after trading costs.")
 
 tabs = st.tabs(["Overview", "Regimes", "Performance", "Risk", "Model insight",
@@ -160,7 +161,8 @@ with tabs[0]:
             st.markdown(f"**{asset_name(a)}**")
             st.markdown(regime_badge(s["label"]), unsafe_allow_html=True)
             st.metric("Target exposure", f"{s['target_weight']:.0%}",
-                      help="Share of capital in the asset = smoothed P(Bull).")
+                      help="Share of capital in the asset: each regime's smoothed probability times how much "
+                           "of the asset that regime holds (100% if it earned money in training, else 0%).")
             st.caption(" · ".join(f"P({lab}) {s['sp_' + lab.lower()]:.0%}" for lab in REGIME_LABELS))
             if pd.notna(s.get("spell_start")):
                 st.caption(f"In {s['label']} since {s['spell_start']:%Y-%m-%d} ({int(s['spell_days'])} trading days)")
@@ -295,7 +297,8 @@ with tabs[3]:
     st.markdown("#### How much was invested")
     plot(charts.exposure_chart(daily))
     st.caption("Buy & Hold is always fully invested, so it is not drawn. The HMM scales its position "
-               "smoothly with P(Bull); the 200-day MA filter is either all in or all out.")
+               "smoothly with the probability of the regimes worth holding; the 200-day MA filter is either all in or "
+               "all out.")
 
     st.markdown("#### Trading costs")
     costs = load("load_cost_totals", RUN_ID, asset).reindex(STRATEGY_ORDER)

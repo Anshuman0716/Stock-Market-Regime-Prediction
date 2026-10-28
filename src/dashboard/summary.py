@@ -79,7 +79,18 @@ def headline_findings(metrics, significance, assets):
                 f"correcting for multiple tests (smallest adjusted p = {significance['p_value_holm'].min():.2f}). "
                 "The differences above could be luck.")
         else:
-            pairs = ", ".join(f"{asset_name(r.asset_id)} vs {r.baseline}" for r in sig.itertuples())
-            findings.append(f"**{len(sig)} of {n_tests}** Sharpe differences are significant after "
-                            f"multiple-test correction: {pairs}.")
+            # A significant difference can favour either side: report both directions.
+            better, worse = sig[sig["sharpe_diff"] > 0], sig[sig["sharpe_diff"] < 0]
+
+            def pairs(df):
+                return ", ".join(f"{asset_name(r.asset_id)} vs {r.baseline}" for r in df.itertuples())
+
+            if not better.empty:
+                findings.append(f"HMM Sharpe significantly **higher** (after correcting for {n_tests} tests): "
+                                f"{pairs(better)}.")
+            else:
+                findings.append(f"**No** difference in the HMM's favour is significant after correcting for "
+                                f"{n_tests} tests.")
+            if not worse.empty:
+                findings.append(f"HMM Sharpe significantly **lower** than the baseline: {pairs(worse)}.")
     return findings

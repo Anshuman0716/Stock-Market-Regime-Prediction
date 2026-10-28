@@ -8,7 +8,10 @@ Variants (each adds one change to the one before):
   1. step5     - labeling "absolute", index returns, cash earns 0, NASDAQ spread 1 bp
   2. labeling  - + labeling "relative" (judged against the asset's own Sharpe)
   3. anchors   - + labeling "sharpe" (best/worst-earning anchors, not calmest/most volatile)
-  4. current   - + tradable funds, T-bill cash, ONEQ spread (= config/config.yaml)
+  4. funds     - + tradable funds, T-bill cash, ONEQ spread
+  5. current   - + regime-return sizing (= config/config.yaml)
+  6. volscale  - + regime-aware volatility scaling (an option, off by default)
+  7. btc6      - current + 6 states for Bitcoin (an option, off by default)
 
 Each variant trains into its own temporary folder, so the live store and
 models are never touched. The summary goes to data/variants.json, which
@@ -48,6 +51,8 @@ def variant_configs(cfg):
     """The setups, each one change away from the previous."""
     step5 = copy.deepcopy(cfg)
     step5["model"]["labeling"]["rule"] = "absolute"
+    step5["model"]["sizing"] = "p_bull"
+    step5["model"]["vol_scaling"] = False
     step5["backtest"].pop("instruments", None)
     step5["backtest"].pop("cash_ticker", None)
     step5["backtest"]["costs"]["spread_bps"]["nasdaq"] = 1.0
@@ -58,11 +63,27 @@ def variant_configs(cfg):
     anchors = copy.deepcopy(step5)
     anchors["model"]["labeling"]["rule"] = "sharpe"
 
+    funds = copy.deepcopy(cfg)
+    funds["model"]["sizing"] = "p_bull"
+    funds["model"]["vol_scaling"] = False
+
+    current = copy.deepcopy(cfg)
+    current["model"]["vol_scaling"] = False
+
+    volscale = copy.deepcopy(cfg)
+    volscale["model"]["vol_scaling"] = True
+
+    btc6 = copy.deepcopy(current)
+    btc6["model"]["n_states_by_asset"] = {"bitcoin": 6}
+
     return [
         ("step5", "Step 5 setup: fixed Sharpe bars, index returns, 0% on cash", step5),
         ("labeling", "+ relative labeling rule", labeling),
         ("anchors", "+ Sharpe-anchored labeling rule", anchors),
-        ("current", "+ tradable funds (SPY, ONEQ, GLD) and T-bill cash = current setup", copy.deepcopy(cfg)),
+        ("funds", "+ tradable funds (SPY, ONEQ, GLD) and T-bill cash", funds),
+        ("current", "+ regime-return sizing = current setup", current),
+        ("volscale", "+ regime-aware volatility scaling (option, off by default)", volscale),
+        ("btc6", "current setup with 6 states for Bitcoin (option, off by default)", btc6),
     ]
 
 

@@ -26,8 +26,8 @@ from hmmlearn.hmm import GaussianHMM
 from hmmlearn import _hmmc
 
 from src.data.loader import get_ann_factor
-from src.models.labeling import rank_and_map_states, save_fold_artifact, state_statistics
-from src.models.signal import REGIME_LABELS, regime_labels
+from src.models.labeling import rank_and_map_states, regime_weights, save_fold_artifact, state_statistics
+from src.models.signal import P_BULL_WEIGHTS, REGIME_LABELS, regime_labels
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,11 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=N
             fit diagnostics.
     """
     model_cfg = config["model"]
-    n_states = model_cfg.get("n_states", 4)
+    # One model size for every asset unless config overrides it per asset
+    # (model.n_states_by_asset), e.g. to let Bitcoin's model represent a
+    # sideways market. Asset-by-asset tuning invites overfitting, so the
+    # default config uses no override.
+    n_states = (model_cfg.get("n_states_by_asset") or {}).get(asset_name, model_cfg.get("n_states", 4))
     covariance_type = model_cfg.get("covariance_type", "diag")
     n_iter = model_cfg.get("n_iter", 2000)
     n_init = model_cfg.get("n_init", 1)
@@ -173,6 +177,9 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=N
     # Labeling rule and thresholds (src/models/labeling.py). Configs without a
     # labeling block get the original "absolute" rule.
     labeling = {"rule": "absolute", **model_cfg.get("labeling", {})}
+    # How much to hold in each regime (labeling.regime_weights); configs
+    # without it keep the original "hold P(Bull)" sizing.
+    sizing = model_cfg.get("sizing", "p_bull")
     ann_factor = get_ann_factor(config, asset_name)
     model_dir = model_dir or f"models/{asset_name}"
 
@@ -221,10 +228,11 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=N
         state_stats = state_statistics(train_df, train_states, n_states, ann_factor)
         for st in state_stats:
             st["label"] = state_map[st["state"]]
+        weights = regime_weights(train_df, train_states, state_map, sizing)
 
         # 5. Persist model + scaler + mapping (one is useless without the others).
         save_fold_artifact(fold_idx, model, scaler, state_map, directory=model_dir,
-                           train_end=train_df.index[-1].date())
+                           train_end=train_df.index[-1].date(), regime_weights=weights)
 
         # 6. Filtered probabilities over the whole history up to the end of
         # the test year, keeping only the test-year rows. The forward pass
@@ -246,12 +254,25 @@ def walk_forward_predict(df, feature_cols, config, asset_name="spx", model_dir=N
             "test_start": test_df.index[0].date(),
             "test_end": test_df.index[-1].date(),
             "state_map": state_map,
+            "regime_weights": weights,
             "states": state_stats,
             "fit": fit_diag,
         })
         fold_idx += 1
 
     return regime_labels(out_probs), out_probs, folds_info
+
+
+def regime_weight_frame(index, folds_info):
+    """
+    Each day's regime weights, taken from the fold that predicts that day
+    (one fold per calendar year). Days no fold covers (the initial training
+    window) get the P(Bull) weights; they have no prediction anyway.
+    """
+    by_year = {pd.Timestamp(f["test_start"]).year: f.get("regime_weights") or P_BULL_WEIGHTS
+               for f in folds_info}
+    rows = [by_year.get(year, P_BULL_WEIGHTS) for year in index.year]
+    return pd.DataFrame(rows, index=index)[REGIME_LABELS]
 
 
 def predict_latest_probs(features, artifact, feature_cols):
