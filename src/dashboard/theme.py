@@ -58,6 +58,22 @@ PORTFOLIO_STRATEGY_NAMES = {
     "equal_weight": "Equal weight",
     "risk_parity": "Risk parity",
 }
+# Same validated palette as the per-asset strategies, by role: violet is
+# always "the regime strategy" (HMM per asset, regime-aware portfolio).
+PORTFOLIO_STRATEGY_COLORS = {
+    "regime_aware": "#6250d6",
+    "equal_weight": "#d95926",
+    "risk_parity": "#199e70",
+}
+
+# One colour per asset for the portfolio-weights chart. Asset names are
+# always in the legend and hover, so colour is never the only cue.
+ASSET_COLORS = {
+    "spx": "#256abf",
+    "gold": "#c98500",
+    "bitcoin": "#9085e9",
+    "nasdaq": "#898781",
+}
 
 # Single-hue ramp (light -> dark blue) for magnitude, e.g. the transition
 # matrix. One hue only: a rainbow would suggest categories that aren't there.
@@ -73,6 +89,7 @@ FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", sans-serif'
 __all__ = [
     "REGIME_LABELS", "REGIME_COLORS", "REGIME_ICONS",
     "STRATEGY_ORDER", "STRATEGY_NAMES", "STRATEGY_COLORS",
+    "PORTFOLIO_STRATEGY_ORDER", "PORTFOLIO_STRATEGY_NAMES", "PORTFOLIO_STRATEGY_COLORS", "ASSET_COLORS",
     "ASSET_NAMES", "SEQUENTIAL_BLUE", "GRID_COLOR", "AXIS_COLOR", "MUTED_TEXT", "FONT_FAMILY",
 ]
 
