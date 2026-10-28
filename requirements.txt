@@ -4,11 +4,11 @@
 # Run: pip install -r requirements.txt
 #
 # NOTE on ta>=0.11.0: This library can be brittle against recent numpy and
-# pandas releases (it is not actively maintained as of 2024). If version
-# conflicts become unwinnable, implement the 18 indicators directly in
-# pandas/numpy inside src/features/engineering.py and remove this dependency.
-# The calculations (RSI, MACD, Bollinger Bands, etc.) are straightforward
-# rolling-window operations — ta>=0.11.0 is a convenience, not a necessity.
+# pandas releases (it is not actively maintained as of 2024). It supplies 4 of
+# the 8 features (RSI, MACD, ADX, ATR in src/features/engineering.py). If
+# version conflicts become unwinnable, compute those directly in pandas/numpy
+# and remove this dependency: they are straightforward rolling-window
+# calculations, so ta is a convenience, not a necessity.
 
 # Data
 yfinance>=0.2.40,<0.3

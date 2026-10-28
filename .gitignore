@@ -17,10 +17,15 @@ scratch/
 # ── Cached raw data (re-downloadable from yfinance) ──────────────────
 data/raw/
 
-# ── SQLite database (rebuilt from pipeline) ──────────────────────────
+# ── SQLite database ──────────────────────────────────────────────────
+# Ignored so temporary stores (tests, *.building) never get committed.
+# data/regime_store.db IS tracked on purpose (added with -f): the dashboard,
+# the notebooks, CI and Streamlit Cloud all read the committed store.
 *.db
 
-# ── Persisted model artifacts (rebuilt from pipeline) ────────────────
+# ── Persisted model artifacts ────────────────────────────────────────
+# The walk-forward folds in models/<asset>/ ARE tracked on purpose: they are
+# the frozen v1.0 models that --reuse-models and the forward tests rely on.
 models/*.joblib
 
 # ── Jupyter ──────────────────────────────────────────────────────────

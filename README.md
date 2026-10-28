@@ -6,6 +6,11 @@
 
 This project labels each trading day as **Bull, Transition or Crisis** using a 4-state Gaussian Hidden Markov Model (HMM) trained on 8 technical and macro features. It then tests whether moving in and out of the market based on those labels beats simple baselines (buy-and-hold, a 200-day moving average and volatility targeting) after trading costs, trading real funds (SPY, ONEQ, GLD) and Bitcoin, with idle cash earning the T-bill rate.
 
+It does this in two frozen versions, each judged on data that did not exist when it was designed:
+
+- **v1.0, each asset on its own:** the HMM strategy against the three baselines, asset by asset.
+- **v2.0, one portfolio:** the per-asset regime signals combined into a portfolio of the S&P 500, Gold and Bitcoin, against equal weight and plain risk parity. Its rules and its pass/fail test were [pre-registered](docs/v2_preregistration.md), committed to git before any portfolio result existed.
+
 The project's priority is an **honest evaluation**: no look-ahead bias anywhere in the pipeline, strictly out-of-sample results, the same costs and execution lag for every strategy, and statistical tests that correct for multiple comparisons.
 
 <!-- generated:status -->
@@ -289,6 +294,25 @@ Implemented in `src/backtest/evaluation.py`.
 
 The volatility target is the hardest baseline. The HMM mostly steps aside when markets get volatile, and a one-line volatility rule does the same with no model at all. If the HMM can't beat it, its regimes add nothing beyond "volatility is high".
 
+### The v2.0 portfolio
+
+Implemented in `src/backtest/portfolio.py`; every rule below was fixed in [docs/v2_preregistration.md](docs/v2_preregistration.md) before any portfolio result existed, and `tests/test_config.py` checks that `config.yaml` still matches it.
+
+1. **Reuse, don't retrain.** The portfolio reads each asset's stored v1.0 target weight, exactly what that asset's HMM strategy traded. No model is refit, so v2.0 cannot change any v1.0 number (tested in `tests/test_pipeline.py`).
+2. **Three portfolios, same assets, same days.** S&P 500 (SPY) and Gold (GLD) from 2010; Bitcoin joins on its first out-of-sample day (2021), for all three portfolios at once. NASDAQ is left out because it moves almost exactly with the S&P 500.
+
+   | Portfolio | Weights decided at the close of day *t* |
+   |---|---|
+   | Equal weight | 1/N in each asset |
+   | Plain risk parity | proportional to 1 / (63-day volatility), fully invested; correlations ignored |
+   | **Regime-aware** (tested) | risk-parity weight × that asset's regime exposure (0–1); the rest in cash, never re-spread to the other assets |
+
+   The regime-aware portfolio *is* risk parity whenever every exposure is 100%, so the comparison with risk parity measures only what the regime signals add.
+3. **One calendar.** Everything runs on US stock trading days. Bitcoin's weekend moves roll into Monday's return; each asset uses its latest signal from that day or earlier, and a signal more than 5 trading days old counts as cash.
+4. **The pass/fail test, decided in advance.** Pass: a strictly higher Sharpe ratio (above cash) than both baselines and a maximum drawdown no deeper than either. Significant pass: also both Holm-adjusted p-values below 0.05. The rule lives once in `src/analysis/verdict.py`; the README and the dashboard both quote it word for word.
+5. **Two windows.** The *historical* verdict uses every day up to the v2.0 freeze (`config/freeze.json`); its significance tests use only those days, so later data can never move it. The *forward* verdict uses only days after the freeze and is withheld until there are 252 of them (about a year).
+6. **Its own family of tests.** The two portfolio comparisons are Holm-corrected with each other only, never mixed with the per-asset tests.
+
 ---
 
 ## 4. Architecture & Data Flow
@@ -298,6 +322,22 @@ The volatility target is the hardest baseline. The HMM mostly steps aside when m
 ```
 
 `src/pipeline.py::run_pipeline` runs all of it in one pass. Notebooks and `app.py` only **read** from `src/` and the store; they never recompute pipeline logic.
+
+**Layers, in the order data flows through them:**
+
+| Layer | Modules | Job |
+|---|---|---|
+| Data | `src/data/loader.py` | Download indices, VIX, traded funds and the T-bill rate (retries, data checks, parquet cache); align them to each asset's calendar using past values only |
+| Features | `src/features/engineering.py` | The 8 scale-free features |
+| Model | `src/models/hmm.py`, `labeling.py`, `signal.py` | Walk-forward HMM with filtered probabilities; per-fold regime labels and sizes from training data; the one trading signal |
+| Per-asset backtest (v1.0) | `src/backtest/engine.py`, `baselines.py`, `evaluation.py`, `metrics.py`, `risk.py` | HMM and baselines on the same out-of-sample window, same lag and costs; metrics and VaR |
+| Portfolio backtest (v2.0) | `src/backtest/portfolio.py` | One stock calendar, the three portfolio rules, a multi-asset engine with drift-aware turnover |
+| Analysis | `src/analysis/regimes.py`, `forward.py`, `verdict.py` | Regime profiles and period breakdowns; frozen versions and their windows; the v2.0 pass/fail rule |
+| Statistics | `src/stats/significance.py` | Block-bootstrap and HAC Sharpe tests, Holm correction per family |
+| Storage | `src/db/schema.sql`, `store.py` | Versioned SQLite schema (v7), idempotent writers, config fingerprints |
+| Presentation | `src/dashboard/*`, `app.py`, `scripts/update_readme.py`, notebooks | Read-only views of the store; nothing is recomputed |
+
+**Two frozen versions, two fingerprints.** `config/freeze.json` lists v1.0 (scope `assets`) and v2.0 (scope `portfolio`). v1.0 is checked against a fingerprint of the config *without* its `portfolio:` section, so portfolio settings can never retrain a model or invalidate v1.0's forward test; v2.0 is checked against the whole config, because it is built on v1.0's signals. `tests/test_config.py` fails if `config.yaml` drifts from either.
 
 **One training run, two outputs.** Each run fits every walk-forward fold once and writes both the saved models and the database from that same fit. `--reuse-models` skips fitting and predicts with the saved folds instead: about 15 seconds instead of about 3.5 minutes, with identical results (tested in `tests/test_pipeline.py`). A retrain is required after any change to `config.yaml` or the features, and when a new calendar year starts; the pipeline refuses to reuse models in those cases.
 
@@ -428,6 +468,7 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 - **Transaction costs:** spread + commission per unit of turnover, set in `config.yaml` (`backtest.costs`): 1.5 bps for SPY, 3.5 bps for ONEQ (it trades far less than SPY), 2.5 bps for GLD, 5.5 bps for Bitcoin. `run_backtest` requires the cost explicitly, so no backtest can silently run cost-free.
 - **Probability-weighted sizing:** HMM exposure = trailing 21-day mean of each regime's probability × that regime's training-based weight, between 0 and 1 (`src/models/signal.py`). An optional regime-aware volatility scaling (`model.vol_scaling`) multiplies this by the volatility baseline's rule; it is off by default. Positions under 0.1% of the portfolio are set to 0: nobody would trade them, and floating-point noise around such tiny weights made some metrics change between runs.
 - **Risk reporting:** historical and Cornish-Fisher VaR, historical CVaR, drawdown depth and duration.
+- **Portfolio engine (v2.0):** the same two-day lag and cash rate; each asset pays its own cost; portfolios rebalance to their targets daily, and trades are measured from where yesterday's holdings **drifted** to, so even constant-weight rules such as equal weight pay to stay balanced. Weights can never be negative or add up to more than 100%; the engine refuses inputs that break either. An independent rebuild of all three portfolios from the stored per-asset returns, with a separate engine loop, matched the stored daily returns to about 1e-16.
 
 ---
 
@@ -444,6 +485,10 @@ Computed with the `ta` library and pandas. Every indicator uses only past and cu
 | **Stress-episode dates are equity-based** | The episodes are S&P 500 peak-to-trough windows applied to every asset, which shows how Gold and Bitcoin behaved during *equity* stress, not during their own crashes. |
 | **Fund proxies and the cash rate** | The signal comes from the index but P&L from a fund, so a gap between the two (tracking error) is part of the result. ONEQ is thinly traded, so its 3 bps spread is an estimate. `^IRX` is a discount yield, used as a close approximation of what idle cash earns. Bitcoin is traded spot, with no ETF fees but exchange fees folded into its 5 bps spread. |
 | **Yahoo revises adjusted prices** | Yahoo recalculates dividend-adjusted fund prices from time to time. Two downloads a day apart differed by at most 1.8e-6 in a daily SPY or ONEQ return, which moved Sharpe ratios and other metrics by at most 4e-5 (4th–5th decimal). Regimes, positions and trades were identical, because the signal comes from the index, not the fund. A rerun on a later download can therefore differ from the stored numbers in the last decimals; this is expected and harmless. |
+| **The portfolio's historical verdict is only half blind** | No portfolio result was seen before its rules were committed, but the per-asset signals it combines were developed on the same 2010–2026 data. The forward test is the clean one, and it needs about a year of new data. |
+| **A small portfolio** | Three assets, and only two before 2021. Bitcoin's part of the test rests on about six years, with one big crypto bear market. The switch from two to three assets in 2021 changes all three portfolios at once. |
+| **Plain risk parity ignores correlations** | Weights use each asset's own volatility only. A full covariance version could allocate better, but it was not pre-registered, so it is not tested here. |
+| **Daily rebalancing, no trade band** | All three portfolios trade back to target every day. A band that skips tiny trades would cut costs for all of them; it was not part of the pre-registered rules. |
 | **Private `hmmlearn` API** | Filtered probabilities use `hmmlearn._hmmc.forward_log`, so `hmmlearn` is pinned to `>=0.3,<0.4`. |
 | **Number of states** | BIC on the first training window keeps falling up to 6 states (notebook 02). Four states are used because each can be mapped to an economic regime; this is a judgement call, not a statistical optimum. |
 
@@ -464,7 +509,8 @@ pip install -r requirements.txt               # or requirements-dev.txt for note
 
 python scripts/run_pipeline.py                 # train + evaluate + write the store (~3.5 min)
 python scripts/run_pipeline.py --reuse-models  # daily refresh with saved models (~15 s)
-python scripts/forward_test.py                 # results since the v1.0 freeze
+python scripts/forward_test.py                 # forward tests of v1.0 and v2.0 on the same new days
+python scripts/update_readme.py                # regenerate README Section 1 from the store
 pytest                                         # test suite
 streamlit run app.py                           # dashboard at http://localhost:8501
 ```
@@ -478,6 +524,8 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb   # re-run
 ```
 
 On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/) on Python 3.12.
+
+**Yearly upkeep.** In January the saved models have no fold for the new year, so `--reuse-models` refuses and asks for a retrain. Run `python scripts/run_pipeline.py` once (same config, one more year of training data), then `update_readme.py`, and commit the store and `models/`. Neither config fingerprint changes, so both forward tests stay valid.
 
 ---
 
@@ -514,7 +562,13 @@ On Windows, `run_all.bat` does all of this with [uv](https://docs.astral.sh/uv/)
 
 ## 11. Deploy on Streamlit Community Cloud
 
-1. Push the repo to GitHub.
-2. On [share.streamlit.io](https://share.streamlit.io) choose **New app** → this repo, branch `main`, main file `app.py`. Under **Advanced settings** pick Python 3.12 or lower (`numpy<2` has no wheels for 3.13).
-3. The app reads only `data/regime_store.db`, so commit it after running `scripts/run_pipeline.py` locally.
-4. Deploy.
+The dashboard only reads the committed `data/regime_store.db` (and `config/` for the freeze checks), so the cloud app needs no API keys, secrets or downloads.
+
+1. Sign in at [share.streamlit.io](https://share.streamlit.io) with the GitHub account that owns this repo.
+2. Choose **Create app** → **Deploy a public app from GitHub**: repository `Anshuman0716/Stock-Market-Regime-Prediction`, branch `main`, main file path `app.py`.
+3. Open **Advanced settings** and set **Python version 3.12** (`numpy<2` has no wheels for 3.13; CI tests 3.10–3.12). No secrets are needed.
+4. **Deploy.** Streamlit installs `requirements.txt` and starts the app. The first page load reads the whole store and takes noticeably longer than later ones, which are cached.
+
+**Updating the cloud app:** it never downloads data itself. Refresh locally (`python scripts/run_pipeline.py --reuse-models`, then `python scripts/update_readme.py`), commit `data/regime_store.db` and `README.md`, and push to `main`; Streamlit Cloud redeploys on every push. Apps on the free tier go to sleep after a period without visitors and wake on the next visit.
+
+Paper trading (`scripts/paper_trade.py`) is a local tool: it needs Alpaca keys in a `.env` file (see `.env.example`) and is not run by the cloud app, which only shows the committed trade log.

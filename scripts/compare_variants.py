@@ -114,7 +114,11 @@ def run_variant(key, description, vcfg):
         with open(cfg_path, "w", encoding="utf-8") as f:
             yaml.safe_dump(vcfg, f)
         db_path = os.path.join(tmp, "store.db")
-        run_pipeline(config_path=cfg_path, db_path=db_path, model_root=os.path.join(tmp, "models"), train=True)
+        # portfolio=None: the variants compare per-asset setups only; building
+        # the v2.0 portfolio (and its bootstrap tests) for each would only cost
+        # time and memory.
+        run_pipeline(config_path=cfg_path, db_path=db_path, model_root=os.path.join(tmp, "models"), train=True,
+                     portfolio=None)
         assets, data_end = summarise(db_path)
     print(f"{key:9s} done in {time.perf_counter() - t0:.0f}s")
     return {"key": key, "description": description, "assets": assets}, data_end
