@@ -104,10 +104,17 @@ def load_latest_signals(db_path, run_id):
     return df.set_index("asset_id")
 
 
-def load_metrics(db_path, run_id, cycle="full"):
-    """Wide table: index (asset_id, strategy), one column per metric."""
+def load_metrics(db_path, run_id, cycle="full", include_portfolio=False):
+    """Wide table: index (asset_id, strategy), one column per metric.
+
+    Like load_windows, the v2.0 portfolio's rows are left out unless asked
+    for: code that maps every row to a per-asset strategy name (tables,
+    notebooks) would otherwise meet strategies it does not know.
+    """
     df = _read(db_path, """SELECT asset_id, strategy, metric_name, metric_value
                            FROM backtest_metrics WHERE run_id = ? AND cycle = ?""", (run_id, cycle))
+    if not include_portfolio:
+        df = df[df["asset_id"] != PORTFOLIO_ID]
     return df.pivot_table(index=["asset_id", "strategy"], columns="metric_name",
                           values="metric_value", aggfunc="first")
 

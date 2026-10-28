@@ -321,6 +321,8 @@ def test_existing_readers_do_not_see_the_portfolio(env):
     _run(env, train=True, portfolio=TWO_ASSET_PORTFOLIO)
     run_id = pipeline.DEFAULT_RUN_ID
     assert PORTFOLIO_ID not in data.load_windows(env["db_path"], run_id).index
+    assert PORTFOLIO_ID not in data.load_metrics(env["db_path"], run_id).index.get_level_values(0)
+    assert PORTFOLIO_ID in data.load_metrics(env["db_path"], run_id, include_portfolio=True).index.get_level_values(0)
     assert PORTFOLIO_ID in data.load_windows(env["db_path"], run_id, include_portfolio=True).index
     assert set(data.load_significance(env["db_path"], run_id)["family"]) == {"asset"}
     assert len(data.load_significance(env["db_path"], run_id, family="portfolio")) == 2

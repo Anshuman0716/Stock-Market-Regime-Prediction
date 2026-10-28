@@ -227,7 +227,7 @@ with tabs[0]:
     st.subheader("Forward tests")
     if not freezes:
         st.info("The design has not been frozen (no config/freeze.json).")
-    fwd = load("load_metrics", RUN_ID, FORWARD_CYCLE)
+    fwd = load("load_metrics", RUN_ID, FORWARD_CYCLE, True)
     for f in freezes:
         state, msg = freeze_states[f["version"]]
         is_portfolio = f["scope"] == SCOPE_PORTFOLIO

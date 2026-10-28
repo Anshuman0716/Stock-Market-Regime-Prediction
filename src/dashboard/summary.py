@@ -120,7 +120,7 @@ def portfolio_results(db_path, run_id, settings):
         return None
 
     def cycle(name):
-        m = data.load_metrics(db_path, run_id, cycle=name)
+        m = data.load_metrics(db_path, run_id, cycle=name, include_portfolio=True)
         return m.loc[PORTFOLIO_ID] if PORTFOLIO_ID in m.index.get_level_values(0) else pd.DataFrame()
 
     historical, forward = cycle(HISTORICAL_CYCLE), cycle(FORWARD_CYCLE)

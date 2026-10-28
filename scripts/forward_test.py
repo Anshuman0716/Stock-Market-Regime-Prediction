@@ -56,7 +56,7 @@ def main():
 
     data.check_store(DEFAULT_DB_PATH)
     run = data.load_run(DEFAULT_DB_PATH)
-    m = data.load_metrics(DEFAULT_DB_PATH, run["run_id"], cycle=FORWARD_CYCLE)
+    m = data.load_metrics(DEFAULT_DB_PATH, run["run_id"], cycle=FORWARD_CYCLE, include_portfolio=True)
     settings = PortfolioSettings.from_config(cfg) or PortfolioSettings()
 
     any_invalid = False

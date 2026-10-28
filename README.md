@@ -23,13 +23,28 @@ The project's priority is an **honest evaluation**: no look-ahead bias anywhere 
 ### Portfolio (v2.0)
 
 <!-- generated:portfolio -->
+**Historical verdict (2010-01-04 to 2026-10-27): Fail.** Not met: Sharpe not above Risk parity.
+
 **Question:** does combining the per-asset regime signals into one portfolio of S&P 500, Gold and Bitcoin beat simple portfolio rules? The regime-aware portfolio holds plain risk-parity weights (1 / 63-day volatility) scaled by each asset's own v1.0 regime exposure, with the rest in cash. It is compared with equal weight and plain risk parity on the same days, assets, costs and cash. Every rule was [pre-registered](docs/v2_preregistration.md) (commit `f7a17d2`) before any portfolio result existed.
 
 **The pass/fail rule, word for word:**
 
 > **Pass:** the regime-aware portfolio has a strictly higher Sharpe ratio above cash than both equal weight and plain risk parity, and a maximum drawdown no deeper than either of them. **Significant pass:** a pass in which both Sharpe differences also have a Holm-adjusted p-value below 0.05.
 
-**Not run yet** [TODO]. The rules and the freeze are committed; the verdict, the results table and the significance tests appear here once `python scripts/run_pipeline.py` builds the portfolio.
+| Strategy | CAGR | Ann. Vol | Sharpe (above cash) | Max DD | Avg. invested | Ann. turnover |
+|---|---|---|---|---|---|---|
+| **Regime-aware portfolio** | 7.93% | 8.23% | 0.79 | -13.23% | 67% | 4.6x |
+| Equal weight | 12.83% | 16.70% | 0.72 | -41.22% | 100% | 2.0x |
+| Risk parity | 12.31% | 12.50% | 0.87 | -24.15% | 100% | 3.1x |
+
+| Regime-aware vs | Sharpe diff | 95% CI | p (bootstrap) | p (HAC) | p (Holm-adjusted) |
+|---|---|---|---|---|---|
+| Equal weight | +0.07 | [-0.26, +0.40] | 0.670 | 0.691 | 1.000 |
+| Risk parity | -0.08 | [-0.36, +0.14] | 0.512 | 0.555 | 1.000 |
+
+*Historical window: every day up to the v2.0 freeze. Bitcoin joins on the first trading day on or after 2021-01-01, its first out-of-sample signal; before that all three portfolios hold S&P 500 and Gold only. The per-asset signals were developed on these same years, so this verdict is only half blind; the forward test below is the clean one.*
+
+**Forward test:** no trading days after 2026-10-27 yet (data through 2026-10-27).
 <!-- /generated:portfolio -->
 
 ### Each asset on its own (v1.0)
